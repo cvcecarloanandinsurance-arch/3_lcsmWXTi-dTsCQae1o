@@ -134,8 +134,8 @@
     background_color: "#f6f7f9",
     theme_color: "#0b74de",
     icons: [
-      { src: "./icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
-      { src: "./icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" }
+      { src: "./ico2-9x2q-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "./ico2-9x2q-512.png", sizes: "512x512", type: "image/png", purpose: "any" }
     ],
     share_target: {
       action: "./" + currentFileName,
@@ -33678,6 +33678,21 @@ updateUndoBackButtons();
     // http(s). MacroDroid call-popup still needs the 127.0.0.1 server to
     // work; opening via content:// only loses that one feature silently.
     if(window.location.protocol !== 'http:' && window.location.protocol !== 'https:'){
+      return '';
+    }
+    // 🐛 Fix (Sep 2026 — explicit user instruction: GitHub Pages copy
+    // showing "pending_call.txt fetch failed: HTTP 404" repeatedly) —
+    // the MacroDroid file-handoff feature ONLY ever works when this HTML
+    // is being served BY the 127.0.0.1:8080 local server, because that's
+    // the only place MacroDroid is told to write pending_call.txt. When
+    // this same HTML is instead opened from a real https:// origin like
+    // cvcecarloanandinsurance-arch.github.io, there is (and never will
+    // be) a pending_call.txt sitting next to it there — that's a normal,
+    // permanent condition for that deployment, not a real error. So we
+    // skip the attempt (and the banner) entirely unless the page is
+    // actually being served from the local server's own origin.
+    const h = window.location.hostname;
+    if(h !== '127.0.0.1' && h !== 'localhost'){
       return '';
     }
     // 🐛 CRITICAL Fix (explicit user instruction — Aug 2026: repeated red
