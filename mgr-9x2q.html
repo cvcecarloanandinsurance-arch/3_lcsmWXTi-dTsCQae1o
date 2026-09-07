@@ -1786,6 +1786,17 @@ whatever is scrolled underneath them. -->
       Add, 📎/🛡️ business-icon uploads, 🔄 Re-scan — not just this
       button's neighbour). -->
       <button class="tool-btn" id="setVisionKeyBtn" type="button" title="Google Cloud Vision Key — Plain OCR (Text படிக்குறது மட்டும், Document புரிஞ்சுக்காது). 📷 Bulk Add, 📎/🛡️ Business Icons, 🔄 Re-scan உட்பட App முழுக்க இருக்குற எல்லா OCR Path-உம் இந்த Key-ஐ Use பண்ணும்.">🔑 Set Vision API Key</button>
+      <!-- ☁️ Set Cloudflare Backup — explicit user instruction (Sep 2026):
+      "Implement cloudflare to avoid background working failure and sync"
+      — this button stores the Worker URL + secret needed for the
+      existing 5-minute auto-backup to ALSO push a text-only copy of the
+      Business List/RC/KYC/Consolidated data to a Cloudflare Worker+KV
+      store, so it survives even if the phone's local storage is
+      cleared/lost. Same IndexedDB save/read-back pattern as 🔑 Set
+      Vision API Key above. Never includes scanned Photo/PDF documents —
+      text data only, same limit the local Backup Save buttons already
+      have. -->
+      <button class="tool-btn" id="setCfBackupBtn" type="button" style="background:#f6821f; border-color:#f6821f;" title="☁️ Cloudflare Worker URL + Secret Token — set இதை பண்ணா, ஒவ்வொரு 5-நிமிட Auto-Backup-உம் Text Data-வை (Photo/PDF இல்லாம) Cloudflare-க்கும் தானாக அனுப்பும், Phone Storage போனாலும் Data தப்பும்.">☁️ Set Cloudflare Backup</button>
       <!-- 🔑 Set Anthropic API Key — explicit user instruction (Aug 30,
       2026, Tamil): "இப்போது இல்லை ஃபியூச்சரில் வாங்குவேன், அதனால் மெயின்
       பேஜில் ஆந்த்ராபிக் கீ உள்ளிட மற்றும் சேவ் செய்ய ஒரு ஐகானை கொண்டு
@@ -4582,14 +4593,24 @@ function clearMergeQueueProgress(){
   if(el) el.remove();
 }
 const IDB_STORE = 'snapshots';
-// 🛑 Global scan-cancel flag (Aug 2026 fix — real incident: a Business
-// List / RC / KYC bulk scan kept silently running and re-saving records
-// in the background even while the person was trying to wipe that exact
-// data, because nothing in this file could ever interrupt an in-progress
-// scan once started). Checked once per file inside runBulkOcrBatch's
-// loop; set true to make any currently-running batch stop cleanly at the
-// next file boundary instead of continuing indefinitely.
-let __scanCancelRequested = false;
+// 🛑 Per-panel scan-cancel flags (Sep 2026 fix — explicit user report:
+// "reset rc related, kyc, consolidated should work independently, each
+// doing only its own job" — this used to be ONE shared
+// __scanCancelRequested flag, so 🧨 Complete Reset on ANY one of
+// 🛡️ RC Related / 🪪 KYC / 🗂️ Consolidated set the SAME flag, which every
+// other panel's batch loop and Strike Rate bump function also checked —
+// resetting Consolidated, for example, could silently pause/stop an
+// in-flight RC or KYC scan too, even though that panel was never touched.
+// Split into three independent flags so each Complete Reset only ever
+// affects its own panel's in-flight batch, exactly as the confirm-dialog
+// text already promised ("🪪 KYC / 🗂️ Consolidated பாதிக்கப்படாது").
+// The mixed-content Business/Bulk-Add batch (runBulkOcrBatch) can still
+// write RC or KYC records mid-batch, so it (and bumpBizStrikeRate) checks
+// BOTH __rcScanCancelRequested and __kycScanCancelRequested — but never
+// __consScanCancelRequested, since that panel alone doesn't feed it.
+let __rcScanCancelRequested = false;
+let __kycScanCancelRequested = false;
+let __consScanCancelRequested = false;
 let idbReady = null;
 
 // 🐛 CRITICAL Fix (Aug 2026 — "எந்த ஒரு பட்டனையும் டச் செய்தால் வேலை
@@ -7186,7 +7207,7 @@ function downloadFinancerStatusCsvFallback(num, financerName, linked){
 // "My Status" is filled from item.myStatus — typed into the 📝 MY STATUS
 // box — with TODAY'S date (the moment this Excel is being sent) appended,
 // not the last-edited date.
-async function downloadFinancerStatusExcel(num, financerName, linked){
+async function downloadFinancerStatusExcel(num, financerName, linked, shareText, shareMobile){
   const todayStr = todayLabel();
   const stamp = new Date().toISOString().slice(0,10);
   const safeName = (financerName || num).replace(/[^a-zA-Z0-9]/g,'_');
@@ -7265,7 +7286,15 @@ async function downloadFinancerStatusExcel(num, financerName, linked){
     const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     // v8.4 fix: same content:// download bug as elsewhere — use the
     // Share-Sheet-based path so this actually saves when opened from Downloads.
-    await openOrDownloadBlob(blob, `Financer_Status_${safeName}_${stamp}.xlsx`);
+    // 🐛 Fix (explicit user instruction, Sep 2026, Tamil: "WhatsApp அனுப்பும்
+    // போது Excel தானாக இணைக்கப்பட வேண்டும், Download Popup வரக்கூடாது") —
+    // shareText/shareMobile (when passed by the caller) now go straight
+    // into openOrDownloadBlob's existing navigator.share({files:[...]})
+    // path, so the Excel + the status-request message open together in
+    // ONE native Share Sheet tap — WhatsApp/WhatsApp Business picked
+    // there attaches the file automatically. No separate raw download,
+    // no second blank wa.me chat window.
+    await openOrDownloadBlob(blob, `Financer_Status_${safeName}_${stamp}.xlsx`, shareText, shareMobile);
   }catch(e){
     console.warn('Excel export failed, falling back to CSV:', e);
     downloadFinancerStatusCsvFallback(num, financerName, linked);
@@ -7404,14 +7433,19 @@ bothListsAddEventListener('click', async (e) => {
     return;
   }
 
-  downloadFinancerStatusExcel(num, financerName, linked);
-
-  const wa = "91" + num;
-  const msg = encodeURIComponent(buildFinancerStatusMessage(financerName));
-  const url = mode === 'business' ? waBusinessIntentLink(wa, msg) : `https://wa.me/${wa}?text=${msg}`;
-  window.open(url, '_blank');
-
-  alert(`📊 Status Sheet (${linked.length} businesses, தற்போதைய latest data) download ஆயிடுச்சு.\n\nWhatsApp chat திறந்திருக்கு — attachment (📎) icon தட்டி இணைத்து அனுப்புங்கள்.`);
+  // 🐛 Fix (explicit user instruction, Sep 2026, Tamil: "WhatsApp அனுப்பும்
+  // போது Excel தானாக இணைக்கப்பட வேண்டும் — Download Popup வேண்டாம், மிகவும்
+  // Irritating") — this used to (1) force a raw file download, (2) open a
+  // SEPARATE blank WhatsApp chat via wa.me with only the text (no file),
+  // and (3) alert the person to manually attach the just-downloaded file
+  // via WhatsApp's own 📎 icon. Now a single call: the Excel + the
+  // status-request message go together into ONE native Share Sheet
+  // (navigator.share — see openOrDownloadBlob), and picking WhatsApp/
+  // WhatsApp Business there attaches the file automatically. `mode` is
+  // kept on the button (🟢 vs 💼) purely as a visual hint of intent —
+  // the OS Share Sheet itself lets the person pick either app.
+  const shareMsg = buildFinancerStatusMessage(financerName);
+  await downloadFinancerStatusExcel(num, financerName, linked, shareMsg, num);
 });
 
 // ---------- 📎 Customer Documents (multi-file store — JPG/PDF/Excel etc., per BUSINESS) ----------
@@ -14470,6 +14504,74 @@ document.getElementById('setVisionKeyBtn').addEventListener('click', async () =>
   alert(entered.trim() ? '✅ Vision API key saved (read-back confirmed). இனி ஒவ்வொரு Scan-லும் இது Automatic-ஆ Use ஆகும்.' : '🗑️ Vision API key cleared. On-device OCR-க்கு Fallback ஆகும்.');
 });
 
+// ☁️ Cloudflare Backup config — explicit user instruction (Sep 2026):
+// same storage pattern as 🔑 Set Vision API Key above (IndexedDB, with
+// a localStorage-legacy migration path kept consistent for anyone who
+// copies this pattern later). Two values stored together: the Worker's
+// URL and the Bearer secret it expects — see cf-backup-worker/worker.js
+// for the server side. Both must be set for pushCloudBackup() to do
+// anything; if either is missing, it silently no-ops (never blocks the
+// existing local backup, which works exactly as before regardless).
+const CF_BACKUP_CONFIG_KEY = 'cfBackupConfig_v1';
+let cfBackupConfigCache = null;
+async function getCloudflareBackupConfig(){
+  if(cfBackupConfigCache !== null) return cfBackupConfigCache;
+  try{
+    const saved = await idbGet(CF_BACKUP_CONFIG_KEY);
+    if(saved && saved.value){ cfBackupConfigCache = saved.value; return cfBackupConfigCache; }
+  }catch(e){ console.warn('getCloudflareBackupConfig: IndexedDB read failed', e); }
+  cfBackupConfigCache = { url: '', secret: '' };
+  return cfBackupConfigCache;
+}
+async function setCloudflareBackupConfig(cfg){
+  try{
+    await idbSet(CF_BACKUP_CONFIG_KEY, cfg);
+    cfBackupConfigCache = cfg;
+    return true;
+  }catch(e){ console.warn('setCloudflareBackupConfig failed', e); return false; }
+}
+document.getElementById('setCfBackupBtn').addEventListener('click', async () => {
+  const current = await getCloudflareBackupConfig();
+  const url = prompt(
+    (current.url ? 'Current Cloudflare Worker URL:\n' + current.url + '\n\n' : 'No Cloudflare Worker URL set yet.\n\n') +
+    'Paste your Worker URL (e.g. https://stffe-backup-worker.YOURNAME.workers.dev) — leave blank + OK to clear, Cancel to leave unchanged:',
+    current.url
+  );
+  if(url === null) return;
+  if(!url.trim()){
+    await setCloudflareBackupConfig({ url: '', secret: '' });
+    alert('🗑️ Cloudflare Backup cleared. Auto-Backup இனி Local மட்டும் (Cloudflare-க்கு அனுப்பாது).');
+    return;
+  }
+  const secret = prompt('Paste your Worker Secret (the same value you set via "wrangler secret put BACKUP_SECRET"):', current.secret || '');
+  if(secret === null) return;
+  const cfg = { url: url.trim().replace(/\/$/, ''), secret: secret.trim() };
+  const ok = await setCloudflareBackupConfig(cfg);
+  if(!ok){ alert('❌ Save ஆகல் — Storage Problem இருக்கலாம்.'); return; }
+  alert('✅ Cloudflare Backup Configured. இனி ஒவ்வொரு 5-நிமிட Auto-Backup-உம் இதற்கும் தானாக அனுப்பும் (Photo/PDF இல்லாம, Text Data மட்டும்).');
+});
+// 🐛 Sends the SAME text-only shape as the local RC/KYC/Consolidated
+// Backup Save buttons — deliberately excludes documentBlobs (scanned
+// Aadhaar/PAN/RC images) so this never sends actual ID-document photos
+// over the network; only names/numbers/statuses, matching the size and
+// privacy footprint already accepted for the local per-panel backups.
+// Fire-and-forget — never throws into its caller, never blocks the
+// existing local auto-backup (idbSet('autoBackupSnapshot', ...)) which
+// runs first and is unaffected if this fails or is unconfigured.
+async function pushCloudBackup(payload){
+  try{
+    const cfg = await getCloudflareBackupConfig();
+    if(!cfg || !cfg.url || !cfg.secret) return; // not configured — silent no-op
+    const { documentBlobs, skippedDocKeys, ...textOnlyPayload } = payload;
+    const res = await fetch(cfg.url + '/backup', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'authorization': 'Bearer ' + cfg.secret },
+      body: JSON.stringify(textOnlyPayload)
+    });
+    if(!res.ok){ console.warn('Cloudflare backup push failed:', res.status, await res.text().catch(()=> '')); }
+  }catch(e){ console.warn('Cloudflare backup push failed (network/offline?):', e); }
+}
+
 // ---------- 🔑 Set Anthropic API Key (v236) — explicit user instruction
 // (Aug 30, 2026, Tamil): storage-only for now (see the long HTML comment
 // above setAnthropicKeyBtn for the full reasoning). Same IndexedDB +
@@ -19914,23 +20016,16 @@ async function refreshUploadExtractStrikeRateBadge(){
       // plain completed/attempted numbers remain.
       b.textContent = `${r.completed}/${r.attempted}`;
     };
-    setIconBadge('uploadExtractChooseRcBtn', 'rcIconStrikeBadge', ins, __sessionUploadActivity.ins);
-    setIconBadge('uploadExtractChooseKycBtn', 'kycIconStrikeBadge', kyc, __sessionUploadActivity.kyc);
-    // 📇 Business List — explicit user instruction also asked for this
-    // on "Business List" itself. NOT placed on the main list header/
-    // Unedited-Edited row — that's exactly where uneditedRowStrikeRate
-    // and belowListStrikeRate were BOTH already removed per his own
-    // earlier explicit instruction ("அந்த கருப்பு கலர் ஸ்ட்ரைக் ரேட்
-    // எதுக்கு") for eating into his working space there. Placed on 📄
-    // Upload & Extract instead — the actual icon the Business-List scan
-    // (BIZ_STRIKE_RATE_KEY) runs through — alongside the existing ⏳
-    // pending-queue badge, without touching the cleared header area.
-    setIconBadge('insuranceOcrExtractBtn', 'bizIconStrikeBadge', biz, __sessionUploadActivity.biz);
-    // 🎯 v316 — same on-icon ✅Completed/Attempted pill, now also on the
-    // 🗂️ Consolidated Document chooser button itself (previously RC/KYC/
-    // Business List all had this, Consolidated was the one icon still
-    // missing it — explicit user instruction, Sep 2, 2026).
-    setIconBadge('uploadExtractChooseConsolidatedBtn', 'consIconStrikeBadge', cons, __sessionUploadActivity.cons);
+    // 🐛 Fix (explicit user instruction, Sep 2026, Tamil: "Tick in the
+    // KYC, rc related, consolidated and just dial icons" — remove) —
+    // these four on-icon badges (RC Related/KYC/Consolidated/Business
+    // 📇 JustDial) are now removed entirely per that instruction. Any
+    // already-rendered badge element from an earlier session is also
+    // explicitly cleaned up below so it doesn't linger on-screen.
+    ['rcIconStrikeBadge', 'kycIconStrikeBadge', 'bizIconStrikeBadge', 'consIconStrikeBadge'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.remove();
+    });
     // 🎯 In-Popup Strike Rate — explicit user instruction (Aug 2026):
     // "அந்த பாப்பா ஃபுல்லா ஸ்டிரைக் ரேட் வரணும் அப்புறம் சர்ச் பாக்ஸ்
     // வரணும்" — full Strike Rate text INSIDE each of 🛡️ RC Related, 🪪
@@ -20002,7 +20097,10 @@ async function bumpInsStrikeRate(succeeded){
   // like the reset "didn't take". __scanCancelRequested stays true for the
   // full duration of each Complete Reset handler (see insuranceOcrFullResetBtn/
   // kycFullResetBtn/consFullResetBtn below) — refuse to write while it's set.
-  if(typeof __scanCancelRequested !== 'undefined' && __scanCancelRequested) return null;
+  // (Sep 2026: now checks ONLY 🛡️ RC Related's own flag — see the
+  // __rcScanCancelRequested/__kycScanCancelRequested/__consScanCancelRequested
+  // split comment above.)
+  if(typeof __rcScanCancelRequested !== 'undefined' && __rcScanCancelRequested) return null;
   try{
     __sessionUploadActivity.ins = true;
     const saved = await idbGet(INS_STRIKE_RATE_KEY);
@@ -20208,7 +20306,16 @@ async function runInsuranceOcrExtractBatch(files, opts){
   try{
     if(!(await getVisionApiKey()) && !__rcVisionNoticeShownThisUpload){
       __rcVisionNoticeShownThisUpload = true;
-      alert('⚠️ 🔑 Cloud Vision API Key செட் செய்யப்படவில்லை. இந்த ஸ்கேன் Tesseract (on-device OCR)-ஐ பயன்படுத்தும், இது Cloud Vision-ஐ விட குறைவான துல்லியம் கொடுக்கலாம். துல்லியமான RC Related ரிசல்ட்டுக்கு, மேலே உள்ள 🔑 Set Vision API Key பட்டனை தட்டி கீயை சேமிக்கவும், பிறகு மீண்டும் ஸ்கேன் செய்யவும்.');
+      // 🐛 Fix (explicit user instruction, Sep 2026, Tamil: "Scan நடக்கும்
+      // போது Popup வரக்கூடாது, தானாக Skip ஆகணும்") — this used to be a
+      // blocking alert() that made the person tap OK before the scan
+      // could even start. Now a non-blocking, self-dismissing toast —
+      // the scan begins immediately either way; the notice is purely
+      // informational.
+      if(typeof showTnPinToastGlobal === 'function'){
+        showTnPinToastGlobal('⚠️ Vision API Key இல்லை — Tesseract-ல் Scan ஆகும் (குறைவான துல்லியம்)');
+      }
+      console.warn('RC Related scan: Cloud Vision API Key not set — falling back to Tesseract OCR for this batch.');
     }
   }catch(e){ /* best-effort notice only — never blocks the scan itself */ }
   // 🐛 Fix (explicit user instruction, Aug 31, 2026, Tamil): "அந்த pdf
@@ -20300,7 +20407,7 @@ async function runInsuranceOcrExtractBatch(files, opts){
     // check (which preserves work for a later Resume), a Complete Reset
     // means the person explicitly wants a clean slate, so anything not
     // yet processed is simply dropped, matching that intent.
-    if(typeof __scanCancelRequested !== 'undefined' && __scanCancelRequested){ rcBatchCancelled = true; break; }
+    if(typeof __rcScanCancelRequested !== 'undefined' && __rcScanCancelRequested){ rcBatchCancelled = true; break; }
     const file = files[i];
     // 📋✕ Immediate Upload Queue — skip this file entirely if the person
     // tapped its own ✕ Cancel button (see renderUploadQueueList above)
@@ -21592,7 +21699,8 @@ document.getElementById('insuranceOcrFullResetBtn').addEventListener('click', as
   btn.textContent = '🧨 நீக்குகிறது…';
   try{
     // Step 1 — stop any in-flight batch first, so nothing races the wipe.
-    __scanCancelRequested = true;
+    // (Sep 2026: own flag only — no longer pauses KYC/Consolidated batches.)
+    __rcScanCancelRequested = true;
     await new Promise(res => setTimeout(res, 400)); // brief grace period for the loop's own cancel-check to actually hit
     // Step 2 — checkpoint (auto-resume source).
     try{ await idbDelete(INS_UPLOAD_CHECKPOINT_KEY); }catch(e){ console.warn('Complete Reset: checkpoint delete failed', e); }
@@ -21631,7 +21739,7 @@ document.getElementById('insuranceOcrFullResetBtn').addEventListener('click', as
     try{ if(typeof refreshUploadExtractStrikeRateBadge === 'function') await refreshUploadExtractStrikeRateBadge(); }catch(e){}
     alert(`✅ 🛡️ RC Related — Complete Reset முடிந்தது.\n\nநீக்கப்பட்டவை: Scan Checkpoint, Review List, ${deletedFileCount} Registration Number(s)-ஓட PDF Archive Files, Strike Rate.\n\nஇப்போ புது File-ஐ Fresh-ஆக Upload பண்ணலாம்.`);
   } finally {
-    __scanCancelRequested = false; // release the stop-flag so future uploads aren't blocked
+    __rcScanCancelRequested = false; // release the stop-flag so future uploads aren't blocked
     btn.disabled = false;
     btn.textContent = originalText;
   }
@@ -21651,7 +21759,8 @@ document.getElementById('kycFullResetBtn').addEventListener('click', async () =>
   btn.disabled = true;
   btn.textContent = '🧨 நீக்குகிறது…';
   try{
-    __scanCancelRequested = true;
+    // (Sep 2026: own flag only — no longer pauses RC/Consolidated batches.)
+    __kycScanCancelRequested = true;
     await new Promise(res => setTimeout(res, 400));
     try{ await idbDelete(KYC_UPLOAD_CHECKPOINT_KEY); }catch(e){ console.warn('KYC Complete Reset: checkpoint delete failed', e); }
     try{ await setKycRecords([]); }catch(e){ console.warn('KYC Complete Reset: records clear failed', e); }
@@ -21673,7 +21782,7 @@ document.getElementById('kycFullResetBtn').addEventListener('click', async () =>
     try{ if(typeof refreshUploadExtractStrikeRateBadge === 'function') await refreshUploadExtractStrikeRateBadge(); }catch(e){}
     alert(`✅ 🪪 KYC — Complete Reset முடிந்தது.\n\nநீக்கப்பட்டவை: Scan Checkpoint, அத்தனை Person Records, ${deletedFileCount} Person(s)-ஓட Documents, Strike Rate.\n\nஇப்போ புது File-ஐ Fresh-ஆக Upload பண்ணலாம்.`);
   } finally {
-    __scanCancelRequested = false;
+    __kycScanCancelRequested = false;
     btn.disabled = false;
     btn.textContent = originalText;
   }
@@ -21693,7 +21802,8 @@ document.getElementById('consFullResetBtn').addEventListener('click', async () =
   btn.disabled = true;
   btn.textContent = '🧨 நீக்குகிறது…';
   try{
-    __scanCancelRequested = true;
+    // (Sep 2026: own flag only — no longer pauses RC/KYC batches.)
+    __consScanCancelRequested = true;
     await new Promise(res => setTimeout(res, 400));
     try{ await idbDelete(CONS_UPLOAD_CHECKPOINT_KEY); }catch(e){ console.warn('Consolidated Complete Reset: checkpoint delete failed', e); }
     let deletedManualCount = 0;
@@ -21729,7 +21839,7 @@ document.getElementById('consFullResetBtn').addEventListener('click', async () =
     try{ if(typeof refreshUploadExtractStrikeRateBadge === 'function') await refreshUploadExtractStrikeRateBadge(); }catch(e){}
     alert(`✅ 🗂️ Consolidated — Complete Reset முடிந்தது.\n\nநீக்கப்பட்டவை: Scan Checkpoint, ${deletedManualCount} நேரடி Upload Documents, ${deletedAutoCount} Auto-Consolidated PDFs, Strike Rate.\n\n🛡️ RC Related/🪪 KYC அடுத்த Save-லேயே இங்கே தானாக திரும்ப Auto-Consolidate ஆகும்.`);
   } finally {
-    __scanCancelRequested = false;
+    __consScanCancelRequested = false;
     btn.disabled = false;
     btn.textContent = originalText;
   }
@@ -21913,7 +22023,17 @@ document.getElementById('kycBackupSaveBtn').addEventListener('click', async () =
     };
     const stamp = new Date().toISOString().replace(/[:.]/g, '-');
     if(downloadJsonBackup(backup, `KYC_Backup_${stamp}.json`)){
-      alert(`✅ Backup Save ஆனது — ${records.length} Persons.\n\nஇந்த JSON File-ஐ பத்திரமா வையுங்க. புது Version Open பண்ணின உடனே, இதே 🪪 KYC Panel-ல் 📥 Backup Restore தட்டி இந்த File-ஐ Select பண்ணுங்க.\n\n⚠️ இது Text Data மட்டும் (Name/Aadhaar/PAN/Mobile) — Scan பண்ண Photo/PDF இதில் இல்லை.`);
+      // 🐛 Fix (Sep 2026, reported: "Backup Save not working in KYC") —
+      // if this ever downloads with 0 records, the earlier plain "0
+      // Persons" wording looked identical to a genuine failure. Made
+      // explicit here so it's obviously a DIFFERENT situation (nothing
+      // saved yet in THIS file/session) rather than a silent bug —
+      // same distinction already made for 🗂️ Consolidated's Backup Save.
+      if(records.length === 0){
+        alert(`⚠️ Backup Save ஆனது — ஆனா 0 Persons.\n\nஇந்த File/Session-ல் இதுவரை 🪪 KYC Panel-ல் எந்த Person Record-உம் Save ஆகவில்லை என்று அர்த்தம் (Backup Save-ஓட Bug இல்லை — வெறும் Empty Data). 🪪 KYC Folder-ல் Person Cards தெரிகிறதா என்று சரிபார்க்கவும்.`);
+      } else {
+        alert(`✅ Backup Save ஆனது — ${records.length} Persons.\n\nஇந்த JSON File-ஐ பத்திரமா வையுங்க. புது Version Open பண்ணின உடனே, இதே 🪪 KYC Panel-ல் 📥 Backup Restore தட்டி இந்த File-ஐ Select பண்ணுங்க.\n\n⚠️ இது Text Data மட்டும் (Name/Aadhaar/PAN/Mobile) — Scan பண்ண Photo/PDF இதில் இல்லை.`);
+      }
     }
   }catch(e){ console.warn('KYC Backup Save failed', e); alert('⚠️ Backup Save தோல்வி: ' + ((e && e.message) || String(e))); }
 });
@@ -22074,8 +22194,9 @@ let kycOcrBatchActive = false;
 const KYC_STRIKE_RATE_KEY = 'kycScanStrikeRate';
 async function bumpKycStrikeRate(succeeded){
   // 🐛 Fix (explicit user instruction, Sep 2, 2026) — see bumpInsStrikeRate's
-  // identical comment above for the full explanation; same guard here.
-  if(typeof __scanCancelRequested !== 'undefined' && __scanCancelRequested) return null;
+  // identical comment above for the full explanation; same guard here,
+  // but on 🪪 KYC's own independent flag (Sep 2026 split).
+  if(typeof __kycScanCancelRequested !== 'undefined' && __kycScanCancelRequested) return null;
   try{
     __sessionUploadActivity.kyc = true;
     const saved = await idbGet(KYC_STRIKE_RATE_KEY);
@@ -22095,8 +22216,9 @@ async function bumpKycStrikeRate(succeeded){
 const CONS_STRIKE_RATE_KEY = 'consDocStrikeRate';
 async function bumpConsStrikeRate(succeeded){
   // 🐛 Fix (explicit user instruction, Sep 2, 2026) — see bumpInsStrikeRate's
-  // identical comment above for the full explanation; same guard here.
-  if(typeof __scanCancelRequested !== 'undefined' && __scanCancelRequested) return null;
+  // identical comment above for the full explanation; same guard here,
+  // but on 🗂️ Consolidated's own independent flag (Sep 2026 split).
+  if(typeof __consScanCancelRequested !== 'undefined' && __consScanCancelRequested) return null;
   try{
     __sessionUploadActivity.cons = true;
     const saved = await idbGet(CONS_STRIKE_RATE_KEY);
@@ -22117,8 +22239,13 @@ async function bumpConsStrikeRate(succeeded){
 const BIZ_STRIKE_RATE_KEY = 'bizScanStrikeRate';
 async function bumpBizStrikeRate(succeeded){
   // 🐛 Fix (explicit user instruction, Sep 2, 2026) — see bumpInsStrikeRate's
-  // identical comment above for the full explanation; same guard here.
-  if(typeof __scanCancelRequested !== 'undefined' && __scanCancelRequested) return null;
+  // identical comment above for the full explanation. Business/Bulk-Add
+  // scanning can write RC or KYC records mid-batch (mixed-content
+  // screenshots), so this checks BOTH those flags (Sep 2026 split) —
+  // but deliberately NOT __consScanCancelRequested, since Consolidated's
+  // own reset should never pause a plain Business/JustDial scan.
+  if(typeof __rcScanCancelRequested !== 'undefined' && __rcScanCancelRequested) return null;
+  if(typeof __kycScanCancelRequested !== 'undefined' && __kycScanCancelRequested) return null;
   try{
     __sessionUploadActivity.biz = true;
     const saved = await idbGet(BIZ_STRIKE_RATE_KEY);
@@ -23141,7 +23268,7 @@ async function runKycFileOnlyImport(files){
     // it — so "நீக்குகிறது…" looked like it never actually finished.
     const kycRenderScheduler = createThrottledRenderer(() => renderKycOcrExtractPanel(document.getElementById('kycOcrExtractSearch') ? document.getElementById('kycOcrExtractSearch').value : '', false), 500);
     for(let i=0;i<files.length;i++){
-      if(typeof __scanCancelRequested !== 'undefined' && __scanCancelRequested){
+      if(typeof __kycScanCancelRequested !== 'undefined' && __kycScanCancelRequested){
         try{ await saveKycUploadCheckpoint(files.slice(i)); }catch(e){}
         break;
       }
@@ -23198,7 +23325,7 @@ async function runKycFileOnlyImport(files){
     // loop above (__scanCancelRequested check), and this alert used to fire
     // unconditionally regardless, falsely claiming N/N finished right after
     // the person had just wiped everything and stopped it.
-    if(!(typeof __scanCancelRequested !== 'undefined' && __scanCancelRequested)){
+    if(!(typeof __kycScanCancelRequested !== 'undefined' && __kycScanCancelRequested)){
       alert(`✅ All Completed — 🪪 KYC: ${files.length}/${files.length} Files முழுவதுமாக முடிந்தது.`);
     }
   } finally {
@@ -27317,14 +27444,26 @@ document.getElementById('consBackupSaveBtn').addEventListener('click', async () 
   try{
     const docs = await getAllConsolidatedManualDocs();
     const metaOnly = docs.map(d => ({ id: d.id, mobile: d.mobile, fileName: d.fileName, businessName: d.businessName || '', customerName: d.customerName || '', fileId: d.fileId || '' }));
+    // 🐛 Fix (explicit user instruction, Sep 2026: "Backup Save not
+    // working in Consolidated") — this backup only ever included
+    // metaOnly (நேரடி Upload records). For anyone who mainly relies on
+    // Auto-Consolidate (RC + KYC name-matched automatically, no manual
+    // upload at all), metaOnly was empty/near-empty every time, making
+    // the download look like it "did nothing". Now also includes the
+    // Auto-Consolidated index (Name/PAN/Aadhaar/Registration Numbers —
+    // text only, same as this index already stores) so the backup file
+    // is actually meaningful even with zero manual uploads.
+    let autoIndexMeta = [];
+    try{ autoIndexMeta = await getConsolidatedAutoIndex(); }catch(e){ console.warn('reading auto index for backup failed', e); }
     const backup = {
       type: 'consolidated_backup_v1', savedAt: new Date().toISOString(),
       manualDocsMeta: metaOnly,
+      autoIndexMeta,
       excludedFileIds: await getConsExcludedFileIds()
     };
     const stamp = new Date().toISOString().replace(/[:.]/g, '-');
     if(downloadJsonBackup(backup, `Consolidated_Backup_${stamp}.json`)){
-      alert(`✅ Backup Save ஆனது — ${metaOnly.length} நேரடி Upload Records (Mobile/Name Details மட்டும்).\n\n🔒 Full-Automatic பகுதி இதில் இல்லை — அது 🪪 KYC / 🛡️ RC Related Backup Restore பண்ணின உடனே தானாகவே திரும்ப உருவாகும்.\n\n⚠️ இதில் Actual Photo/PDF இல்லை — Version மாறினா அந்த Documents-ஐ மறுபடியும் Upload பண்ண வேண்டியிருக்கலாம்.`);
+      alert(`✅ Backup Save ஆனது — ${metaOnly.length} நேரடி Upload Records + ${autoIndexMeta.length} Auto-Consolidated Records (Mobile/Name/PAN/Aadhaar/Regn Numbers மட்டும்).\n\n⚠️ இதில் Actual Photo/PDF இல்லை — Version மாறினா 🪪 KYC/🛡️ RC Related Backup Restore பண்ணின உடனே இது தானாகவே திரும்ப உருவாகும்; நேரடி Upload Documents-ஐ மட்டும் மறுபடியும் Upload பண்ண வேண்டியிருக்கலாம்.`);
     }
   }catch(e){ console.warn('Consolidated Backup Save failed', e); alert('⚠️ Backup Save தோல்வி: ' + ((e && e.message) || String(e))); }
 });
@@ -27345,7 +27484,8 @@ document.getElementById('consBackupRestoreInput').addEventListener('change', asy
     try{ await renderConsolidatedDocPanel(document.getElementById('consolidatedDocSearch').value || ''); }catch(e){}
     try{ if(typeof refreshUploadExtractStrikeRateBadge === 'function') await refreshUploadExtractStrikeRateBadge(); }catch(e){}
     const metaCount = Array.isArray(data.manualDocsMeta) ? data.manualDocsMeta.length : 0;
-    alert(`✅ Backup Restore முடிந்தது.\n\nExcluded/Deleted List திரும்ப Load ஆனது.\n\n📌 நேரடி Upload செய்த ${metaCount} Documents-ஓட Mobile/Name Details மட்டும் இந்த Backup-ல் இருந்தது — Actual Photo/PDF இல்லாததால் அவை தானாக திரும்ப வரவில்லை; தேவைனா அந்த ${metaCount} Documents-ஐ மறுபடியும் Upload பண்ணுங்க (Mobile Number அப்பவே தெரியும்).`);
+    const autoCount = Array.isArray(data.autoIndexMeta) ? data.autoIndexMeta.length : 0;
+    alert(`✅ Backup Restore முடிந்தது.\n\nExcluded/Deleted List திரும்ப Load ஆனது.\n\n📌 நேரடி Upload செய்த ${metaCount} Documents-ஓட Mobile/Name Details மட்டும் இந்த Backup-ல் இருந்தது — Actual Photo/PDF இல்லாததால் அவை தானாக திரும்ப வரவில்லை; தேவைனா அந்த ${metaCount} Documents-ஐ மறுபடியும் Upload பண்ணுங்க (Mobile Number அப்பவே தெரியும்).\n\n🔒 ${autoCount} Auto-Consolidated Records இந்த Backup-ல் இருந்தது — இது 🪪 KYC/🛡️ RC Related Restore ஆனதும் தானாகவே திரும்ப Rebuild ஆகிடும்.`);
   }catch(e){ console.warn('Consolidated Backup Restore failed', e); alert('⚠️ Backup Restore தோல்வி — File சரியா JSON Format-ல் இல்லை போல. Error: ' + ((e && e.message) || String(e))); }
 });
 // 🗂️ Shared per-file loop for Consolidated Document Upload — used by both
@@ -27364,7 +27504,7 @@ async function runConsolidatedFileOnlyBatch(files, btn){
     // __scanCancelRequested, so 🧨 Complete Reset (consFullResetBtn, below)
     // couldn't actually stop a batch already running — it kept inserting
     // records right back in underneath the wipe.
-    if(typeof __scanCancelRequested !== 'undefined' && __scanCancelRequested){
+    if(typeof __consScanCancelRequested !== 'undefined' && __consScanCancelRequested){
       try{ await saveConsUploadCheckpoint(files.slice(i)); }catch(e){}
       paused = true;
       break;
@@ -29850,7 +29990,7 @@ async function runBulkOcrBatch(files, opts){
     // documents underneath whatever the person is doing. Whatever hasn't
     // been processed yet is saved back as a checkpoint so it isn't lost —
     // it simply won't auto-resume; it waits for an explicit Resume tap.
-    if(typeof __scanCancelRequested !== 'undefined' && __scanCancelRequested){
+    if((typeof __rcScanCancelRequested !== 'undefined' && __rcScanCancelRequested) || (typeof __kycScanCancelRequested !== 'undefined' && __kycScanCancelRequested)){
       try{ await saveBulkOcrCheckpoint(files.slice(i)); }catch(e){}
       if(typeof showGlobalScanProgress === 'function') clearGlobalScanProgress();
       break;
@@ -31713,6 +31853,11 @@ async function runAutoBackup(force){
     // for the 5-minute interval case, since idbSet never touches the
     // browser's Downloads UI.
     try{ await idbSet('autoBackupSnapshot', payload); }catch(e){}
+    // ☁️ Cloudflare cloud copy — explicit user instruction (Sep 2026):
+    // fire-and-forget, text-only (see pushCloudBackup's own comment) —
+    // never awaited-and-blocking, never affects the local save above
+    // whether it succeeds, fails, or Cloudflare isn't configured at all.
+    try{ pushCloudBackup(payload); }catch(e){}
 
     // 🐛 Fix v3 (explicit user instruction — Aug 2026: "ஐந்து நிமிடத்திற்கு
     // ஒருமுறை டவுன்லோட் டவுன்லோட் என்று வருகிறது அதை பேக்ரவுண்டில் மாற்ற
@@ -37654,7 +37799,7 @@ async function tryAutoRouteMatchedShareRecord(rec){
     // just returns instantly. Never awaited here — this must not delay
     // anything else on load.
     try{ refreshPdfArchiveQueueBadge(); }catch(e){}
-    try{ if(!__scanCancelRequested) processPendingPdfArchiveQueue(); }catch(e){}
+    try{ if(!__rcScanCancelRequested) processPendingPdfArchiveQueue(); }catch(e){}
     // ⚡ Background RC/Insurance Scan Queue — auto-resume on every app
     // open, same pattern as the PDF-Archive queue directly above. Anything
     // queued in a previous session (app closed/killed before the Scan
@@ -37662,7 +37807,7 @@ async function tryAutoRouteMatchedShareRecord(rec){
     // empty queue just returns instantly. Never awaited — must not delay
     // anything else on load.
     try{ refreshScanQueueBadge(); }catch(e){}
-    try{ if(!__scanCancelRequested) processPendingScanQueue(); }catch(e){}
+    try{ if(!__rcScanCancelRequested) processPendingScanQueue(); }catch(e){}
     // 🗂️ Consolidated — explicit user instruction (Aug 27, 2026): "எந்த
     // மேனுவல் வொர்க்கும் இருக்கக் கூடாது" — run the automatic Name-match
     // retry + full Consolidated Backfill on EVERY app open in the
@@ -37673,7 +37818,7 @@ async function tryAutoRouteMatchedShareRecord(rec){
     // only ever touch records still missing a Mobile Number / a
     // Consolidated compile.
     try{
-      if(!__scanCancelRequested){
+      if(!__consScanCancelRequested){
         backfillConsolidatedDocuments().then(() => {
           try{ if(typeof refreshUploadExtractStrikeRateBadge === 'function') refreshUploadExtractStrikeRateBadge(); }catch(e){}
           // 🎯 Automatic Reorient Sweep (explicit user instruction — Aug
