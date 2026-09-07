@@ -1202,7 +1202,31 @@
     about which build is actually running. Full fix-tag now lives only in
     the tooltip (title) — the on-screen text is just the version number,
     since the descriptive suffix was the widest single item in this row. -->
-    <span id="appVersionBadge" title="v345 · waExtractNewBizMobileBlank — fix (Sep 3, 2026, Tamil: user asked that in the WhatsApp Extract Share Inbox popup, when the detected Mobile Number does NOT match an existing Business/Financer row — i.e. the business isn't in the Business List yet — the Mobile Number box should be left blank/unlocked for him to type in himself, rather than auto-filled/locked with a not-yet-listed number; the Business Name box should keep auto-filling exactly as it appears in the WhatsApp Extract regardless). The Mobile Number box now only auto-fills (and stays locked) when the number detected in the Share title/text already matches an existing Business or Financer row via shareFormFindBizByMobile/shareFormFindFinancerNamesByMobile; otherwise it's unlocked and starts blank, same as the existing no-detection safety-net path (manual typing + background RC/KYC content auto-match still both apply). Previous v344 note: waExtractSkipScan — the WhatsApp Extract Share Inbox popup's 🔗 Merge + RC/Insurance Scan button no longer runs the mandatory OCR scan step (runBulkOcrBatchCapped3) before reaching the Business List; it's now just ⬆️ Upload, straight from read/zip-PDF-expand to one-file-at-a-time upload." style="flex-shrink:0; white-space:nowrap; padding:3px 8px; border-radius:12px; border:1px solid #78716c; background:#f5f5f4; color:#57534e; font-weight:800; font-size:0.62rem;">🏷️ v345 · waExtractNewBizMobileBlank</span>
+    <span id="appVersionBadge" title="v348 · restoreFromCloudUnwrapFix — worker.js's GET /backup returns {savedAt,payload}, client now correctly unwraps .payload before restoring (previous v347 build passed the wrapper straight through, which would have failed looksLikeValidData). · v347 · restoreFromCloudBackup — added ☁️ Restore from Cloud button next to ☁️ Set Cloudflare Backup: pulls the latest text-only snapshot back from the same Cloudflare Worker/KV (Business List full replace, Insurance Renewal/KYC merge-safe, same as 📥 Import Backup's tested logic, just sourced over the network via GET /backup instead of a chosen file). Photo/PDF documents never touch Cloudflare — unaffected, still phone-only. · v346 · rcKycConsResultJumpIcons · v345 · waExtractNewBizMobileBlank — fix (Sep 3, 2026, Tamil: user asked that in the WhatsApp Extract Share Inbox popup, when the detected Mobile Number does NOT match an existing Business/Financer row — i.e. the business isn't in the Business List yet — the Mobile Number box should be left blank/unlocked for him to type in himself, rather than auto-filled/locked with a not-yet-listed number; the Business Name box should keep auto-filling exactly as it appears in the WhatsApp Extract regardless). The Mobile Number box now only auto-fills (and stays locked) when the number detected in the Share title/text already matches an existing Business or Financer row via shareFormFindBizByMobile/shareFormFindFinancerNamesByMobile; otherwise it's unlocked and starts blank, same as the existing no-detection safety-net path (manual typing + background RC/KYC content auto-match still both apply). Previous v344 note: waExtractSkipScan — the WhatsApp Extract Share Inbox popup's 🔗 Merge + RC/Insurance Scan button no longer runs the mandatory OCR scan step (runBulkOcrBatchCapped3) before reaching the Business List; it's now just ⬆️ Upload, straight from read/zip-PDF-expand to one-file-at-a-time upload." style="flex-shrink:0; white-space:nowrap; padding:3px 8px; border-radius:12px; border:1px solid #78716c; background:#f5f5f4; color:#57534e; font-weight:800; font-size:0.62rem;">🏷️ v348 · restoreFromCloudUnwrapFix</span>
+  </div>
+  <!-- 🎯 RC/KYC/Consolidate Result quick-jump icons — explicit user
+  instruction (Tamil, Sep 2026): "ஆர்சி ரிலேட்டட் சேர்ச் பண்ணா 100 ரிசல்ட்
+  வரும், ஒவ்வொரு ரிசல்ட்டுக்குள்ளயும் அஞ்சு ஆறு பாக்ஸ் இருக்கும், அவசரமா
+  ஏதாவது கண்டுபிடிக்கணும்னா ரொம்ப தூரம் ஸ்க்ரோல் பண்ண வேண்டி இருக்கு —
+  அரிசி (RC) ரிசல்ட், கேஒய்சி ரிசல்ட், கன்சாலிடேட்டட் ரிசல்ட் என்று மூன்று
+  ஐகான்களை மெயின்/அக்கவுண்ட் பேஜில் நிறுவி, தொட்டவுடன் நேரடியாக அந்த
+  ரிசல்ட் காட்ட வேண்டும்" — the 🛡️ RC Related / 🪪 KYC / 🗂️ Consolidated
+  search boxes + full result lists already existed further down the page
+  (inside insuranceOcrExtractPanel/kycOcrExtractPanel/consolidatedDocPanel),
+  but actually REACHING them always meant scrolling all the way down past
+  everything else first. These 3 buttons live here in the fixed
+  #topStickyBar (visible from anywhere on the page, no scroll needed to
+  find THEM), and jump straight to the already-existing panel — opening
+  it if closed, un-minimizing it if minimized, re-rendering its full list,
+  then smooth-scrolling it into view just below this fixed bar. Unlike
+  tapping 🛡️ RC Related/🪪 KYC/🗂️ Consolidated Document above, these never
+  open the Photo/File picker — purely a "show me what's already saved,
+  right now" shortcut. See jumpToRcResult/jumpToKycResult/
+  jumpToConsResult further below (wired near scrollToMainPageBtn). -->
+  <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-top:5px; font-size:0.64rem; font-weight:700;">
+    <button type="button" id="rcResultJumpBtn" title="🛡️ RC Related Result-ஐ நேரடியாக காட்டும் (Scroll தேவையில்லை)" style="flex-shrink:0; white-space:nowrap; padding:3px 8px; border-radius:12px; border:1px solid #7c2d12; background:#7c2d12; color:#fff; font-weight:800; font-size:0.64rem; cursor:pointer; display:flex; align-items:center; gap:3px;">🛡️ RC Result</button>
+    <button type="button" id="kycResultJumpBtn" title="🪪 KYC Result-ஐ நேரடியாக காட்டும் (Scroll தேவையில்லை)" style="flex-shrink:0; white-space:nowrap; padding:3px 8px; border-radius:12px; border:1px solid #9333ea; background:#9333ea; color:#fff; font-weight:800; font-size:0.64rem; cursor:pointer; display:flex; align-items:center; gap:3px;">🪪 KYC Result</button>
+    <button type="button" id="consResultJumpBtn" title="🗂️ Consolidate Result-ஐ நேரடியாக காட்டும் (Scroll தேவையில்லை)" style="flex-shrink:0; white-space:nowrap; padding:3px 8px; border-radius:12px; border:1px solid #0f766e; background:#0f766e; color:#fff; font-weight:800; font-size:0.64rem; cursor:pointer; display:flex; align-items:center; gap:3px;">🗂️ Consolidate Result</button>
   </div>
 
 </div>
@@ -1797,6 +1821,13 @@ whatever is scrolled underneath them. -->
       text data only, same limit the local Backup Save buttons already
       have. -->
       <button class="tool-btn" id="setCfBackupBtn" type="button" style="background:#f6821f; border-color:#f6821f;" title="☁️ Cloudflare Worker URL + Secret Token — set இதை பண்ணா, ஒவ்வொரு 5-நிமிட Auto-Backup-உம் Text Data-வை (Photo/PDF இல்லாம) Cloudflare-க்கும் தானாக அனுப்பும், Phone Storage போனாலும் Data தப்பும்.">☁️ Set Cloudflare Backup</button>
+      <!-- ☁️ Restore from Cloud — explicit user instruction (Sep 2026):
+      lets him PULL the latest text-only snapshot back from the same
+      Cloudflare Worker/KV that ☁️ Set Cloudflare Backup pushes to every
+      5 minutes, so the cloud copy can actually be verified/used, not just
+      trusted blindly. Same merge-safe restore path as 📥 Import Backup —
+      see restoreFromCloudBackup(). -->
+      <button class="tool-btn" id="restoreCfBackupBtn" type="button" style="background:#0b74de; border-color:#0b74de;" title="☁️ Cloudflare-ல் கடைசியா Save ஆன Backup-ஐ இங்க திரும்ப கொண்டு வரும் (Photo/PDF தவிர மத்த Text Data). Business List முழுசா Replace ஆகும் (Version History மாதிரி); RC/KYC/Consolidated Data Merge ஆகும் (இருக்குறதை மேலெழுதாது).">☁️ Restore from Cloud</button>
       <!-- 🔑 Set Anthropic API Key — explicit user instruction (Aug 30,
       2026, Tamil): "இப்போது இல்லை ஃபியூச்சரில் வாங்குவேன், அதனால் மெயின்
       பேஜில் ஆந்த்ராபிக் கீ உள்ளிட மற்றும் சேவ் செய்ய ஒரு ஐகானை கொண்டு
@@ -2137,6 +2168,121 @@ whatever is scrolled underneath them. -->
       window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
     });
   }
+
+  // 🎯 RC/KYC/Consolidate Result quick-jump — see the HTML comment above
+  // the 3 buttons (near appVersionBadge) for the full explanation. Each
+  // handler: closes the OTHER 2 panels (same mutual-exclusivity as the
+  // 🛡️/🪪/🗂️ chooser icons), force-opens + fully re-renders its own
+  // panel, un-minimizes it if it was minimized, then smooth-scrolls it
+  // into view just below this fixed #topStickyBar (so the panel's own
+  // 🔎 Search box lands right under the bar, not hidden underneath it).
+  // Deliberately never touches insuranceOcrExtractInput/kycOcrExtractInput
+  // (the Photo/File pickers) — those only belong to the 📄 Upload &
+  // Extract chooser icons above, never to a "just show me the result"
+  // shortcut like this one. All functions/queues referenced here
+  // (renderInsuranceOcrExtractList, renderKycOcrExtractPanel,
+  // renderConsolidatedDocPanel, backfillConsolidatedDocuments,
+  // insuranceOcrExtractQueue) are defined later in this same file, but
+  // since these are only ever CALLED at click-time (long after the whole
+  // page — and every script tag in it — has finished loading), that's
+  // safe; each call is still typeof-guarded defensively regardless.
+  function closeOtherUploadResultPanels(exceptPanelId){
+    [
+      ['insuranceOcrExtractPanel', 'uploadExtractChooseRcBtn'],
+      ['kycOcrExtractPanel', 'uploadExtractChooseKycBtn'],
+      ['consolidatedDocPanel', 'uploadExtractChooseConsolidatedBtn']
+    ].forEach(function(pair){
+      if(pair[0] === exceptPanelId) return;
+      var p = document.getElementById(pair[0]), b = document.getElementById(pair[1]);
+      if(p) p.style.display = 'none';
+      if(b) b.classList.remove('tool-btn-panel-open');
+    });
+  }
+  function expandUploadResultBodyIfMinimized(bodyId, minimizeBtnId){
+    try{
+      var body = document.getElementById(bodyId);
+      var minBtn = document.getElementById(minimizeBtnId);
+      if(body && minBtn && body.style.display === 'none') minBtn.click();
+    }catch(e){}
+  }
+  function scrollUploadResultPanelIntoView(panel){
+    if(!panel) return;
+    requestAnimationFrame(function(){
+      try{
+        var tsb = document.getElementById('topStickyBar');
+        var barVisible = tsb && !tsb.classList.contains('tsb-hidden');
+        var offset = (barVisible ? tsb.getBoundingClientRect().height : 0) + 10;
+        var y = panel.getBoundingClientRect().top + window.scrollY - offset;
+        window.scrollTo({ top: Math.max(0, y), left: 0, behavior: 'smooth' });
+      }catch(e){
+        try{ panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); }catch(e2){}
+      }
+    });
+  }
+  var rcResultJumpBtn = document.getElementById('rcResultJumpBtn');
+  if(rcResultJumpBtn) rcResultJumpBtn.addEventListener('click', function(){
+    try{
+      closeOtherUploadResultPanels('insuranceOcrExtractPanel');
+      var panel = document.getElementById('insuranceOcrExtractPanel');
+      var btn = document.getElementById('uploadExtractChooseRcBtn');
+      // Reset any leftover search filter from a previous visit — a jump
+      // button is meant to show EVERYTHING right away, not a stale filter.
+      try{
+        var rcSearchInputEl = document.getElementById('insuranceOcrExtractSearch');
+        var rcSearchClearEl = document.getElementById('insuranceOcrExtractSearchClear');
+        if(rcSearchInputEl) rcSearchInputEl.value = '';
+        if(rcSearchClearEl) rcSearchClearEl.style.display = 'none';
+        if(typeof insuranceOcrExtractSearchQuery !== 'undefined') insuranceOcrExtractSearchQuery = '';
+      }catch(e){}
+      if(typeof insuranceOcrExtractQueue !== 'undefined' && insuranceOcrExtractQueue.length && typeof renderInsuranceOcrExtractList === 'function') renderInsuranceOcrExtractList();
+      panel.style.display = 'block';
+      if(btn) btn.classList.add('tool-btn-panel-open');
+      expandUploadResultBodyIfMinimized('insuranceOcrExtractBody', 'insuranceOcrMinimizeBtn');
+      scrollUploadResultPanelIntoView(panel);
+    }catch(e){ console.warn('rcResultJumpBtn failed', e); alert('⚠️ 🛡️ RC Result காட்டும்போது Error — Screenshot எடுத்து அனுப்புங்க.'); }
+  });
+  var kycResultJumpBtn = document.getElementById('kycResultJumpBtn');
+  if(kycResultJumpBtn) kycResultJumpBtn.addEventListener('click', async function(){
+    try{
+      closeOtherUploadResultPanels('kycOcrExtractPanel');
+      var panel = document.getElementById('kycOcrExtractPanel');
+      var btn = document.getElementById('uploadExtractChooseKycBtn');
+      panel.style.display = 'block';
+      if(btn) btn.classList.add('tool-btn-panel-open');
+      try{
+        var kycSearchInputEl = document.getElementById('kycOcrExtractSearch');
+        var kycSearchClearEl = document.getElementById('kycOcrExtractSearchClear');
+        if(kycSearchInputEl) kycSearchInputEl.value = '';
+        if(kycSearchClearEl) kycSearchClearEl.style.display = 'none';
+      }catch(e){}
+      if(typeof renderKycOcrExtractPanel === 'function') await renderKycOcrExtractPanel('');
+      expandUploadResultBodyIfMinimized('kycOcrExtractBody', 'kycOcrMinimizeBtn');
+      scrollUploadResultPanelIntoView(panel);
+    }catch(e){ console.warn('kycResultJumpBtn failed', e); alert('⚠️ 🪪 KYC Result காட்டும்போது Error — Screenshot எடுத்து அனுப்புங்க.'); }
+  });
+  var consResultJumpBtn = document.getElementById('consResultJumpBtn');
+  if(consResultJumpBtn) consResultJumpBtn.addEventListener('click', async function(){
+    try{
+      closeOtherUploadResultPanels('consolidatedDocPanel');
+      var panel = document.getElementById('consolidatedDocPanel');
+      var btn = document.getElementById('uploadExtractChooseConsolidatedBtn');
+      panel.style.display = 'block';
+      if(btn) btn.classList.add('tool-btn-panel-open');
+      if(typeof backfillConsolidatedDocuments === 'function'){
+        try{ await backfillConsolidatedDocuments(function(){}); }catch(e){}
+      }
+      try{
+        var consSearchInputEl = document.getElementById('consolidatedDocSearch');
+        var consSearchClearEl = document.getElementById('consolidatedDocSearchClear');
+        if(consSearchInputEl) consSearchInputEl.value = '';
+        if(consSearchClearEl) consSearchClearEl.style.display = 'none';
+      }catch(e){}
+      if(typeof renderConsolidatedDocPanel === 'function') await renderConsolidatedDocPanel('');
+      try{ if(typeof renderConsolidatedManualDocList === 'function') await renderConsolidatedManualDocList(''); }catch(e){}
+      expandUploadResultBodyIfMinimized('consolidatedDocBody', 'consolidatedDocMinimizeBtn');
+      scrollUploadResultPanelIntoView(panel);
+    }catch(e){ console.warn('consResultJumpBtn failed', e); alert('⚠️ 🗂️ Consolidate Result காட்டும்போது Error — Screenshot எடுத்து அனுப்புங்க.'); }
+  });
 
   // 🧮 EMI Calculator launcher (scrolling page) — explicit user
   // instruction (Sep 3, 2026, Tamil). window.openEmiCalculator is
@@ -14572,6 +14718,197 @@ async function pushCloudBackup(payload){
   }catch(e){ console.warn('Cloudflare backup push failed (network/offline?):', e); }
 }
 
+// ☁️ Restore from Cloud — explicit user instruction (Sep 2026): he already
+// built the Cloudflare Worker for backup and wants an icon that actually
+// PULLS the latest saved snapshot back down, so the cloud copy is proven
+// to be correct instead of trusted blindly. Deliberately a SEPARATE
+// function that duplicates 📥 Import Backup's own tested merge logic below
+// (rather than refactoring that working button to be shared) — same
+// "don't risk breaking a working path" approach already used elsewhere in
+// this file (see v297's guard-don't-purge note). Business List: full
+// REPLACE (same as Import Backup / Version History). Insurance Renewal /
+// KYC / deletion-tombstones: merged fill-blank-only, never overwritten.
+// documentBlobs will always be empty here (Cloudflare copy is text-only,
+// same privacy footprint as pushCloudBackup — Photo/PDF never leaves the
+// phone), so the Document-restore step below simply no-ops, same as any
+// backup file that has no documentBlobs.
+async function fetchCloudBackup(){
+  const cfg = await getCloudflareBackupConfig();
+  if(!cfg || !cfg.url || !cfg.secret){
+    alert('☁️ முதலில் "Set Cloudflare Backup" மூலமா Worker URL + Secret-ஐ Set பண்ணுங்க.');
+    return null;
+  }
+  const res = await fetch(cfg.url + '/backup', {
+    method: 'GET',
+    headers: { 'authorization': 'Bearer ' + cfg.secret }
+  });
+  if(!res.ok){
+    if(res.status === 404){
+      alert('☁️ Cloudflare-ல் இன்னும் ஒரு Backup-உம் Save ஆகல் — முதலில் ஒரு 5-நிமிட Auto-Backup நடக்கிற வரைக்கும் காத்திருங்க, அப்புறம் Restore பண்ணுங்க.');
+    }else{
+      alert('❌ Cloudflare-ல் இருந்து Backup எடுக்க முடியல் (Status: ' + res.status + '). Worker URL/Secret சரியா இருக்கான்னு பாருங்க.');
+    }
+    return null;
+  }
+  // 🐛 Fix — worker.js's GET /backup returns { savedAt, payload } (the
+  // server's OWN push-time wrapper, from its History-slot record shape —
+  // see worker.js POST handler: `record = { savedAt, payload: parsed }`),
+  // NOT the backup payload itself. Unwrap .payload here so
+  // applyRestoredBackupPayload() gets the same shape it already expects
+  // (parsed.data/parsed.savedAt/etc.), exactly like a locally-exported
+  // backup file. Falls back to the raw JSON if an older/different worker
+  // build ever returns the payload un-wrapped, so this stays forward-safe.
+  const json = await res.json();
+  return (json && json.payload && typeof json.payload === 'object') ? json.payload : json;
+}
+async function applyRestoredBackupPayload(parsed, sourceLabel){
+  if(!looksLikeValidData(parsed.data)){
+    alert('☁️ Cloud-ல் இருந்து வந்த Data சரியா இல்ல — இது ஒரு V227 Directory Backup மாதிரி தெரியல், அதனால Restore பண்ண முடியல்.');
+    return;
+  }
+  const recCount = Array.isArray(parsed.data) ? parsed.data.length : '?';
+  const editedCount = Array.isArray(parsed.editedIds) ? parsed.editedIds.length : 0;
+  const savedAtLabel = parsed.savedAt ? new Date(parsed.savedAt).toLocaleString() : 'unknown time';
+  const insCount = Array.isArray(parsed.insuranceRenewalRecords) ? parsed.insuranceRenewalRecords.length : 0;
+  const kycCount = Array.isArray(parsed.kycRecords) ? parsed.kycRecords.length : 0;
+  const ok = confirm(
+    `${sourceLabel}-ல் இருந்து Restore பண்ணலாமா?\n\n` +
+    `Save ஆன நேரம்: ${savedAtLabel}\n` +
+    `${recCount} businesses, ${editedCount} edited` +
+    (insCount ? `\n${insCount} Insurance Renewal record(s) (Merge — இருக்குறதை மேலெழுதாது)` : '') +
+    (kycCount ? `\n${kycCount} KYC record(s) (Merge — இருக்குறதை மேலெழுதாது)` : '') +
+    `\n\n(Photo/PDF Documents Cloud Backup-ல் இல்ல — Phone-லேயே Untouched ஆ இருக்கும்.)` +
+    `\n\nBusiness List முழுசா இதனால Replace ஆகும் (Enquiry marks/Call dates/Edits/New-Old status/SIM tags உட்பட). Insurance Renewal/KYC Data பாதுகாப்பா Merge ஆகும், மேலெழுதாது. இதை Undo பண்ண முடியாது. Continue பண்ணலாமா?`
+  );
+  if(!ok) return;
+
+  data = parsed.data;
+  enquiredIds = new Set(parsed.enquiredIds || []);
+  editedIds = new Set(parsed.editedIds || []);
+  callDates = parsed.callDates || {};
+  callCounts = parsed.callCounts || {};
+  noWhatsAppNumbers = new Set(parsed.noWhatsAppNumbers || []);
+  targetIds = new Set(parsed.targetIds || []);
+  oldIds = new Set(parsed.oldIds || []);
+  simUsed = parsed.simUsed || {};
+  npIds = new Set(parsed.npIds || []);
+  wtIds = new Set(parsed.wtIds || []);
+  nrnIds = new Set(parsed.nrnIds || []);
+  gIds = new Set(parsed.gIds || []);
+  ulIds = new Set(parsed.ulIds || []);
+  nlIds = new Set(parsed.nlIds || []);
+  prospectIds = new Set(parsed.prospectIds || []);
+  selectedIds = new Set(parsed.selectedIds || []);
+  ucIds = new Set(parsed.ucIds || []);
+  ncIds = new Set(parsed.ncIds || []);
+  prmIds = new Set(parsed.prmIds || []);
+  disbursedIds = new Set(parsed.disbursedIds || []);
+  payoutReceivedIds = new Set(parsed.payoutReceivedIds || []);
+
+  persist(); persistEdited(); persistEnquired(); persistCallDates();
+  persistCallCounts(); persistNoWhatsApp(); persistTarget(); persistOld(); persistSim();
+  persistCallStatus('np', npIds); persistCallStatus('wt', wtIds); persistCallStatus('nrn', nrnIds);
+  persistCallStatus('g', gIds); persistCallStatus('ul', ulIds); persistCallStatus('nl', nlIds);
+  persistCallStatus('prospect', prospectIds); persistCallStatus('selected', selectedIds);
+  persistCallStatus('uc', ucIds); persistCallStatus('nc', ncIds); persistCallStatus('prm', prmIds);
+
+  render(filterData(searchBox.value));
+  updateStats();
+
+  let insMerged = 0, kycMerged = 0;
+  try{
+    if(Array.isArray(parsed.insuranceRenewalRecords) && parsed.insuranceRenewalRecords.length){
+      const localIns = await getInsuranceRenewalRecords();
+      const byRegn = new Map(localIns.map(r => [r.registrationNumber, r]));
+      const deletedRegns = new Set(await getDeletedInsuranceRegns());
+      for(const incoming of parsed.insuranceRenewalRecords){
+        if(!incoming || !incoming.registrationNumber) continue;
+        if(deletedRegns.has(incoming.registrationNumber)) continue;
+        let rec = byRegn.get(incoming.registrationNumber);
+        if(!rec){
+          localIns.push(incoming);
+          byRegn.set(incoming.registrationNumber, incoming);
+          insMerged++;
+          continue;
+        }
+        let changed = false;
+        Object.keys(incoming).forEach(k => {
+          if(k === 'id' || k === 'registrationNumber') return;
+          if(k === 'mobiles' && Array.isArray(incoming.mobiles) && incoming.mobiles.length){
+            const merged = Array.from(new Set([...(rec.mobiles || []), ...incoming.mobiles]));
+            if(merged.length !== (rec.mobiles || []).length){ rec.mobiles = merged; changed = true; }
+            return;
+          }
+          if(!rec[k] && incoming[k]){ rec[k] = incoming[k]; changed = true; }
+        });
+        if(changed) insMerged++;
+      }
+      await setInsuranceRenewalRecords(localIns);
+    }
+  }catch(err){ console.warn('Insurance Renewal restore from cloud backup failed:', err); }
+  try{
+    if(Array.isArray(parsed.deletedInsuranceRegns) && parsed.deletedInsuranceRegns.length){
+      const localDeleted = new Set(await getDeletedInsuranceRegns());
+      parsed.deletedInsuranceRegns.forEach(r => { if(r) localDeleted.add(r); });
+      await idbSet(INSURANCE_RENEWAL_DELETED_KEY, [...localDeleted]);
+    }
+  }catch(err){ console.warn('Deleted-regn tombstone merge (cloud) failed:', err); }
+  try{
+    if(Array.isArray(parsed.deletedBusinessMobiles) && parsed.deletedBusinessMobiles.length){
+      const localDeletedBiz = new Set(await getDeletedBusinessMobiles());
+      parsed.deletedBusinessMobiles.forEach(m => { if(m) localDeletedBiz.add(m); });
+      const mergedBiz = [...localDeletedBiz];
+      await idbSet(DELETED_BUSINESS_MOBILES_KEY, mergedBiz);
+      deletedBusinessMobilesCache = mergedBiz;
+    }
+  }catch(err){ console.warn('Deleted-business tombstone merge (cloud) failed:', err); }
+  try{
+    if(Array.isArray(parsed.kycRecords) && parsed.kycRecords.length){
+      const localKyc = await getKycRecords();
+      for(const incoming of parsed.kycRecords){
+        if(!incoming) continue;
+        let rec = null;
+        if(incoming.aadhaarNumber) rec = localKyc.find(r => r.aadhaarNumber && r.aadhaarNumber === incoming.aadhaarNumber);
+        if(!rec && incoming.panNumber) rec = localKyc.find(r => r.panNumber && r.panNumber === incoming.panNumber);
+        if(!rec && incoming.name) rec = localKyc.find(r => r.name && r.name === incoming.name);
+        if(!rec){
+          localKyc.push(incoming);
+          kycMerged++;
+          continue;
+        }
+        let changed = false;
+        Object.keys(incoming).forEach(k => {
+          if(k === 'id') return;
+          if(!rec[k] && incoming[k]){ rec[k] = incoming[k]; changed = true; }
+        });
+        if(changed) kycMerged++;
+      }
+      await setKycRecords(localKyc);
+    }
+  }catch(err){ console.warn('KYC restore from cloud backup failed:', err); }
+  try{ if(typeof refreshExtractedCountBadge === 'function') await refreshExtractedCountBadge(); }catch(err){}
+  try{ if(typeof updateInsuranceExcelCount === 'function') await updateInsuranceExcelCount(); }catch(err){}
+  try{ if(typeof refreshKycCountBadge === 'function') await refreshKycCountBadge(); }catch(err){}
+  const extraMsg = (insMerged || kycMerged) ? `\n\n🛡️ Insurance Renewal: ${insMerged} record(s) merged.\n🪪 KYC: ${kycMerged} record(s) merged.` : '';
+  alert(`✅ ${sourceLabel}-ல் இருந்து Restore ஆனது. ${recCount} businesses, ${editedCount} edited — இப்போ Load ஆகி இருக்கு.${extraMsg}`);
+}
+document.getElementById('restoreCfBackupBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('restoreCfBackupBtn');
+  const originalText = btn.textContent;
+  btn.textContent = '☁️ Cloud-ல் இருந்து படிக்குது…';
+  btn.disabled = true;
+  try{
+    const parsed = await fetchCloudBackup();
+    if(parsed) await applyRestoredBackupPayload(parsed, '☁️ Cloudflare');
+  }catch(e){
+    console.warn('Restore from Cloud failed:', e);
+    alert('❌ Cloud-ல் இருந்து Restore பண்ண முடியல் (Network Problem-ஆ இருக்கலாம்): ' + (e && e.message ? e.message : e));
+  }finally{
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+});
+
 // ---------- 🔑 Set Anthropic API Key (v236) — explicit user instruction
 // (Aug 30, 2026, Tamil): storage-only for now (see the long HTML comment
 // above setAnthropicKeyBtn for the full reasoning). Same IndexedDB +
@@ -21911,11 +22248,27 @@ document.getElementById('insuranceOcrBackupRestoreInput').addEventListener('chan
 const insuranceOcrMinimizeBtn = document.getElementById('insuranceOcrMinimizeBtn');
 const insuranceOcrExtractBody = document.getElementById('insuranceOcrExtractBody');
 let insuranceOcrListMinimized = false;
+// 🔽 Minimize = Close back to icon-only (explicit user instruction — Sep
+// 2026, Tamil): "தட்டினால் ரிசல்ட் வர வேண்டும், மினிமைஸ் பட்டனை தட்டினால்
+// பழைய நிலைமைக்கு சுருங்கி ஐகான் மட்டும் தெரிய வேண்டும்" — this ▾ button
+// used to only collapse the INNER list (body.style.display='none') while
+// the panel's own header/search bar stayed on-screen — not the same as
+// the "before you tapped 🛡️ RC Result" state. Now it closes the WHOLE
+// panel (same display:none the panel starts in, and the same thing
+// closeOtherUploadResultPanels already does when a DIFFERENT result is
+// opened) — so only the 🛡️ RC Result icon itself remains visible,
+// exactly like before it was tapped. The internal body/label state is
+// also reset here so the panel opens fully expanded again next time
+// 🛡️ RC Result is tapped, instead of ever silently starting collapsed.
 insuranceOcrMinimizeBtn.addEventListener('click', () => {
-  insuranceOcrListMinimized = !insuranceOcrListMinimized;
-  insuranceOcrExtractBody.style.display = insuranceOcrListMinimized ? 'none' : '';
-  insuranceOcrMinimizeBtn.textContent = insuranceOcrListMinimized ? '▸' : '▾';
-  insuranceOcrMinimizeBtn.title = insuranceOcrListMinimized ? 'List-ஐ Expand பண்ணும்' : 'List-ஐ Minimize பண்ணும்';
+  const panel = document.getElementById('insuranceOcrExtractPanel');
+  const chooseBtn = document.getElementById('uploadExtractChooseRcBtn');
+  if(panel) panel.style.display = 'none';
+  if(chooseBtn) chooseBtn.classList.remove('tool-btn-panel-open');
+  insuranceOcrListMinimized = false;
+  insuranceOcrExtractBody.style.display = '';
+  insuranceOcrMinimizeBtn.textContent = '▾';
+  insuranceOcrMinimizeBtn.title = 'List-ஐ Minimize பண்ணும்';
 });
 // 📊📑📇 Minimize/Expand — same ▾/▸ toggle pattern as
 // insuranceOcrMinimizeBtn above, newly added (Aug 31, 2026, Tamil
@@ -21955,14 +22308,20 @@ if(jdMinimizeBtn) jdMinimizeBtn.addEventListener('click', () => {
 // 📥 Minimize/Expand the 🪪 KYC list body — same fix, same reasoning, as
 // 🛡️ RC Related's insuranceOcrMinimizeBtn above (explicit user
 // instruction — Aug 2026, applies to every OCR-scan popup in the app).
+// 🔽 Minimize = Close back to icon-only — same fix as 🛡️ RC Related's
+// insuranceOcrMinimizeBtn above, applied here for 🪪 KYC Result.
 const kycOcrMinimizeBtn = document.getElementById('kycOcrMinimizeBtn');
 const kycOcrExtractBody = document.getElementById('kycOcrExtractBody');
 let kycOcrListMinimized = false;
 kycOcrMinimizeBtn.addEventListener('click', () => {
-  kycOcrListMinimized = !kycOcrListMinimized;
-  kycOcrExtractBody.style.display = kycOcrListMinimized ? 'none' : '';
-  kycOcrMinimizeBtn.textContent = kycOcrListMinimized ? '▸' : '▾';
-  kycOcrMinimizeBtn.title = kycOcrListMinimized ? 'List-ஐ Expand பண்ணும்' : 'List-ஐ Minimize பண்ணும்';
+  const panel = document.getElementById('kycOcrExtractPanel');
+  const chooseBtn = document.getElementById('uploadExtractChooseKycBtn');
+  if(panel) panel.style.display = 'none';
+  if(chooseBtn) chooseBtn.classList.remove('tool-btn-panel-open');
+  kycOcrListMinimized = false;
+  kycOcrExtractBody.style.display = '';
+  kycOcrMinimizeBtn.textContent = '▾';
+  kycOcrMinimizeBtn.title = 'List-ஐ Minimize பண்ணும்';
 });
 // 🚫 🔄 Re-scan All (KYC) handler removed along with its button
 // (explicit user instruction — Aug 2026).
@@ -22088,14 +22447,20 @@ kycOcrExtractSearchClearBtn.addEventListener('click', () => {
 // person can also correct any of the three before tapping Fetch & Merge
 // again, and that typed correction is what's saved — see opts handling
 // in consolidateCustomerDocumentsForMobile above).
+// 🔽 Minimize = Close back to icon-only — same fix as 🛡️ RC Related's
+// insuranceOcrMinimizeBtn above, applied here for 🗂️ Consolidate Result.
 const consolidatedDocMinimizeBtn = document.getElementById('consolidatedDocMinimizeBtn');
 const consolidatedDocBody = document.getElementById('consolidatedDocBody');
 let consolidatedDocMinimized = false;
 if(consolidatedDocMinimizeBtn) consolidatedDocMinimizeBtn.addEventListener('click', () => {
-  consolidatedDocMinimized = !consolidatedDocMinimized;
-  consolidatedDocBody.style.display = consolidatedDocMinimized ? 'none' : '';
-  consolidatedDocMinimizeBtn.textContent = consolidatedDocMinimized ? '▸' : '▾';
-  consolidatedDocMinimizeBtn.title = consolidatedDocMinimized ? 'List-ஐ Expand பண்ணும்' : 'List-ஐ Minimize பண்ணும்';
+  const panel = document.getElementById('consolidatedDocPanel');
+  const chooseBtn = document.getElementById('uploadExtractChooseConsolidatedBtn');
+  if(panel) panel.style.display = 'none';
+  if(chooseBtn) chooseBtn.classList.remove('tool-btn-panel-open');
+  consolidatedDocMinimized = false;
+  consolidatedDocBody.style.display = '';
+  consolidatedDocMinimizeBtn.textContent = '▾';
+  consolidatedDocMinimizeBtn.title = 'List-ஐ Minimize பண்ணும்';
 });
 const consolidatedDocSearch = document.getElementById('consolidatedDocSearch');
 const consolidatedDocSearchClearBtn = document.getElementById('consolidatedDocSearchClear');
@@ -22748,18 +23113,98 @@ let bulkOcrBatchActive = false;
 // button — the fix is that every caller now genuinely gets its turn.)
 let bulkOcrBatchWaitQueue = [];
 
+// 🔇 Silent Keep-Alive (explicit user instruction — Sep 2026, Tamil):
+// "Screen Lock ஆகாது (30 நிமிட Timeout வச்சிருக்கேன்), நான் வேற Screen/App-ல
+// இருக்கும்போதும் Upload/Scan Background-ல் தொடர்ந்து நடக்கணும்". Screen
+// Wake Lock (above) only stops the screen from auto-sleeping — it does
+// NOTHING once the TAB itself goes to the background (user switches app),
+// because Chrome throttles/freezes background tabs for battery reasons
+// REGARDLESS of whether the screen is on. The one well-established,
+// honest way a web page can stay exempt from that background-tab
+// throttling is to hold an ACTIVE audio session — Chrome/Android does not
+// freeze a tab that's actively playing audio, since that would cut real
+// audio/video apps' sound. So this plays a continuous, inaudible
+// (near-zero-gain, sub-audible-frequency) tone for the duration of any
+// Bulk OCR / Scan-Queue / PDF-Archive batch, and tags it with a
+// MediaSession so Android shows a normal "media playing" notification
+// (further reduces the chance of the OS killing the tab's process).
+// HONEST LIMITS: this is best-effort, not a guarantee — (1) some phones
+// (Xiaomi/Vivo/Oppo/Realme-style aggressive battery managers) can still
+// kill background browser processes no matter what the page does; if
+// batches keep getting cut off, disabling Battery Optimization / enabling
+// Auto-Start for Chrome (Settings → Apps → Chrome → Battery) makes the
+// biggest real difference. (2) Chrome's autoplay policy can block the very
+// first audio start if it happens with no recent tap — since every batch
+// here starts from an on-screen button tap, that's normally satisfied.
+let bulkOcrKeepAliveCtx = null;
+let bulkOcrKeepAliveOsc = null;
+async function startBulkOcrSilentKeepAlive(){
+  try{
+    if(bulkOcrKeepAliveCtx) return; // already running for an earlier concurrent batch
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if(!Ctx) return;
+    const ctx = new Ctx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    gain.gain.value = 0.00001; // effectively silent, but non-zero so it isn't optimized away as "no output"
+    osc.frequency.value = 18; // sub-audible
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    try{ await ctx.resume(); }catch(e){}
+    bulkOcrKeepAliveCtx = ctx;
+    bulkOcrKeepAliveOsc = osc;
+    try{
+      if('mediaSession' in navigator){
+        navigator.mediaSession.metadata = new MediaMetadata({ title: '📷 Business Database — Upload/Scan நடந்துகிட்டு இருக்கு…', artist: 'Screen மாறினாலும் தொடரும்' });
+        navigator.mediaSession.playbackState = 'playing';
+        // No-op handlers so the OS media-notification's buttons don't error
+        ['play','pause','stop'].forEach(a => { try{ navigator.mediaSession.setActionHandler(a, () => {}); }catch(e){} });
+      }
+    }catch(e){}
+  }catch(e){ /* best-effort — Autoplay-blocked or unsupported browsers just don't get this protection */ }
+}
+async function stopBulkOcrSilentKeepAlive(){
+  try{ if(bulkOcrKeepAliveOsc){ bulkOcrKeepAliveOsc.stop(); bulkOcrKeepAliveOsc = null; } }catch(e){}
+  try{ if(bulkOcrKeepAliveCtx){ await bulkOcrKeepAliveCtx.close(); bulkOcrKeepAliveCtx = null; } }catch(e){}
+  try{ if('mediaSession' in navigator) navigator.mediaSession.playbackState = 'none'; }catch(e){}
+}
+
 async function acquireBulkOcrWakeLock(){
   bulkOcrWakeLockRefCount++;
   try{
     if('wakeLock' in navigator && !bulkOcrWakeLock){
       bulkOcrWakeLock = await navigator.wakeLock.request('screen');
+      // The spec force-releases a wake lock the instant the tab becomes
+      // hidden — that's automatic and can't be prevented. Track it here so
+      // the visibilitychange re-acquire below knows to actually re-request
+      // instead of thinking one is still held (bulkOcrWakeLock would
+      // otherwise keep pointing at a dead, already-released sentinel).
+      bulkOcrWakeLock.addEventListener('release', () => { bulkOcrWakeLock = null; });
     }
   }catch(e){ /* best-effort — older/unsupported browsers just don't get this protection */ }
+  try{ await startBulkOcrSilentKeepAlive(); }catch(e){}
 }
+// 🔁 Re-request the screen wake lock the moment the tab is visible again,
+// for as long as a batch is still genuinely running (ref count > 0) — the
+// wake lock itself is powerless while hidden (see the 'release' listener
+// above), but this makes sure it's actively held again for the REST of the
+// batch the instant this tab is back in front, instead of silently staying
+// unlocked until the batch happens to finish.
+document.addEventListener('visibilitychange', () => {
+  if(document.hidden) return;
+  if(bulkOcrWakeLockRefCount > 0 && 'wakeLock' in navigator && !bulkOcrWakeLock){
+    navigator.wakeLock.request('screen').then(sentinel => {
+      bulkOcrWakeLock = sentinel;
+      bulkOcrWakeLock.addEventListener('release', () => { bulkOcrWakeLock = null; });
+    }).catch(() => {});
+  }
+});
 async function releaseBulkOcrWakeLock(){
   bulkOcrWakeLockRefCount = Math.max(0, bulkOcrWakeLockRefCount - 1);
-  if(bulkOcrWakeLockRefCount > 0) return; // another parallel share is still running — keep the screen awake for it
+  if(bulkOcrWakeLockRefCount > 0) return; // another parallel share is still running — keep the screen awake/audio alive for it
   try{ if(bulkOcrWakeLock){ await bulkOcrWakeLock.release(); bulkOcrWakeLock = null; } }catch(e){}
+  try{ await stopBulkOcrSilentKeepAlive(); }catch(e){}
 }
 
 async function saveBulkOcrCheckpoint(remainingFiles){
@@ -35393,11 +35838,18 @@ updateUndoBackButtons();
   }
   async function routeSharedFilesV2(mobile, category, typedName, fileObjs, onFileSaved, onProgress){
     const files = fileObjs.map(f => new File([f.blob], f.name, { type: f.type || (f.blob && f.blob.type) }));
-    // 🪪 Fire-and-forget — see autoExtractKycFromSharedFiles's own comment
-    // above for the full explanation. Runs independently of, and never
-    // blocks, the Business/Financer PDF merge below.
-    try{ autoExtractKycFromSharedFiles(mobile, typedName, files); }catch(e){ console.warn('autoExtractKycFromSharedFiles kickoff failed', e); }
-
+    // 🪪 Sequencing fix (explicit user instruction, Sep 2026, Tamil):
+    // "அப்லோடு செய்ததும் அந்தந்த பிசினஸ் லிஸ்டில் அப்லோட் தான் ஆக
+    // வேண்டும், பிறகுதான் ஸ்கேனிங் ப்ராசஸ் ... பிசினஸ் லிஸ்டில் இருந்து
+    // நடக்க வேண்டும்" — this used to fire the KYC-detect OCR scan
+    // (autoExtractKycFromSharedFiles) BEFORE the Business/Financer PDF
+    // merge below even started, sharing the same single JS thread with
+    // it — in practice the scan's own OCR/Vision work could visibly run
+    // ahead of the upload. The call is now placed at the END of every
+    // branch below, AFTER that branch's own merge/upload has fully
+    // finished (still not awaited itself — the popup still closes the
+    // moment the fast upload is done — but it can now only ever START
+    // once the file is genuinely already saved into the Business List).
     const trimmedTyped = (typedName || '').trim();
     // 🎯 Accurate message (explicit user instruction — Aug 2026:
     // "டூப்ளிகேட் கண்டுபிடிச்சு அந்த லிஸ்ட்ட காசின்ல கொடுக்க முடிஞ்சா
@@ -35471,11 +35923,15 @@ updateUndoBackButtons();
         // family-mirror/auto-create logic inside it) never go stale just
         // because this share only carried a plain Business List file.
         try{ if(typeof consolidateCustomerDocumentsForMobile === 'function') consolidateCustomerDocumentsForMobile(mobile).catch(()=>{}); }catch(e){}
+        // 🪪 Scan runs only NOW — Business List merge above is already done.
+        try{ autoExtractKycFromSharedFiles(mobile, typedName, files); }catch(e){ console.warn('autoExtractKycFromSharedFiles kickoff failed', e); }
         return { matched: true, message: `${describeMerge(lastMergeResult, files.length)} — "${rowNames.join('", "')}".` };
       }
       const newItem = shareFormCreateBizItem(typedName, mobile, false);
       const mergeResult = await shareFormMergeIntoBizDoc(newItem, files, onFileSaved, onProgress);
       try{ if(typeof consolidateCustomerDocumentsForMobile === 'function') consolidateCustomerDocumentsForMobile(mobile).catch(()=>{}); }catch(e){}
+      // 🪪 Scan runs only NOW — Business List merge above is already done.
+      try{ autoExtractKycFromSharedFiles(mobile, typedName, files); }catch(e){ console.warn('autoExtractKycFromSharedFiles kickoff failed', e); }
       return { matched: false, message: `🆕 புதிய Business "${newItem.name}" உருவாக்கப்பட்டு — ${describeMerge(mergeResult, files.length)}.` };
     }
 
@@ -35519,11 +35975,15 @@ updateUndoBackButtons();
         rowNames.push(bizRow.name);
       }
       try{ if(typeof consolidateCustomerDocumentsForMobile === 'function') consolidateCustomerDocumentsForMobile(mobile).catch(()=>{}); }catch(e){}
+      // 🪪 Scan runs only NOW — Business List merge above is already done.
+      try{ autoExtractKycFromSharedFiles(mobile, typedName, files); }catch(e){ console.warn('autoExtractKycFromSharedFiles kickoff failed', e); }
       return { matched: true, message: `${describeMerge(lastMergeResult, files.length)} — Financer (${rowNames.join(', ')}).` };
     }
     const newFinItem = shareFormCreateBizItem(typedName, mobile, true);
     const newFinMergeResult = await shareFormMergeIntoBizDoc(newFinItem, files, onFileSaved, onProgress);
     try{ if(typeof consolidateCustomerDocumentsForMobile === 'function') consolidateCustomerDocumentsForMobile(mobile).catch(()=>{}); }catch(e){}
+    // 🪪 Scan runs only NOW — Business List merge above is already done.
+    try{ autoExtractKycFromSharedFiles(mobile, typedName, files); }catch(e){ console.warn('autoExtractKycFromSharedFiles kickoff failed', e); }
     return { matched: false, message: `🆕 புதிய Financer "${newFinItem.name}" Business List-ல் உருவாக்கப்பட்டு — ${describeMerge(newFinMergeResult, files.length)}.` };
   }
 
@@ -36786,14 +37246,36 @@ async function tryAutoRouteMatchedShareRecord(rec){
           // well-defined copy is a safe no-op, not a duplicate page).
           // Only genuinely unmatched files still go through the full
           // fresh-scan + raw-archive path exactly as before.
-          const { unmatched, matchedWellDefined } = await splitShareFilesByWellDefinedMatch(rec.files);
+          // 🐛 Fix (explicit user instruction, Sep 2026, Tamil): "எந்தவித
+          // ஸ்கேனிங் இல்லாம டைரக்டாக அப்லோடு நடக்கணும், பிறகு பிசினஸ்
+          // லிஸ்டில் மட்டும்தான் நடக்க வேண்டும்" — the auto-route path
+          // (this function — triggered when a WhatsApp Extract share's
+          // Mobile Number already matches an existing Business/Financer
+          // row, so no manual popup is shown) used to ALSO silently queue
+          // every unmatched file for a background OCR scan
+          // (queuePendingScan → processPendingScanQueue → visionOnly Vision
+          // API pass) purely to auto-fill RC/Insurance/KYC fields, running
+          // IN PARALLEL with the direct upload below. That scan step is
+          // REMOVED here — unmatched files now go straight into the
+          // archive/upload queue only, exactly like the manual "⬆️ Upload"
+          // popup already does (see its Sep 3, 2026 fix note). Anyone who
+          // specifically needs RC/Insurance/KYC field extraction still has
+          // that — unchanged — via the separate 🛡️ RC Related / KYC
+          // chooser (📄 Upload & Extract → insuranceOcrExtractBtn), which
+          // this change does not touch.
+          // 🚫 Video/Audio Auto-Skip (explicit user instruction — Sep 2026,
+          // Tamil): same isBlockedShareMediaFile check as the manual "⬆️
+          // Upload" popup now uses — applied here too so the SILENT
+          // auto-route path (this function) never archives/uploads a
+          // video/audio/voice-note file into the Business List either.
+          const mediaFilteredFiles = rec.files.filter(f => !isBlockedShareMediaFile(f));
+          const { unmatched, matchedWellDefined } = await splitShareFilesByWellDefinedMatch(mediaFilteredFiles);
           const wellDefinedAsFiles = matchedWellDefined.map(hit => {
             const ext = (hit.blob && hit.blob.type === 'application/pdf') ? 'pdf' : 'jpg';
             const label = hit.kind === 'rc' ? 'RC_Related' : (hit.kind === 'kyc' ? 'KYC' : 'Consolidated');
             const blob = hit.blob;
             return { name: `${label}_WellDefined.${ext}`, type: (blob && blob.type) || 'application/pdf', blob };
           });
-          if(unmatched.length) await queuePendingScan(unmatched);
           const archiveFiles = [...unmatched, ...wellDefinedAsFiles];
           if(archiveFiles.length) await queuePendingPdfArchive(mobile, category, typedName, archiveFiles);
           await deleteShareRecordOrGroup(rec);
@@ -36804,7 +37286,6 @@ async function tryAutoRouteMatchedShareRecord(rec){
           return;
         }
         try{ if(typeof showMergeSuccessBanner === 'function') showMergeSuccessBanner(`✅ 📱 ${mobile}${typedName ? ' — 🏢 ' + typedName : ''} — Business List-ல் மேட்ச் ஆகி Merge-க்கு அனுப்பப்பட்டது.`); }catch(bannerErr){}
-        processPendingScanQueue().catch(e => showBackgroundQueueWarning('📷 RC/Insurance Scan', localizeErrorMessage(e)));
         processPendingPdfArchiveQueue().catch(e => showBackgroundQueueWarning('📎 Document Merge', localizeErrorMessage(e)));
       })();
       return true;
@@ -37530,19 +38011,44 @@ async function tryAutoRouteMatchedShareRecord(rec){
           // field extraction still has that — unchanged — via the
           // separate 🛡️ RC Related / KYC chooser (📄 Upload & Extract →
           // insuranceOcrExtractBtn), which this change does not touch.
+          // 🚫 Video/Audio Auto-Skip (explicit user instruction — Sep 2026,
+          // Tamil): "வீடியோ ஆடியோ இவைகள் ஆட்டோமேட்டிக்காக ஸ்கிப் ஆக
+          // வேண்டும் அப்லோட் ஆக கூடாது" — this Upload step used to pass
+          // rec.files straight through UNFILTERED into routeSharedFilesV2,
+          // so any video/audio/voice-note mixed into the WhatsApp share got
+          // merged into the Business List PDF right alongside real
+          // documents. Reuses the SAME isBlockedShareMediaFile check the
+          // rest of the app already uses to keep video/audio/text/stickers
+          // out of the OCR pipeline and file-list display — now also
+          // applied here, right before upload, so these never reach the
+          // Business List at all.
+          const filesToUpload = rec.files.filter(f => !isBlockedShareMediaFile(f));
+          const skippedMediaCount = rec.files.length - filesToUpload.length;
           mergeBtn.textContent = '⬆️ Upload ஆகிறது...';
           const uploadedLines = [];
-          const totalCount = rec.files.length;
+          const totalCount = filesToUpload.length;
           const renderUploadStatus = () => {
-            setMergeStatus(uploadedLines.join('<br>') + `<br><b>⬆️ ${uploadedLines.length}/${totalCount} Upload ஆனது...</b>`);
+            setMergeStatus(uploadedLines.join('<br>') + `<br><b>⬆️ ${uploadedLines.length}/${totalCount} Upload ஆனது...</b>` + (skippedMediaCount ? `<br><span style="color:#64748b;font-size:.72rem;">🚫 ${skippedMediaCount} Video/Audio File(s) Skip ஆனது (Upload ஆகாது)</span>` : ''));
           };
           renderUploadStatus();
+          if(!totalCount){
+            __finalizingIds.forEach(id => __shareRecordsBeingFinalized.delete(id));
+            await deleteShareRecordOrGroup(rec);
+            setMergeStatus(`<div style="color:#b45309;font-weight:700;">⚠️ இந்த Share-ல் Video/Audio மட்டும்தான் இருந்தது — Upload செய்ய Document எதுவும் இல்லை.</div><div style="font-size:.72rem;color:#64748b;margin-top:4px;">(இதை Touch பண்ணா Popup மறையும்)</div>`);
+            mergeStatusBox.style.cursor = 'pointer';
+            const finishEmpty = () => { cleanupMergePill(); overlay.remove(); onDone(); };
+            mergeStatusBox.addEventListener('click', finishEmpty, { once: true });
+            waPill.setDone(__waPillLabel() + ' — Completed (தட்டி மூடவும்)');
+            waPill.pill.addEventListener('wa-pill-done-tap', finishEmpty, { once: true });
+            box.querySelector('#shareInboxFileBtnRow').style.display = 'none';
+            return;
+          }
           // 🔒 Per-Mobile-Number lock (see withWaMobileLock above) — if
           // another share currently running in parallel targets this SAME
           // Mobile Number, this one waits its turn instead of writing into
           // the same Business/Financer document at the same time. Shares
           // for a different Mobile Number are never blocked by this.
-          const result = await withWaMobileLock(mobile, () => routeSharedFilesV2(mobile, category, typedName, rec.files, (savedFile) => {
+          const result = await withWaMobileLock(mobile, () => routeSharedFilesV2(mobile, category, typedName, filesToUpload, (savedFile) => {
             const nm = (savedFile && savedFile.name) || `File ${uploadedLines.length + 1}`;
             uploadedLines.push('✅ ' + nm);
             renderUploadStatus();
