@@ -1885,6 +1885,16 @@ WhatsApp Upload and 📞 Calls are now shown smaller, per instruction). -->
       See #promoRunFloatWrap further down near the other floating buttons
       (📞 callRateBadge / 🕐 versionHistoryBtn / 📥 floatingWaUploadBtn). -->
       <button class="tool-btn" id="toAchieveBtn" type="button" title="Daily effective work Time Table — 6:30 AM Wake up to 10:50 PM Sleep, Calls only 9 AM-6:30 PM with 1:30-2 PM lunch" style="background:#0f766e; color:#fff; border-color:#0f766e;">🎯 TO ACHIEVE</button>
+      <!-- 📋 TO ACHIEVE Check List — explicit user instruction (Sep 8 2026,
+      Tamil): a Tick-box version of the same 🎯 TO ACHIEVE schedule, dated
+      to TODAY, so each finished task can be ticked off through the day.
+      Ticks save the instant each box is tapped (not just on close) —
+      closing is just an extra safety-net save, per instruction "அந்த
+      ஐகானை க்ளோஸ் செய்தால் டிக்கெட் சேவ் ஆக வேண்டும்". Saved to
+      localStorage keyed by today's date (YYMMDD), so a fresh day always
+      starts with an empty checklist — yesterday's ticks are never carried
+      over or lost, just kept under their own date's key. -->
+      <button class="tool-btn" id="toAchieveCheckBtn" type="button" title="TO ACHIEVE Schedule-ஐ Tick Box-உடன் காட்டும் — ஒவ்வொரு நாளுக்கும் தனியா Save ஆகும்" style="background:#134e4a; color:#fff; border-color:#134e4a;">📋 TO ACHIEVE Check List</button>
       <button class="tool-btn tool-btn-add" id="openPrivateLtdBtn" type="button" style="background:#7c2d12; color:#fff; border-color:#7c2d12;" title="Private Limited நிறுவனங்கள் — Business List-லிருந்து தானாக நீக்கப்பட்டு இங்கே வரும். 10 Promo Template-களில் ஒன்று ஒவ்வொரு அனுப்புகையிலும் Random-ஆக தேர்வாகும்.">🏢 Private Ltd Promo <span id="privateLtdCount">(0)</span></button>
       <button class="tool-btn" id="disbursedCasesBtn" type="button" style="background:#166534; color:#fff; border-color:#166534;">💰 ALL DISBURSED <span id="disbursedCasesCount">(0)</span></button>
       <button class="tool-btn tool-btn-add" id="logIncomingCallBtn" type="button" style="background:#c2410c; color:#fff; border-color:#c2410c;" title="Call Log Excel/CSV File Upload செய்யவும் (அல்லது ஒரு நம்பரை Manual-ஆக Log செய்யலாம்) — Business List உடன் தானாக மேட்ச் ஆகி, Mobile Number அடிப்படையில் Duplicates நீக்கப்படும்">📥 Log All Call</button>
@@ -2053,8 +2063,12 @@ WhatsApp Upload and 📞 Calls are now shown smaller, per instruction). -->
   callRateBadge / callTrackerTotalMini / callTrackerTargetMini) — only
   the DOM nesting/position changed, zero JS changes needed. -->
   <div style="position:sticky; top:8px; z-index:9996; margin-bottom:10px; display:flex; align-items:center; flex-wrap:wrap; gap:10px; pointer-events:none;">
-    <button type="button" id="emiCalcLauncherBtn" title="Indian EMI Calculator" style="pointer-events:auto; padding:10px 16px; border-radius:24px; background:#0f766e; color:#fff; border:3px solid #fff; box-shadow:0 3px 10px rgba(0,0,0,0.35); display:inline-flex; align-items:center; gap:6px; font-weight:800; font-size:0.8rem; cursor:pointer;">
-      <span style="font-size:1.05rem;">🧮</span> EMI Calculator
+    <!-- 🔽 Shrunk slightly — explicit user instruction (Sep 8 2026, Tamil):
+         "இ எம் ஐ கால்குலேட்டர் ஐகானை சிறிது சுருக்கி" — padding/font-size
+         reduced a notch (10px 16px→7px 12px, 0.8rem→0.72rem, icon
+         1.05rem→0.92rem, gap 6px→5px). Same id/handler, only sizing changed. -->
+    <button type="button" id="emiCalcLauncherBtn" title="Indian EMI Calculator" style="pointer-events:auto; padding:7px 12px; border-radius:20px; background:#0f766e; color:#fff; border:3px solid #fff; box-shadow:0 3px 10px rgba(0,0,0,0.35); display:inline-flex; align-items:center; gap:5px; font-weight:800; font-size:0.72rem; cursor:pointer;">
+      <span style="font-size:0.92rem;">🧮</span> EMI Calculator
     </button>
 
     <div id="promoRunFloatWrap" style="pointer-events:auto; position:relative;">
@@ -2073,6 +2087,34 @@ WhatsApp Upload and 📞 Calls are now shown smaller, per instruction). -->
     <button type="button" id="callRateBadge" title="Calls Today — tap to add today's calls" style="pointer-events:auto; width:34px; height:34px; border-radius:50%; background:#0f766e; color:#fff; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; flex-direction:column; font-weight:800; line-height:1; padding:0; cursor:pointer;">
       <span style="font-size:0.42rem;">📞</span>
       <span style="font-size:0.44rem;"><span id="callTrackerTotalMini">0</span>/<span id="callTrackerTargetMini">1000</span></span>
+    </button>
+
+    <!-- 🎯🆕 Two read-only badges — explicit user instruction (Sep 8 2026,
+         Tamil): placed next to 📞 callRateBadge as asked ("வாட்ஸ் அப்
+         ப்ரொமோ ஸ்ட்ரைக் கணக்கு அருகில்"). Display-only, no click handler
+         on either ("இதனுள் எந்த டாபிக்கையும் பதிய வேண்டாம்") — values are
+         pushed in by refreshCallTouchBadges(), called from the .icon-call
+         click handler and once at boot.
+         1) callTodayUniqueBadge — today's DISTINCT businesses whose 📞
+            Call icon was touched in the Business List, deduped by
+            business id (touch the same business 10 times today = still
+            counts once). Deliberately built from callDates, NOT from
+            callRateBadge/callTrackerTotalMini's manual "Calls Today" tap-
+            counter — that number is typed in by hand and is not a real
+            per-business call log, so it must stay excluded from this.
+         2) callAllTimeUniqueBadge — running count of DIFFERENT business
+            lists called, starting from the moment this feature shipped
+            (not backfilled from history) and never auto-resetting —
+            keeps growing forever, same lifetime as the rest of the app's
+            saved data. -->
+    <button type="button" id="callTodayUniqueBadge" title="இன்று Business List-ல் 📞 Call பட்டன் Touch செய்த Unique Business எண்ணிக்கை — ஒரே Business-ஐ பலமுறை Touch செய்தாலும் ஒன்றாகவே எண்ணப்படும், Call செய்த நம்பர் மட்டும்" style="pointer-events:auto; cursor:default; width:34px; height:34px; border-radius:50%; background:#b91c1c; color:#fff; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; flex-direction:column; font-weight:800; line-height:1; padding:0;">
+      <span style="font-size:0.42rem;">📇</span>
+      <span style="font-size:0.55rem;" id="callTodayUniqueMini">0</span>
+    </button>
+
+    <button type="button" id="callAllTimeUniqueBadge" title="இந்த தருணத்திலிருந்து இதுவரை Call செய்த மொத்த வெவ்வேறு (Different) Business List எண்ணிக்கை — தொடர்ந்து கூடிக்கொண்டே இருக்கும்" style="pointer-events:auto; cursor:default; width:34px; height:34px; border-radius:50%; background:#7c3aed; color:#fff; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; flex-direction:column; font-weight:800; line-height:1; padding:0;">
+      <span style="font-size:0.42rem;">📊</span>
+      <span style="font-size:0.55rem;" id="callAllTimeUniqueMini">0</span>
     </button>
   </div>
   <!-- 🔼 Maximize Main Page — explicit user instruction (Sep 2026): moved
@@ -2111,6 +2153,15 @@ WhatsApp Upload and 📞 Calls are now shown smaller, per instruction). -->
 
 <div class="research-toast" id="researchToast"></div>
 <div class="call-followup" id="callFollowUp"></div>
+
+<div class="vh-overlay" id="toAchieveCheckOverlay" style="display:none;">
+  <div class="vh-modal">
+    <h3>📋 TO ACHIEVE Check List</h3>
+    <p class="vh-sub" id="toAchieveCheckDate" style="font-weight:700;"></p>
+    <div id="toAchieveCheckList" style="display:flex; flex-direction:column; gap:8px; margin-bottom:10px;"></div>
+    <button class="vh-close" id="toAchieveCheckCloseBtn" type="button">Close</button>
+  </div>
+</div>
 
 <div class="vh-overlay" id="vhOverlay" style="display:none;">
   <div class="vh-modal">
@@ -2820,7 +2871,7 @@ WhatsApp Upload and 📞 Calls are now shown smaller, per instruction). -->
           </table>
         </div>
       </div>
-      <button type="button" id="emiChartShareBtn" style="width:100%; margin-top:10px; padding:10px; border-radius:8px; border:none; background:#25D366; color:#fff; font-weight:800; cursor:pointer;">📤 Share EMI Chart</button>
+      <button type="button" id="emiChartShareBtn" style="width:100%; margin-top:10px; padding:10px; border-radius:8px; border:none; background:#25D366; color:#fff; font-weight:800; cursor:pointer;">📤 Share EMI Chart (PDF)</button>
     </div>
     <button class="vh-close" id="emiCalcCloseBtn" type="button" style="margin-top:12px;">Close</button>
   </div>
@@ -2839,12 +2890,18 @@ WhatsApp Upload and 📞 Calls are now shown smaller, per instruction). -->
   const chartCaptureTitle = document.getElementById('emiChartCaptureTitle');
   const chartTableBody = document.getElementById('emiChartTableBody');
   const chartShareBtn = document.getElementById('emiChartShareBtn');
+  // 📄 Holds the full calculation (Principal/Rate/Tenure/EMI/Total
+  // Interest/Total Payment) from the most recent Calculate — needed by the
+  // 📤 Share button to build the fancy PDF summary header, independently of
+  // whatever is currently visible/scrolled in the on-screen chart table.
+  let lastEmiCalc = null;
 
   window.openEmiCalculator = function(){
     resultEl.style.display = 'none';
     resultEl.innerHTML = '';
     chartSection.style.display = 'none';
     chartTableBody.innerHTML = '';
+    lastEmiCalc = null;
     overlay.style.display = 'flex';
     setTimeout(() => pInput.focus(), 50);
   };
@@ -2864,12 +2921,14 @@ WhatsApp Upload and 📞 Calls are now shown smaller, per instruction). -->
       resultEl.style.display = 'block';
       resultEl.innerHTML = '<span style="color:#dc2626; font-weight:700;">Loan Amount, Interest Rate, Tenure — மூன்றையும் சரியாக Type பண்ணவும்.</span>';
       chartSection.style.display = 'none';
+      lastEmiCalc = null;
       return;
     }
     const r = annualRate / 12 / 100; // monthly rate
     const emi = (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
     const totalPayment = emi * n;
     const totalInterest = totalPayment - P;
+    lastEmiCalc = { P, annualRate, n, emi, totalInterest, totalPayment };
     resultEl.style.display = 'block';
     resultEl.innerHTML = `
       <div><strong>Monthly EMI:</strong> ${fmtINR(emi)}</div>
@@ -2907,23 +2966,107 @@ WhatsApp Upload and 📞 Calls are now shown smaller, per instruction). -->
     el.addEventListener('keydown', (e) => { if(e.key === 'Enter') computeEmi(); });
   });
 
-  // 📤 Share EMI Chart — captures #emiChartCaptureArea (title + full
-  // month-wise table) as a PNG via html2canvas (same library already used
-  // elsewhere in this app for image capture) and hands it to the OS Share
-  // Sheet via navigator.share({files:[...]}) — same pattern as every
-  // other 📤 Share button here, so WhatsApp Normal/Business/Cloned all
-  // show up as options. Falls back to opening the image in a new tab
-  // (so it can be long-pressed/saved manually) when navigator.share
-  // isn't available.
+  // 📄 Renders an HTML string off-screen (fixed pixel width, height left
+  // completely auto/unconstrained — no overflow/max-height anywhere in the
+  // markup we pass in) and captures it with html2canvas. This is the fix for
+  // the bug where Share only ever captured whatever was scrolled into view:
+  // #emiChartCaptureArea on-screen has "max-height:260px; overflow-y:auto"
+  // (so the calculator modal itself doesn't grow huge), and html2canvas
+  // clips to an element's own rendered/visible box — it does NOT walk past
+  // a CSS overflow clip to grab hidden scrolled content. So this builds a
+  // completely separate, never-clipped copy of the report (same full HTML
+  // that's already sitting in chartTableBody — every month, first to last)
+  // positioned off-screen, lets it lay out to its true full height, then
+  // captures that.
+  async function renderReportToCanvas(html, widthPx){
+    const container = document.createElement('div');
+    container.style.position = 'fixed';
+    container.style.left = '-99999px';
+    container.style.top = '0';
+    container.style.width = widthPx + 'px';
+    container.style.background = '#ffffff';
+    container.innerHTML = html;
+    document.body.appendChild(container);
+    try{
+      return await html2canvas(container, { backgroundColor: '#ffffff', scale: 2 });
+    } finally {
+      document.body.removeChild(container);
+    }
+  }
+  // One coloured summary "stat card" — Loan Amount / Rate / Tenure / EMI /
+  // Total Interest / Total Payment — for the fancy header block of the PDF.
+  function emiStatCard(label, value, color){
+    return `
+      <div style="flex:1 1 150px; min-width:150px; background:#ffffff; border-radius:10px; border:1px solid #e2e8f0; border-top:4px solid ${color}; padding:10px 12px;">
+        <div style="font-size:10.5px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.3px;">${label}</div>
+        <div style="font-size:16px; font-weight:800; color:#0f172a; margin-top:3px;">${value}</div>
+      </div>`;
+  }
+  // 📤 Share EMI Chart — explicit user instruction (Tamil, Sep 8 2026):
+  // sharing the EMI chart must go out as a proper PDF (with the OS PDF
+  // Share Sheet), must include EMI/Principal/Interest/Total figures, must
+  // cover EVERY month from the first to the very last (not just whatever
+  // fits on screen), and should look a bit more polished/professional
+  // ("சிறிது பேன்சியாக இருக்க வேண்டும்"). Builds a styled, full report
+  // (title + coloured summary cards + the complete month-wise table already
+  // held in chartTableBody), renders it off-screen at full height via
+  // renderReportToCanvas above, slices that tall canvas into A4 PDF pages
+  // with embedCanvasAsPdfPages (the same pdf-lib helper this app already
+  // uses elsewhere for long scanned documents), and hands the resulting PDF
+  // file to the OS Share Sheet — same navigator.share({files:[...]})
+  // pattern as every other 📤 Share button here, so WhatsApp
+  // Normal/Business/Cloned all show up as options. Falls back to opening
+  // the PDF in a new tab when navigator.share isn't available.
   chartShareBtn.addEventListener('click', async () => {
     const original = chartShareBtn.textContent;
-    chartShareBtn.textContent = '⏳...';
+    chartShareBtn.textContent = '⏳ PDF தயார் ஆகுது...';
     chartShareBtn.disabled = true;
     try{
-      const canvas = await html2canvas(chartCaptureArea, { backgroundColor: '#ffffff', scale: 2 });
-      const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
-      if(!blob){ throw new Error('canvas-to-blob-failed'); }
-      const file = new File([blob], 'EMI_Chart.png', { type: 'image/png' });
+      if(!lastEmiCalc){ throw new Error('no-emi-calc'); }
+      const { P, annualRate, n, emi, totalInterest, totalPayment } = lastEmiCalc;
+      // chartTableBody.innerHTML always holds every month's row (m=1..n),
+      // built in full by computeEmi() above regardless of the on-screen
+      // scroll clipping — this is what guarantees first-month-to-last-month
+      // coverage in the PDF.
+      const fullRowsHtml = chartTableBody.innerHTML;
+      const reportHtml = `
+        <div style="font-family:'Segoe UI', Arial, sans-serif; width:800px; background:#ffffff;">
+          <div style="background:linear-gradient(135deg,#0f766e,#0b74de); padding:22px 26px;">
+            <div style="color:#ffffff; font-size:23px; font-weight:800;">🧮 EMI Amortization Schedule</div>
+            <div style="color:#dbeafe; font-size:13px; margin-top:5px;">Loan ${fmtINR(P)} &nbsp;•&nbsp; ${annualRate}% per annum &nbsp;•&nbsp; ${n} Months</div>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:10px; padding:18px 22px; background:#f1f5f9;">
+            ${emiStatCard('Loan Amount', fmtINR(P), '#0b74de')}
+            ${emiStatCard('Interest Rate', annualRate + '% p.a.', '#7c3aed')}
+            ${emiStatCard('Tenure', n + ' Months', '#0891b2')}
+            ${emiStatCard('Monthly EMI', fmtINR(emi), '#0f766e')}
+            ${emiStatCard('Total Interest', fmtINR(totalInterest), '#dc2626')}
+            ${emiStatCard('Total Payment', fmtINR(totalPayment), '#16a34a')}
+          </div>
+          <div style="padding:4px 22px 22px;">
+            <table style="width:100%; border-collapse:collapse; font-size:12px;">
+              <thead>
+                <tr style="background:#0f766e;">
+                  <th style="padding:7px 6px; text-align:center; border:1px solid #0f766e; color:#ffffff;">Month</th>
+                  <th style="padding:7px 6px; text-align:right; border:1px solid #0f766e; color:#ffffff;">EMI</th>
+                  <th style="padding:7px 6px; text-align:right; border:1px solid #0f766e; color:#ffffff;">Principal</th>
+                  <th style="padding:7px 6px; text-align:right; border:1px solid #0f766e; color:#ffffff;">Interest</th>
+                  <th style="padding:7px 6px; text-align:right; border:1px solid #0f766e; color:#ffffff;">Balance</th>
+                </tr>
+              </thead>
+              <tbody>${fullRowsHtml}</tbody>
+            </table>
+          </div>
+          <div style="padding:12px 22px; text-align:center; font-size:10.5px; color:#94a3b8; border-top:1px solid #e2e8f0;">Generated by Success To Follow For Ever</div>
+        </div>`;
+
+      const canvas = await renderReportToCanvas(reportHtml, 800);
+      const mergedPdf = await PDFDocument.create();
+      await embedCanvasAsPdfPages(canvas, mergedPdf);
+      const outBytes = await mergedPdf.save();
+      const blob = new Blob([outBytes], { type: 'application/pdf' });
+      const fileName = `EMI_Chart_${Math.round(P)}_${annualRate}pct_${n}m.pdf`;
+      const file = new File([blob], fileName, { type: 'application/pdf' });
       if(navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))){
         await navigator.share({ files: [file], text: chartCaptureTitle.textContent });
       } else {
@@ -2933,7 +3076,7 @@ WhatsApp Upload and 📞 Calls are now shown smaller, per instruction). -->
       }
     }catch(e){
       if(e && e.name !== 'AbortError'){
-        alert('EMI Chart-ஐ Share பண்ண முடியவில்லை. மறுபடியும் try பண்ணவும்.');
+        alert('EMI Chart PDF-ஐ Share பண்ண முடியவில்லை. மறுபடியும் try பண்ணவும்.');
       }
     } finally {
       chartShareBtn.textContent = original;
@@ -4497,7 +4640,7 @@ document.getElementById('promoNormalMsgBtn').addEventListener('click', async () 
   let msg;
   if(item.isFinancerBroadcast){
     downloadFinancerStatusExcel(num, item.name, item.linkedBusinesses);
-    msg = encodeURIComponent(buildFinancerStatusMessage(item.name));
+    msg = encodeURIComponent(buildFinancerStatusMessage(item.name, item.linkedBusinesses));
     window.open(`sms:${num}?body=${msg}`, '_blank');
     advancePromoAsSent(); // per explicit instruction (16-Aug-2026): Push = sent, immediately — not Prospect, so no wait for tab-return
     return;
@@ -4570,7 +4713,7 @@ async function openPromoWhatsApp(useBusiness){
     // status-request message — just driven through the queue instead of
     // tapped one row at a time.
     downloadFinancerStatusExcel(num, item.name, item.linkedBusinesses);
-    const msg = encodeURIComponent(buildFinancerStatusMessage(item.name));
+    const msg = encodeURIComponent(buildFinancerStatusMessage(item.name, item.linkedBusinesses));
     openPromoWaTarget(wa, msg, useBusiness, useClone);
     advancePromoAsSent(); // not Prospect — immediate sync + advance
     return;
@@ -5493,6 +5636,7 @@ function mirrorReliabilityLayerNow(){
   idbSet('kyc', [...kycIds]);
   idbSet('ckyc', [...ckycIds]);
   idbSet('postponewatch', todayPostponeWatch);
+  idbSet('alltimecalled', [...allTimeCalledBizIds]);
   const now = Date.now();
   if(now - lastHistoryPush > 60000){
     lastHistoryPush = now;
@@ -5786,6 +5930,38 @@ let ckycIds = loadCallStatusIds('ckyc'); // "Completed KYC" — mutually exclusi
 let newOldFilterMode = null; // null | 'new' | 'old'
 let callDates = loadCallDates();
 let callCounts = loadCallCounts();
+
+// 🎯 All-Time Unique Business Call Tracker — explicit user instruction
+// (Sep 8, 2026, Tamil): "இந்த தருணத்திலிருந்து இதுவரை எத்தனை டிஃபரென்ட்
+// பிசினஸ் லிஸ்டுகளுக்கு கால் செய்தேன்" — a running, NEVER auto-resetting
+// count of how many DIFFERENT businesses' 📞 Call icon has been touched,
+// counted from the moment this feature was added onward (deliberately NOT
+// backfilled from any callDates/callCounts history that already existed
+// before this — starts empty and only grows from real .icon-call taps
+// from here on, forever). Deduplicated by business id — touching the same
+// business's Call icon any number of times only ever counts once. Persisted
+// the same way as npIds/wtIds/etc via persistCallStatus('alltimecalled', ...)
+// so it rides along on every existing save/backup/restore/merge code path.
+let allTimeCalledBizIds = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY + "_alltimecalled") || "[]"));
+
+// 🎯 Refreshes the two small read-only badges next to 📞 callRateBadge:
+// callTodayUniqueMini = today's DISTINCT businesses whose Call icon was
+// touched (deduped via callDates — touching the same business 10 times
+// today still counts once; deliberately independent of the manual
+// callRateBadge/ctState "Calls Today" tap-counter, which is not a per-
+// business log and must NOT feed this number).
+// callAllTimeUniqueMini = allTimeCalledBizIds.size (never resets).
+function refreshCallTouchBadges(){
+  try{
+    const today = todayLabel();
+    let todayCount = 0;
+    Object.keys(callDates).forEach(id => { if(callDates[id] === today) todayCount++; });
+    const todayEl = document.getElementById('callTodayUniqueMini');
+    if(todayEl) todayEl.textContent = todayCount;
+    const allTimeEl = document.getElementById('callAllTimeUniqueMini');
+    if(allTimeEl) allTimeEl.textContent = allTimeCalledBizIds.size;
+  }catch(e){ console.warn('refreshCallTouchBadges failed', e); }
+}
 
 // ---------- 📵 "Call பண்ணி Postpone பண்ணாதவை" watch list ----------
 // Explicit user instruction (Aug 2026): a Main Page icon that automatically
@@ -7426,8 +7602,24 @@ uppercaseAllBusinessNamesOnce();
 // pre-attach the Excel file itself (same platform limitation as voice
 // notes) — the file just downloads to your phone and you attach it by
 // hand from the chat that opens.
-function buildFinancerStatusMessage(financerName){
-  return `☀️ GOOD MORNING JI,\n\nமேலே இணைக்கப்பட்டுள்ள Excel-ல் உள்ள அனைத்து பிசினஸ்களுக்கான Status-ஐ இன்றைக்குள் தெரியப்படுத்தவும். ஏதேனும் Query இருந்தாலும் அதையும் Update செய்யவும். அல்லது எனக்கு WhatsApp வாய்ஸ் மெசேஜ் போடவும் அனைத்து கேஸ்களையும் பற்றி.\n\nநீங்கள் அந்த கேஸை Follow Up செய்யவில்லை எனில், Follow Up செய்யும் Executive-ஓட Name மற்றும் Number-ஐ எனக்கு WhatsApp செய்யவும். நன்றி... 🙏\n\nஇப்படிக்கு,\nY. தினகரன்,\nDSA\n9841058319`;
+// 🔢 Pending-count logic — explicit user instruction (Sep 2026, Tamil):
+// the message used to say "அனைத்து" (ALL) businesses, regardless of how
+// many were already DISBURSED. Now it states the exact PENDING count —
+// total businesses in the attached Excel (which is exactly `linked`,
+// already excluding the header row — the header is a separately-added
+// worksheet row, never part of this array) MINUS however many of them
+// already have "DISBURSED" typed into their own My Status box (ms-input
+// forces uppercase as you type, but this checks case-insensitively via
+// toUpperCase() too, in case older records were saved before that was
+// enforced, or "DISBURSED" appears as part of a longer note like
+// "DISBURSED ON 5TH"). If `linked` isn't passed (older call sites), the
+// count line falls back to 0 rather than throwing.
+function buildFinancerStatusMessage(financerName, linked){
+  const list = linked || [];
+  const totalCount = list.length;
+  const disbursedCount = list.filter(item => (item.myStatus || '').toUpperCase().includes('DISBURSED')).length;
+  const pendingCount = Math.max(totalCount - disbursedCount, 0);
+  return `☀️ GOOD MORNING JI,\n\nமேலே இணைக்கப்பட்டுள்ள Excel-ல் உள்ள இந்த *${pendingCount} பிசினஸ்களுக்கான* Status-ஐ இன்றைக்குள் தெரியப்படுத்தவும். ஏதேனும் Query இருந்தாலும் அதையும் Update செய்யவும். அல்லது எனக்கு WhatsApp வாய்ஸ் மெசேஜ் போடவும் அனைத்து கேஸ்களையும் பற்றி.\n\nநீங்கள் அந்த கேஸை Follow Up செய்யவில்லை எனில், Follow Up செய்யும் Executive-ஓட Name மற்றும் Number-ஐ எனக்கு WhatsApp செய்யவும். நன்றி... 🙏\n\nஇப்படிக்கு,\nY. தினகரன்,\nDSA\n9841058319`;
 }
 
 // Second paragraph, appended after the message above with one blank line
@@ -7719,7 +7911,7 @@ bothListsAddEventListener('click', async (e) => {
   // WhatsApp Business there attaches the file automatically. `mode` is
   // kept on the button (🟢 vs 💼) purely as a visual hint of intent —
   // the OS Share Sheet itself lets the person pick either app.
-  const shareMsg = buildFinancerStatusMessage(financerName);
+  const shareMsg = buildFinancerStatusMessage(financerName, linked);
   await downloadFinancerStatusExcel(num, financerName, linked, shareMsg, num);
 });
 
@@ -12758,6 +12950,14 @@ bothListsAddEventListener('click', (e) => {
   callCounts[id] = (callCounts[id] || 0) + 1;
   persistCallDates();
   persistCallCounts();
+  // 🎯 All-Time Unique Business Call Tracker — only bump/persist when this
+  // business id is genuinely new to the set (avoids a redundant write on
+  // every repeat tap of an already-counted business).
+  if(!allTimeCalledBizIds.has(id)){
+    allTimeCalledBizIds.add(id);
+    persistCallStatus('alltimecalled', allTimeCalledBizIds);
+  }
+  refreshCallTouchBadges();
   const badge = tr.querySelector('.call-date-badge');
   if(badge){ badge.textContent = callDates[id]; badge.classList.add('called'); }
   const countBadge = tr.querySelector('.call-count-badge');
@@ -32020,7 +32220,11 @@ document.getElementById('exportEditsBtn').addEventListener('click', (e) => {
         prmIds: [...prmIds],
         disbursedIds: [...disbursedIds],
         payoutReceivedIds: [...payoutReceivedIds],
-        deletedBusinessMobiles: deletedBusinessMobiles
+        deletedBusinessMobiles: deletedBusinessMobiles,
+        // 🎯 All-Time Unique Business Call Tracker — explicit user
+        // instruction (Sep 8, 2026): must be included in every Business
+        // List backup and restored on Import Backup.
+        allTimeCalledBizIds: [...allTimeCalledBizIds]
       };
       // No pretty-print (", null, 2" removed — Sep 2, 2026 fix): identical
       // data, compact JSON, roughly half-to-two-thirds the string size at
@@ -32168,6 +32372,11 @@ document.getElementById('importBackupFile').addEventListener('change', (e) => {
     prmIds = new Set(parsed.prmIds || []);
     disbursedIds = new Set(parsed.disbursedIds || []);
     payoutReceivedIds = new Set(parsed.payoutReceivedIds || []);
+    // 🎯 All-Time Unique Business Call Tracker — full replace, same as
+    // every other field in this Import Backup handler (this is a full
+    // restore, not a merge — see mergeBackupFile below for the union
+    // version used by "🔀 Merge Backup from Other Phone").
+    allTimeCalledBizIds = new Set(parsed.allTimeCalledBizIds || []);
 
     persist(); persistEdited(); persistEnquired(); persistCallDates();
     persistCallCounts(); persistNoWhatsApp(); persistTarget(); persistOld(); persistSim();
@@ -32175,6 +32384,8 @@ document.getElementById('importBackupFile').addEventListener('change', (e) => {
     persistCallStatus('g', gIds); persistCallStatus('ul', ulIds); persistCallStatus('nl', nlIds);
     persistCallStatus('prospect', prospectIds); persistCallStatus('selected', selectedIds);
     persistCallStatus('uc', ucIds); persistCallStatus('nc', ncIds); persistCallStatus('prm', prmIds);
+    persistCallStatus('alltimecalled', allTimeCalledBizIds);
+    refreshCallTouchBadges();
 
     render(filterData(searchBox.value));
     updateStats();
@@ -32428,6 +32639,10 @@ document.getElementById('mergeBackupFile').addEventListener('change', (e) => {
     Object.keys(parsed.simUsed||{}).forEach(id => {
       if(!simUsed[id]) simUsed[id] = parsed.simUsed[id];
     });
+    // 🎯 All-Time Unique Business Call Tracker — union, same philosophy as
+    // every other progress-tracking set above: nothing counted as called
+    // on either phone should be lost by merging.
+    (parsed.allTimeCalledBizIds||[]).forEach(id => allTimeCalledBizIds.add(id));
 
     persist(); persistEdited(); persistEnquired(); persistCallDates();
     persistCallCounts(); persistNoWhatsApp(); persistTarget(); persistOld(); persistSim();
@@ -32435,6 +32650,8 @@ document.getElementById('mergeBackupFile').addEventListener('change', (e) => {
     persistCallStatus('g', gIds); persistCallStatus('ul', ulIds); persistCallStatus('nl', nlIds);
     persistCallStatus('prospect', prospectIds); persistCallStatus('selected', selectedIds);
     persistCallStatus('uc', ucIds); persistCallStatus('nc', ncIds); persistCallStatus('prm', prmIds);
+    persistCallStatus('alltimecalled', allTimeCalledBizIds);
+    refreshCallTouchBadges();
 
     render(filterData(searchBox.value));
     updateStats();
@@ -33084,6 +33301,90 @@ document.getElementById('toAchieveBtn').addEventListener('click', function(){
   }catch(e){
     alert('Time Table PDF-ஐ திறக்க முடியல. Error: ' + e.message);
   }
+});
+
+// ---------- 📋 TO ACHIEVE Check List — explicit user instruction (Sep 8
+// 2026, Tamil): a Tick-box version of the exact same 🎯 TO ACHIEVE
+// schedule, dated to TODAY, so each finished task can be ticked off
+// through the day. Kept as a plain array (same 13 items/times as the
+// embedded PDF above) rather than parsing the PDF itself — far simpler
+// and just as accurate, since both are meant to always describe the same
+// schedule. Ticks are saved to localStorage the INSTANT each box is
+// tapped (not only when the overlay is closed) — per instruction "அந்த
+// ஐகானை Close செய்தால் Tick Save ஆக வேண்டும்", Close also re-saves as a
+// safety net, but nothing is ever lost even if the tab is killed before
+// Close is tapped. Keyed by today's date (YYMMDD) so a new day always
+// starts with a fresh, empty checklist — yesterday's ticks stay under
+// yesterday's own date key, never mixed in or lost.
+const TO_ACHIEVE_ITEMS = [
+  { time: '6:30 AM', label: '1. WAKE UP' },
+  { time: '7:00 AM', label: '2. FINISH WHATSAPP PROMO RUN LIST' },
+  { time: '9:00 AM', label: '3. FINISH YOUR ENQUIRY LIST' },
+  { time: '11:00 AM', label: '4. FINISH YOUR EDITED LIST TODAY' },
+  { time: '12:00 PM', label: '5. FINISH YOUR UN-EDITED LIST TODAY' },
+  { time: '1:30 PM', label: '6. FINISH YOUR LUNCH' },
+  { time: '2:00 PM', label: '7. FINISH YOUR UN-EDITED REMAINING' },
+  { time: '6:30 PM', label: '8. OVERLOOK KYC' },
+  { time: '7:00 PM', label: '9. INCOMING CALL EDIT IN BUSINESS LIST' },
+  { time: '8:30 PM', label: '10. TAKE SCREENSHOT FROM JD' },
+  { time: '10:00 PM', label: '11. DINNER' },
+  { time: '10:30 PM', label: '12. UPLOAD YOUR SCREENSHOT' },
+  { time: '10:50 PM', label: '13. GO TO SLEEP' }
+];
+function toAchieveTodayKey(){
+  const d = new Date();
+  const yy = String(d.getFullYear()).slice(2);
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return 'toAchieveCheck_' + yy + mm + dd;
+}
+function toAchieveLoadTicks(){
+  try{
+    const raw = localStorage.getItem(toAchieveTodayKey());
+    return raw ? JSON.parse(raw) : {};
+  }catch(e){ return {}; }
+}
+function toAchieveSaveTicks(ticks){
+  try{ localStorage.setItem(toAchieveTodayKey(), JSON.stringify(ticks)); }catch(e){ console.warn('TO ACHIEVE Check List save failed', e); }
+}
+function renderToAchieveCheckList(){
+  const ticks = toAchieveLoadTicks();
+  const listEl = document.getElementById('toAchieveCheckList');
+  const dateEl = document.getElementById('toAchieveCheckDate');
+  const today = new Date();
+  dateEl.textContent = '📅 ' + today.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  listEl.innerHTML = TO_ACHIEVE_ITEMS.map((item, idx) => {
+    const checked = ticks[idx] ? 'checked' : '';
+    return `<label style="display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; background:${ticks[idx] ? '#dcfce7' : '#f8fafc'}; border:1px solid ${ticks[idx] ? '#86efac' : '#e2e8f0'}; cursor:pointer;">
+      <input type="checkbox" data-to-achieve-idx="${idx}" ${checked} style="width:20px; height:20px; flex-shrink:0;">
+      <span style="font-weight:800; color:#0f766e; min-width:70px;">${item.time}</span>
+      <span style="flex:1; ${ticks[idx] ? 'text-decoration:line-through; color:#166534;' : ''}">${item.label}</span>
+    </label>`;
+  }).join('');
+}
+document.getElementById('toAchieveCheckBtn').addEventListener('click', function(){
+  renderToAchieveCheckList();
+  document.getElementById('toAchieveCheckOverlay').style.display = 'flex';
+});
+document.getElementById('toAchieveCheckList').addEventListener('change', function(e){
+  const input = e.target.closest('input[data-to-achieve-idx]');
+  if(!input) return;
+  const idx = input.dataset.toAchieveIdx;
+  const ticks = toAchieveLoadTicks();
+  ticks[idx] = input.checked;
+  toAchieveSaveTicks(ticks);
+  renderToAchieveCheckList(); // re-render so the tapped row's tick/strikethrough style updates immediately
+});
+document.getElementById('toAchieveCheckCloseBtn').addEventListener('click', function(){
+  // Safety-net save (per explicit instruction) — the ticks are already
+  // saved on every individual tap above, so this just re-confirms the
+  // current in-memory checkbox state one more time before closing.
+  const ticks = {};
+  document.querySelectorAll('#toAchieveCheckList input[data-to-achieve-idx]').forEach(input => {
+    ticks[input.dataset.toAchieveIdx] = input.checked;
+  });
+  toAchieveSaveTicks(ticks);
+  document.getElementById('toAchieveCheckOverlay').style.display = 'none';
 });
 
 // ---------- 💰 Disbursed Cases (main page) ----------
@@ -34510,6 +34811,10 @@ updateUndoBackButtons();
 
   ctRender();
   setInterval(ctRender, 60000); // keep rate fresh every minute even with no new input
+  // 🎯 Paint the two new read-only badges (callTodayUniqueMini /
+  // callAllTimeUniqueMini) with their initial values at boot too — not
+  // just after the next Call tap.
+  try{ if(typeof refreshCallTouchBadges === 'function') refreshCallTouchBadges(); }catch(e){}
   // Now position:sticky (not fixed), so it takes its natural spot in the
   // page flow and only sticks to the top once scrolled to it — no manual
   // spacer div needed to reserve blank space for it anymore.
