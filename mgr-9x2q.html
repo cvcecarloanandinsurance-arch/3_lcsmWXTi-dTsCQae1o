@@ -211,14 +211,31 @@
   }
 })();
 </script>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- 🎯 CRITICAL Fix (explicit user instruction, Sep 8 2026, Tamil: "பாப் அப்
+ஸ்க்ரீன் விரைந்து வருவதற்கு முடிந்த அளவுக்கு Implement செய்யவும்") — THE
+real root cause of the 30-second-to-1-minute WhatsApp Extract popup delay:
+these 8 external libraries had no `defer`, so the browser's HTML parser
+BLOCKS completely at each one — fetches it over the network, runs it, THEN
+continues — one at a time, in order — before it can even reach any of the
+inline JS further down this file (including the code that shows the
+WhatsApp Extract popup). On a slow/metered mobile connection this chain of
+8 sequential network fetches, all before parsing can proceed past this
+point, is exactly what was eating 30s–60s before anything else on the page
+could even start running. `defer` lets the browser keep parsing the rest
+of the document (and the popup-showing code in it) immediately while these
+download in the BACKGROUND in parallel, only running them (in this same
+order) once parsing finishes — safe here because every actual use of
+JSZip/PDFDocument/XLSX/ExcelJS/Tesseract/mammoth/html2canvas anywhere in
+this file is inside a function triggered by a later user action (upload,
+scan, export), never at top-level during initial script execution. -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 <style>
   /* 🐛 Fix (explicit user instruction, Aug 31, 2026): visual-only busy
   state for 🛡️ RC Related's own icon during an active scan — replaces
@@ -1204,30 +1221,16 @@
     since the descriptive suffix was the widest single item in this row. -->
     <span id="appVersionBadge" title="v348 · restoreFromCloudUnwrapFix — worker.js's GET /backup returns {savedAt,payload}, client now correctly unwraps .payload before restoring (previous v347 build passed the wrapper straight through, which would have failed looksLikeValidData). · v347 · restoreFromCloudBackup — added ☁️ Restore from Cloud button next to ☁️ Set Cloudflare Backup: pulls the latest text-only snapshot back from the same Cloudflare Worker/KV (Business List full replace, Insurance Renewal/KYC merge-safe, same as 📥 Import Backup's tested logic, just sourced over the network via GET /backup instead of a chosen file). Photo/PDF documents never touch Cloudflare — unaffected, still phone-only. · v346 · rcKycConsResultJumpIcons · v345 · waExtractNewBizMobileBlank — fix (Sep 3, 2026, Tamil: user asked that in the WhatsApp Extract Share Inbox popup, when the detected Mobile Number does NOT match an existing Business/Financer row — i.e. the business isn't in the Business List yet — the Mobile Number box should be left blank/unlocked for him to type in himself, rather than auto-filled/locked with a not-yet-listed number; the Business Name box should keep auto-filling exactly as it appears in the WhatsApp Extract regardless). The Mobile Number box now only auto-fills (and stays locked) when the number detected in the Share title/text already matches an existing Business or Financer row via shareFormFindBizByMobile/shareFormFindFinancerNamesByMobile; otherwise it's unlocked and starts blank, same as the existing no-detection safety-net path (manual typing + background RC/KYC content auto-match still both apply). Previous v344 note: waExtractSkipScan — the WhatsApp Extract Share Inbox popup's 🔗 Merge + RC/Insurance Scan button no longer runs the mandatory OCR scan step (runBulkOcrBatchCapped3) before reaching the Business List; it's now just ⬆️ Upload, straight from read/zip-PDF-expand to one-file-at-a-time upload." style="flex-shrink:0; white-space:nowrap; padding:3px 8px; border-radius:12px; border:1px solid #78716c; background:#f5f5f4; color:#57534e; font-weight:800; font-size:0.62rem;">🏷️ v348 · restoreFromCloudUnwrapFix</span>
   </div>
-  <!-- 🎯 RC/KYC/Consolidate Result quick-jump icons — explicit user
-  instruction (Tamil, Sep 2026): "ஆர்சி ரிலேட்டட் சேர்ச் பண்ணா 100 ரிசல்ட்
-  வரும், ஒவ்வொரு ரிசல்ட்டுக்குள்ளயும் அஞ்சு ஆறு பாக்ஸ் இருக்கும், அவசரமா
-  ஏதாவது கண்டுபிடிக்கணும்னா ரொம்ப தூரம் ஸ்க்ரோல் பண்ண வேண்டி இருக்கு —
-  அரிசி (RC) ரிசல்ட், கேஒய்சி ரிசல்ட், கன்சாலிடேட்டட் ரிசல்ட் என்று மூன்று
-  ஐகான்களை மெயின்/அக்கவுண்ட் பேஜில் நிறுவி, தொட்டவுடன் நேரடியாக அந்த
-  ரிசல்ட் காட்ட வேண்டும்" — the 🛡️ RC Related / 🪪 KYC / 🗂️ Consolidated
-  search boxes + full result lists already existed further down the page
-  (inside insuranceOcrExtractPanel/kycOcrExtractPanel/consolidatedDocPanel),
-  but actually REACHING them always meant scrolling all the way down past
-  everything else first. These 3 buttons live here in the fixed
-  #topStickyBar (visible from anywhere on the page, no scroll needed to
-  find THEM), and jump straight to the already-existing panel — opening
-  it if closed, un-minimizing it if minimized, re-rendering its full list,
-  then smooth-scrolling it into view just below this fixed bar. Unlike
-  tapping 🛡️ RC Related/🪪 KYC/🗂️ Consolidated Document above, these never
-  open the Photo/File picker — purely a "show me what's already saved,
-  right now" shortcut. See jumpToRcResult/jumpToKycResult/
-  jumpToConsResult further below (wired near scrollToMainPageBtn). -->
-  <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-top:5px; font-size:0.64rem; font-weight:700;">
-    <button type="button" id="rcResultJumpBtn" title="🛡️ RC Related Result-ஐ நேரடியாக காட்டும் (Scroll தேவையில்லை)" style="flex-shrink:0; white-space:nowrap; padding:3px 8px; border-radius:12px; border:1px solid #7c2d12; background:#7c2d12; color:#fff; font-weight:800; font-size:0.64rem; cursor:pointer; display:flex; align-items:center; gap:3px;">🛡️ RC Result</button>
-    <button type="button" id="kycResultJumpBtn" title="🪪 KYC Result-ஐ நேரடியாக காட்டும் (Scroll தேவையில்லை)" style="flex-shrink:0; white-space:nowrap; padding:3px 8px; border-radius:12px; border:1px solid #9333ea; background:#9333ea; color:#fff; font-weight:800; font-size:0.64rem; cursor:pointer; display:flex; align-items:center; gap:3px;">🪪 KYC Result</button>
-    <button type="button" id="consResultJumpBtn" title="🗂️ Consolidate Result-ஐ நேரடியாக காட்டும் (Scroll தேவையில்லை)" style="flex-shrink:0; white-space:nowrap; padding:3px 8px; border-radius:12px; border:1px solid #0f766e; background:#0f766e; color:#fff; font-weight:800; font-size:0.64rem; cursor:pointer; display:flex; align-items:center; gap:3px;">🗂️ Consolidate Result</button>
-  </div>
+  <!-- 🎯 RC/KYC/Consolidate Result quick-jump icons — RELOCATED (explicit
+  user instruction, Sep 8 2026, Tamil): originally placed here in the
+  fixed #topStickyBar (Sep 2026), but per follow-up correction these 3
+  buttons must sit immediately NEXT TO their respective 🛡️ RC Related /
+  🪪 KYC / 🗂️ Consolidated Document icon instead — not up here, separated
+  from them. Moved down into #uploadExtractChooser (see each icon's own
+  button further below); this whole block removed from here. Same ids
+  (rcResultJumpBtn/kycResultJumpBtn/consResultJumpBtn), same click
+  handlers (jumpToRcResult/jumpToKycResult/jumpToConsResult wired near
+  scrollToMainPageBtn) — zero JS changes, only their DOM location moved. -->
 
 </div>
 <!-- 🐛 Fix (explicit user instruction — Aug 2026: "மேல அலைன்மென்ட் மிஸ்
@@ -1246,67 +1249,19 @@
      updateShareDebugLine() (further down, inside processShareQueue) still
      safely no-ops via its own `if(!el) return;` guard, so nothing else
      needs to change. -->
-<!-- 🔀 Unified bottom floating icon row — explicit user instruction: "அந்த
-whatsapp ப்ரோமோ ரன் ஐகானை கீழே இருக்கும் 3 ஐகான்களுக்கு நடுவில் அழகாக
-இடைவெளி விட்டு சொருகவும்" (insert the WhatsApp Promo Run icon nicely
-spaced in between the 3 bottom icons). Previously 📣 startPromoRunBtn sat
-stacked awkwardly above 🕐 versionHistoryBtn in its own left:14px column —
-now all 4 icons (🕐 History, 📣 Promo Run, 📥 WhatsApp Upload, 📞 Calls)
-live inside one position:fixed flex row spanning the screen width with
-justify-content:space-between, giving even spacing across all 4 instead
-of 3 fixed corners + 1 stacked extra. Each button/wrap below keeps its
-EXACT original id (versionHistoryBtn / startPromoRunBtn /
-builderFunnelBtn / builderActiveDot / floatingWaStrikeRateBadge /
-floatingWaUploadBtn / callRateBadge), so every existing click handler and
-JS lookup keeps working with zero JS changes — only the positioning
-wrapper changed. pointer-events:none on the row + pointer-events:auto on
-each icon keeps the empty gaps between icons from blocking taps on
-whatever is scrolled underneath them. -->
-<div id="bottomFloatBar" style="position:fixed; left:0; right:0; bottom:18px; z-index:9998; display:flex; align-items:flex-end; justify-content:space-between; padding:0 14px; pointer-events:none;">
-  <!-- 🕐 versionHistoryBtn (the "backup ball") MOVED OUT of this fixed
-       floating row — explicit user instruction (Sep 3, 2026, Tamil):
-       "மெயின் பேஜில் உள்ள பேக்கப் பால் ஐகானை உம், எக்ஸ்போர்ட் எடிட்
-       பேக்கப் ஐகான் ஐயும் ஸ்க்ரோலிங் பேச்சில் கொண்டு வரவும்" (bring the
-       backup-ball icon and the Export-edits-backup icon into the
-       scrolling page). It now lives inside .list-page, right next to
-       💾 exportEditsBtn — see the sticky pair just after the
-       list-page opening <div> below. Same exact id/click handler
-       (openVersionHistory), only its position/DOM location changed. -->
-
-  <div id="promoRunFloatWrap" style="pointer-events:auto; position:relative;">
-    <button type="button" id="startPromoRunBtn" title="📣 WhatsApp Promo Run" style="width:56px; height:56px; border-radius:50%; background:#16a34a; color:#fff; border:3px solid #fff; box-shadow:0 3px 10px rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; flex-direction:column; font-weight:800; line-height:1; padding:0; cursor:pointer;">
-      <span style="font-size:1.1rem;">📣</span>
-      <span style="font-size:0.46rem;">Promo Run</span>
-    </button>
-    <button type="button" id="builderFunnelBtn" title="9 கேட்டகரி — தேர்வு செய்யவும்" style="position:absolute; bottom:-4px; right:-4px; width:24px; height:24px; border-radius:50%; background:#0f172a; color:#fff; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.35); font-size:11px; font-weight:900; line-height:1; padding:0; cursor:pointer; display:flex; align-items:center; justify-content:center;">▼</button>
-    <span id="builderActiveDot" title="WhatsApp/SMS-க்கு போய் இருக்கீங்க — திரும்ப வந்தவுடன் தானாக மறையும்" style="display:none; position:absolute; top:-4px; left:-4px; width:14px; height:14px; border-radius:50%; background:#22c55e; border:2px solid #fff; box-shadow:0 0 0 1px #000; z-index:3;"></span>
-  </div>
-
-  <div style="pointer-events:auto; position:relative;">
-    <!-- 🚫 shareDebugLine + floatingWaStrikeRateBadge REMOVED — explicit
-    user instruction (Aug 2026): "டீபக்னு ஒன்னு கொடுத்து இருக்கீங்க அது
-    எதுக்கு, கருப்பு கலர் ஸ்ட்ரைக் ரேட் எதுக்கு" — both black floating
-    labels sitting right above the 📥 WhatsApp button were taking up his
-    working space with information he never asked to see there. Removed
-    from the DOM entirely. Both underlying functions still no-op safely:
-    updateShareDebugLine() already has `if(!el) return;` and now also
-    logs the same line to console.log (see shareInboxModule further down)
-    so the detection trail is still there for troubleshooting later,
-    just off-screen instead of a floating banner; refreshUploadExtractStrikeRateBadge()'s
-    `if(floatBadge){...}` guard already handled a missing element the
-    same way. The Strike Rate numbers themselves are unaffected — still
-    live inside 📄 Upload & Extract for anyone who opens that panel. -->
-    <button type="button" id="floatingWaUploadBtn" title="Upload from WhatsApp — 📄 Upload &amp; Extract chooser-ஐ Open பண்ணி மேலே Scroll பண்ணும்" style="width:56px; height:56px; border-radius:50%; background:#25D366; color:#fff; border:3px solid #fff; box-shadow:0 3px 10px rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; flex-direction:column; font-weight:800; line-height:1; padding:0; cursor:pointer;">
-      <span style="font-size:1.15rem;">📥</span>
-      <span style="font-size:0.48rem;">WhatsApp</span>
-    </button>
-  </div>
-
-  <button type="button" id="callRateBadge" title="Calls Today — tap to add today's calls" style="pointer-events:auto; width:56px; height:56px; border-radius:50%; background:#0f766e; color:#fff; border:3px solid #fff; box-shadow:0 3px 10px rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; flex-direction:column; font-weight:800; line-height:1; padding:0; cursor:pointer;">
-    <span style="font-size:0.62rem;">📞</span>
-    <span style="font-size:0.68rem;"><span id="callTrackerTotalMini">0</span>/<span id="callTrackerTargetMini">1000</span></span>
-  </button>
-</div>
+<!-- 🔀 v349 relocation (explicit user instruction, Sep 8 2026, Tamil):
+"ஸ்கிரீனுக்கு கீழே உள்ள மூன்று ஐ காண்களையும் ஸ்க்ரோலிங் பேஜில் நிறுவவும் —
+whatsapp ப்ரோமோ ஐகான் மட்டும் பெரிதாக, மற்ற இரண்டையும் சிறிதாக காட்ட
+வேண்டும்" — the position:fixed #bottomFloatBar row (📣 Promo Run / 📥
+WhatsApp Upload / 📞 Calls) is REMOVED entirely from here; the same 3
+icons now live inside .list-page (the scrolling page) instead — see the
+sticky row right after the 🧮 EMI Calculator launcher, just past the
+list-page opening <div> below. Same exact ids (startPromoRunBtn /
+builderFunnelBtn / builderActiveDot / floatingWaUploadBtn / callRateBadge
+/ callTrackerTotalMini / callTrackerTargetMini), so every existing click
+handler/JS lookup keeps working with zero JS changes — only the
+position + size changed (📣 Promo Run kept at its original big size; 📥
+WhatsApp Upload and 📞 Calls are now shown smaller, per instruction). -->
 <script>
 // 🔽🔼 Main Page Minimize/Maximize — explicit user instruction (Sep 2026):
 // tapping ➖ in the fixed top bar hides BOTH #topStickyBar (search box +
@@ -1440,6 +1395,24 @@ whatever is scrolled underneath them. -->
       <button class="tool-btn" id="tnPincodeBtn" type="button" style="background:#0e7490; color:#fff; border-color:#0e7490;" title="தமிழ்நாடு பின்கோடு ஏரியா — Office Name அல்லது Pincode மூலம் தேடலாம் (pinc.xlsx இணைக்கப்பட்டது)">📍 தமிழ்நாடு பின்கோடு ஏரியா</button>
       <a class="tool-btn" id="localServerBtn" href="http://127.0.0.1:8080/files/" rel="noopener" style="background:#0369a1; color:#fff; border-color:#0369a1;" title="Local HTTP Server — this file's folder (mic/voice-note work aaga idha use pannunga)">🌐 Local Server (127.0.0.1:8080)</a>
       <button class="tool-btn tool-btn-add" id="addBizBtn" type="button">➕ Add New Business</button>
+      <!-- 📤📥 Backup Save/Restore for ALL Upload Icons — explicit user
+      instruction (Sep 8 2026, Tamil): "பிசினஸ் லிஸ்டில் அனைத்து அப்லோட்
+      ஐக்கானில் அப்லோடு செய்யும் அனைத்து டாக்குமென்ட்களுக்கும்" — unlike
+      the existing 🛡️/🪪/🗂️ Backup Save/Restore buttons (which only ever
+      exported TEXT metadata, never the actual scanned Photo/PDF files —
+      see their own titles: "Photo/PDF Image இதில் இல்லை"), these two
+      cover the ACTUAL FILE BLOBS from every upload icon in the Business
+      List: 📎 Customer Documents, 🛡️ Insurance Documents, 🏦 Financer
+      Documents, 🛡️ RC/Insurance-per-Registration archive, 📑 Insurance
+      Quotation, 🗂️ Consolidated (auto + manual), 🪪 KYC-per-person
+      archive — packaged as one ZIP (via JSZip, already loaded for this
+      app's other ZIP features) with a manifest.json describing which
+      IndexedDB key/prefix each file belongs to, so Restore can put every
+      file back exactly where it came from. See backupAllUploadDocuments()/
+      restoreAllUploadDocuments() further below. -->
+      <button class="tool-btn" id="backupAllUploadsBtn" type="button" style="background:#166534; color:#fff; border-color:#166534;" title="Business List-ல் உள்ள எல்லா Upload ஐகான்களிலும் (📎/🛡️/🏦/📑/🗂️/🪪) இதுவரை Upload ஆன அத்தனை Photo/PDF File-களையும் ஒரே ZIP File-ஆ Download பண்ணும்.">📤 Backup Save (All Uploads)</button>
+      <button class="tool-btn" id="restoreAllUploadsBtn" type="button" style="background:#0e7490; color:#fff; border-color:#0e7490;" title="📤 Backup Save (All Uploads)-ல் Download ஆன ZIP File-ஐ திரும்ப Select பண்ணி, அத்தனை Photo/PDF File-களையும் அவை இருந்த அதே இடத்திலேயே திரும்ப Restore பண்ணும்.">📥 Restore (All Uploads)</button>
+      <input type="file" id="restoreAllUploadsInput" accept=".zip,application/zip,application/x-zip-compressed" style="display:none;">
       <!-- 📷 Bulk Add from Screenshots button permanently removed (explicit
       user instruction, Aug 2026: "மூன்றும் தேவையில்லை... பெர்மனெண்டா டெலிட்
       பண்ணிடுங்க") — Business-from-screenshot capability lives on
@@ -1489,6 +1462,18 @@ whatever is scrolled underneath them. -->
       times without any tap needed to reveal it. -->
       <div id="uploadExtractChooser" style="display:flex; width:100%; gap:8px; margin-top:6px; flex-wrap:wrap;">
         <button type="button" id="uploadExtractChooseRcBtn" class="tool-btn" style="flex:1; min-width:100px; background:#7c2d12; color:#fff; border-color:#7c2d12;"><span id="rcMainLabelText">🛡️ RC Related</span></button>
+        <!-- 🎯 RC Result quick-jump — relocated here (Sep 8 2026, Tamil
+        instruction) to sit right next to 🛡️ RC Related itself; same id/
+        handler as before (jumpToRcResult), only its DOM position moved. -->
+        <button type="button" id="rcResultJumpBtn" title="🛡️ RC Related Result-ஐ நேரடியாக காட்டும் (Scroll தேவையில்லை)" style="flex-shrink:0; white-space:nowrap; padding:8px 10px; border-radius:8px; border:1px solid #7c2d12; background:#fff; color:#7c2d12; font-weight:800; font-size:0.68rem; cursor:pointer; display:flex; align-items:center; gap:3px;">🛡️ RC Result <span id="rcResultCountBadge" style="background:#7c2d12; color:#fff; border-radius:8px; padding:1px 2px; font-size:0.62rem; font-weight:800; width:26px; display:inline-block; text-align:center; box-sizing:border-box; flex-shrink:0;">0</span></button>
+        <!-- 🔼🔽 Minimize/Maximize toggle — explicit user instruction (Sep 8
+        2026, Tamil): a single-tap arrow (no double-tap needed, unlike the
+        Result button itself) that mirrors insuranceOcrMinimizeBtn — ▸ means
+        currently closed (tap to Maximize/open), ▾ means currently open (tap
+        to Minimize/close). Kept in sync by syncPanelToggleButtons() below.
+        Calls the exact same jumpToRcResult() the main button uses — single
+        source of truth, no duplicated open/close logic. -->
+        <button type="button" id="rcResultToggleBtn" title="Maximize/Minimize" style="flex-shrink:0; width:26px; padding:8px 0; border-radius:8px; border:1px solid #7c2d12; background:#7c2d12; color:#fff; font-weight:900; font-size:0.7rem; cursor:pointer;">▸</button>
         <!-- 📊 Bulk Insurance Excel/CSV Upload — explicit user instruction
         (Aug 30, 2026, Tamil): "நான் பல்க் இன்சூரன்ஸ் டேட்டா எக்ஸெல் பைலையோ
         சிஎஸ்பி பைலையோ அப்லோடு செய்வேன் அப்பொழுது அதில் இருக்கும் தரவுகள்
@@ -1521,8 +1506,19 @@ whatever is scrolled underneath them. -->
         openPromoWhatsApp() for the auto-attach-on-send half of this. -->
         <button type="button" id="uploadExtractChooseInsQuotationBtn" class="tool-btn" style="flex:1; min-width:100px; background:#0e7490; color:#fff; border-color:#0e7490;" title="Insurance Quotation — பல Quotation PDF/Image-களை ஒரே நேரத்தில் Upload பண்ணலாம், ஒவ்வொன்றிலும் இருக்கும் Registration Number-ஐ OCR மூலம் கண்டுபிடித்து, அந்த வாகன Registration Number-ல் சேமிக்கும். 🔟 Insurance Renewal Promo Send செய்யும்போது இது தானாக Attach ஆகும்.">📑 Insurance Quotation</button>
         <button type="button" id="uploadExtractChooseKycBtn" class="tool-btn" style="flex:1; min-width:100px; background:#9333ea; color:#fff; border-color:#9333ea;"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAWfmNhQlgAABZ+anVtYgAAAB5qdW1kYzJwYQARABCAAACqADibcQNjMnBhAAAAFlhqdW1iAAAAR2p1bWRjMm1hABEAEIAAAKoAOJtxA3VybjpjMnBhOjExYjVmZGMzLTc5ZGMtNGIzZi1hZDhhLTk3OGIxMjNiMzZkYgAAAAOTanVtYgAAAClqdW1kYzJhcwARABCAAACqADibcQNjMnBhLmFzc2VydGlvbnMAAAAAuGp1bWIAAABEanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5pbmdyZWRpZW50LnYzAAAAABhjMnNoDmAAKzN2yXxQzTGYksfUkAAAAGxjYm9yo2lkYzpmb3JtYXRpaW1hZ2UvcG5namluc3RhbmNlSUR4LHhtcDppaWQ6MzM3ZGZkZTMtYzBlMi00MjNlLWFmZTYtYjdhY2I5YzhkMzdhbHJlbGF0aW9uc2hpcGhwYXJlbnRPZgAAAeJqdW1iAAAAQWp1bWRjYm9yABEAEIAAAKoAOJtxE2MycGEuYWN0aW9ucy52MgAAAAAYYzJzaLfgx684jZyD3d78SYKmoxoAAAGZY2JvcqJnYWN0aW9uc4KiZmFjdGlvbmtjMnBhLm9wZW5lZGpwYXJhbWV0ZXJzoWtpbmdyZWRpZW50c4GiY3VybHgtc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5pbmdyZWRpZW50LnYzZGhhc2hYICt7an0yR3MTwNT78gyuEjzoaflksVd+qZ/5md4xdnr+pGZhY3Rpb254HWNvbS5hbnRocm9waWMuY2xhdWRlLnByb3ZpZGVkanBhcmFtZXRlcnOheB9jb20uYW50aHJvcGljLm9yaWdpbi1jb25maWRlbmNlZ3Vua25vd25rZGVzY3JpcHRpb254ZkNsYXVkZSBwcm92aWRlZCB0aGlzIGZpbGUgYXQgdGhlIHJlcXVlc3Qgb2YgYSB1c2VyIGFuZCBtYXkgaGF2ZSBjcmVhdGVkIG9yIG1vZGlmaWVkIHRoZSBmaWxlIGNvbnRlbnRzLm1zb2Z0d2FyZUFnZW50oWRuYW1lZkNsYXVkZXJhbGxBY3Rpb25zSW5jbHVkZWT1AAAAyGp1bWIAAABAanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5oYXNoLmRhdGEAAAAAGGMyc2iyMI2maVweByTqKJFK8peYAAAAgGNib3KlY2FsZ2ZzaGEyNTZjcGFkTQAAAAAAAAAAAAAAAABkaGFzaFggAu2P+iPwLa9ICR6wJuXlXIHxnegY89ChPqMTkpzT3XZkbmFtZW5qdW1iZiBtYW5pZmVzdGpleGNsdXNpb25zgaJlc3RhcnQYIWZsZW5ndGgZFooAAAI+anVtYgAAACdqdW1kYzJjbAARABCAAACqADibcQNjMnBhLmNsYWltLnYyAAAAAg9jYm9ypWNhbGdmc2hhMjU2aXNpZ25hdHVyZXhNc2VsZiNqdW1iZj0vYzJwYS91cm46YzJwYToxMWI1ZmRjMy03OWRjLTRiM2YtYWQ4YS05NzhiMTIzYjM2ZGIvYzJwYS5zaWduYXR1cmVqaW5zdGFuY2VJRHgseG1wOmlpZDoxYTI0MDY2Zi01Yjc4LTRjZDAtOGIwNi1mM2IyNDk5ZGQ0NzFyY3JlYXRlZF9hc3NlcnRpb25zg6JjdXJseC1zZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmluZ3JlZGllbnQudjNkaGFzaFggK3tqfTJHcxPA1PvyDK4SPOhp+WSxV36pn/mZ3jF2ev6iY3VybHgqc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5hY3Rpb25zLnYyZGhhc2hYIBy1eS51p/Esuk4yFgVXGX2MAn4Lkf1F9e2wpqpfN5duomN1cmx4KXNlbGYjanVtYmY9YzJwYS5hc3NlcnRpb25zL2MycGEuaGFzaC5kYXRhZGhhc2hYIFoccC6Bl2kVk4C7ZeJ6iQMEGGlznBW3tj19IW+kiVcgdGNsYWltX2dlbmVyYXRvcl9pbmZvo2RuYW1lb0FudGhyb3BpYyBGaWxlc2d2ZXJzaW9uZTEuMC4wa3NwZWNWZXJzaW9uZTIuNC4wAAAQOGp1bWIAAAAoanVtZGMyY3MAEQAQgAAAqgA4m3EDYzJwYS5zaWduYXR1cmUAAAAQCGNib3LShFkCEqIBJhghWQIKMIICBjCCAY2gAwIBAgIUQOWgCu7COdC+uIP6BkIFPWdVEwAwCgYIKoZIzj0EAwMwSTEXMBUGA1UEChMOQW50aHJvcGljLCBQQkMxLjAsBgNVBAMTJUFudGhyb3BpYyBDb250ZW50IENyZWRlbnRpYWxzIFJvb3QgQ0EwHhcNMjYwODA3MTg0MzU2WhcNMjgwODA2MTk0MzU2WjBEMRcwFQYDVQQKEw5BbnRocm9waWMsIFBCQzEpMCcGA1UEAxMgQW50aHJvcGljIENsYXVkZSBDb250ZW50IFNpZ25pbmcwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASYegpry1AYBRTVNL1CpTlbROnY3dey+UrsF9C3phYrATN3ZHf93Mo8RQN0KOUuOn19P4oWNFWe5n2/She9N7eTo1gwVjAOBgNVHQ8BAf8EBAMCB4AwFQYDVR0lBA4wDAYKKwYBBAGD6F4CATAMBgNVHRMBAf8EAjAAMB8GA1UdIwQYMBaAFM5R4gSBTmRbI/jjxM+aPpzB11zCMAoGCCqGSM49BAMDA2cAMGQCMDFzHRSeAXrSy1WOzkbhPZ6Km2wGTmZ/2gK18k8BQGXyqz88Rdrz6CTX9flAnYNVxgIwcF9c3fVhqmJKpi+UhasNUMko69cyX6STPfta3Q8EjyzDjzoyrol46FP6VFHhvUcJoWNwYWRZDZ4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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" alt="" style="width:16px;height:16px;vertical-align:-3px;border-radius:4px;margin-right:3px;"><span id="kycMainLabelText">KYC</span></button>
+        <!-- 🎯 KYC Result quick-jump — relocated here (Sep 8 2026, Tamil
+        instruction) to sit right next to 🪪 KYC itself; same id/handler as
+        before (jumpToKycResult), only its DOM position moved. -->
+        <button type="button" id="kycResultJumpBtn" title="🪪 KYC Result-ஐ நேரடியாக காட்டும் (Scroll தேவையில்லை)" style="flex-shrink:0; white-space:nowrap; padding:8px 10px; border-radius:8px; border:1px solid #9333ea; background:#fff; color:#9333ea; font-weight:800; font-size:0.68rem; cursor:pointer; display:flex; align-items:center; gap:3px;">🪪 KYC Result <span id="kycResultCountBadge" style="background:#9333ea; color:#fff; border-radius:8px; padding:1px 2px; font-size:0.62rem; font-weight:800; width:26px; display:inline-block; text-align:center; box-sizing:border-box; flex-shrink:0;">0</span></button>
+        <button type="button" id="kycResultToggleBtn" title="Maximize/Minimize" style="flex-shrink:0; width:26px; padding:8px 0; border-radius:8px; border:1px solid #9333ea; background:#9333ea; color:#fff; font-weight:900; font-size:0.7rem; cursor:pointer;">▸</button>
         <button type="button" id="uploadExtractChooseJdBtn" class="tool-btn" style="flex:1; min-width:100px; background:#0369a1; color:#fff; border-color:#0369a1;">📇 Just Dial</button>
         <button type="button" id="uploadExtractChooseConsolidatedBtn" class="tool-btn" style="flex:1; min-width:100px; background:#0f766e; color:#fff; border-color:#0f766e;"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAWfmNhQlgAABZ+anVtYgAAAB5qdW1kYzJwYQARABCAAACqADibcQNjMnBhAAAAFlhqdW1iAAAAR2p1bWRjMm1hABEAEIAAAKoAOJtxA3VybjpjMnBhOjExYjVmZGMzLTc5ZGMtNGIzZi1hZDhhLTk3OGIxMjNiMzZkYgAAAAOTanVtYgAAAClqdW1kYzJhcwARABCAAACqADibcQNjMnBhLmFzc2VydGlvbnMAAAAAuGp1bWIAAABEanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5pbmdyZWRpZW50LnYzAAAAABhjMnNoDmAAKzN2yXxQzTGYksfUkAAAAGxjYm9yo2lkYzpmb3JtYXRpaW1hZ2UvcG5namluc3RhbmNlSUR4LHhtcDppaWQ6MzM3ZGZkZTMtYzBlMi00MjNlLWFmZTYtYjdhY2I5YzhkMzdhbHJlbGF0aW9uc2hpcGhwYXJlbnRPZgAAAeJqdW1iAAAAQWp1bWRjYm9yABEAEIAAAKoAOJtxE2MycGEuYWN0aW9ucy52MgAAAAAYYzJzaLfgx684jZyD3d78SYKmoxoAAAGZY2JvcqJnYWN0aW9uc4KiZmFjdGlvbmtjMnBhLm9wZW5lZGpwYXJhbWV0ZXJzoWtpbmdyZWRpZW50c4GiY3VybHgtc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5pbmdyZWRpZW50LnYzZGhhc2hYICt7an0yR3MTwNT78gyuEjzoaflksVd+qZ/5md4xdnr+pGZhY3Rpb254HWNvbS5hbnRocm9waWMuY2xhdWRlLnByb3ZpZGVkanBhcmFtZXRlcnOheB9jb20uYW50aHJvcGljLm9yaWdpbi1jb25maWRlbmNlZ3Vua25vd25rZGVzY3JpcHRpb254ZkNsYXVkZSBwcm92aWRlZCB0aGlzIGZpbGUgYXQgdGhlIHJlcXVlc3Qgb2YgYSB1c2VyIGFuZCBtYXkgaGF2ZSBjcmVhdGVkIG9yIG1vZGlmaWVkIHRoZSBmaWxlIGNvbnRlbnRzLm1zb2Z0d2FyZUFnZW50oWRuYW1lZkNsYXVkZXJhbGxBY3Rpb25zSW5jbHVkZWT1AAAAyGp1bWIAAABAanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5oYXNoLmRhdGEAAAAAGGMyc2iyMI2maVweByTqKJFK8peYAAAAgGNib3KlY2FsZ2ZzaGEyNTZjcGFkTQAAAAAAAAAAAAAAAABkaGFzaFggAu2P+iPwLa9ICR6wJuXlXIHxnegY89ChPqMTkpzT3XZkbmFtZW5qdW1iZiBtYW5pZmVzdGpleGNsdXNpb25zgaJlc3RhcnQYIWZsZW5ndGgZFooAAAI+anVtYgAAACdqdW1kYzJjbAARABCAAACqADibcQNjMnBhLmNsYWltLnYyAAAAAg9jYm9ypWNhbGdmc2hhMjU2aXNpZ25hdHVyZXhNc2VsZiNqdW1iZj0vYzJwYS91cm46YzJwYToxMWI1ZmRjMy03OWRjLTRiM2YtYWQ4YS05NzhiMTIzYjM2ZGIvYzJwYS5zaWduYXR1cmVqaW5zdGFuY2VJRHgseG1wOmlpZDoxYTI0MDY2Zi01Yjc4LTRjZDAtOGIwNi1mM2IyNDk5ZGQ0NzFyY3JlYXRlZF9hc3NlcnRpb25zg6JjdXJseC1zZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmluZ3JlZGllbnQudjNkaGFzaFggK3tqfTJHcxPA1PvyDK4SPOhp+WSxV36pn/mZ3jF2ev6iY3VybHgqc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5hY3Rpb25zLnYyZGhhc2hYIBy1eS51p/Esuk4yFgVXGX2MAn4Lkf1F9e2wpqpfN5duomN1cmx4KXNlbGYjanVtYmY9YzJwYS5hc3NlcnRpb25zL2MycGEuaGFzaC5kYXRhZGhhc2hYIFoccC6Bl2kVk4C7ZeJ6iQMEGGlznBW3tj19IW+kiVcgdGNsYWltX2dlbmVyYXRvcl9pbmZvo2RuYW1lb0FudGhyb3BpYyBGaWxlc2d2ZXJzaW9uZTEuMC4wa3NwZWNWZXJzaW9uZTIuNC4wAAAQOGp1bWIAAAAoanVtZGMyY3MAEQAQgAAAqgA4m3EDYzJwYS5zaWduYXR1cmUAAAAQCGNib3LShFkCEqIBJhghWQIKMIICBjCCAY2gAwIBAgIUQOWgCu7COdC+uIP6BkIFPWdVEwAwCgYIKoZIzj0EAwMwSTEXMBUGA1UEChMOQW50aHJvcGljLCBQQkMxLjAsBgNVBAMTJUFudGhyb3BpYyBDb250ZW50IENyZWRlbnRpYWxzIFJvb3QgQ0EwHhcNMjYwODA3MTg0MzU2WhcNMjgwODA2MTk0MzU2WjBEMRcwFQYDVQQKEw5BbnRocm9waWMsIFBCQzEpMCcGA1UEAxMgQW50aHJvcGljIENsYXVkZSBDb250ZW50IFNpZ25pbmcwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASYegpry1AYBRTVNL1CpTlbROnY3dey+UrsF9C3phYrATN3ZHf93Mo8RQN0KOUuOn19P4oWNFWe5n2/She9N7eTo1gwVjAOBgNVHQ8BAf8EBAMCB4AwFQYDVR0lBA4wDAYKKwYBBAGD6F4CATAMBgNVHRMBAf8EAjAAMB8GA1UdIwQYMBaAFM5R4gSBTmRbI/jjxM+aPpzB11zCMAoGCCqGSM49BAMDA2cAMGQCMDFzHRSeAXrSy1WOzkbhPZ6Km2wGTmZ/2gK18k8BQGXyqz88Rdrz6CTX9flAnYNVxgIwcF9c3fVhqmJKpi+UhasNUMko69cyX6STPfta3Q8EjyzDjzoyrol46FP6VFHhvUcJoWNwYWRZDZ4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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" alt="" style="width:16px;height:16px;vertical-align:-3px;border-radius:4px;margin-right:3px;"><span id="consMainLabelText">Consolidated Document</span></button>
+        <!-- 🎯 Consolidated Result quick-jump — relocated here (Sep 8 2026,
+        Tamil instruction) to sit right next to 🗂️ Consolidated Document
+        itself; same id/handler as before (jumpToConsResult), only its DOM
+        position moved. -->
+        <button type="button" id="consResultJumpBtn" title="🗂️ Consolidate Result-ஐ நேரடியாக காட்டும் (Scroll தேவையில்லை)" style="flex-shrink:0; white-space:nowrap; padding:8px 10px; border-radius:8px; border:1px solid #0f766e; background:#fff; color:#0f766e; font-weight:800; font-size:0.68rem; cursor:pointer; display:flex; align-items:center; gap:3px;">🗂️ Consolidate Result <span id="consResultCountBadge" style="background:#0f766e; color:#fff; border-radius:8px; padding:1px 2px; font-size:0.62rem; font-weight:800; width:26px; display:inline-block; text-align:center; box-sizing:border-box; flex-shrink:0;">0</span></button>
+        <button type="button" id="consResultToggleBtn" title="Maximize/Minimize" style="flex-shrink:0; width:26px; padding:8px 0; border-radius:8px; border:1px solid #0f766e; background:#0f766e; color:#fff; font-weight:900; font-size:0.7rem; cursor:pointer;">▸</button>
       </div>
       <!-- 📊📑📇 Maximize/Minimize for the remaining 3 icons — explicit
       user instruction (Aug 31, 2026, Tamil): "6 ஐகான்களுக்கும்
@@ -2043,9 +2039,40 @@ whatever is scrolled underneath them. -->
        row needed), in the sticky slot the backup buttons vacated above.
        Same openEmiCalculator() function, now also builds/shares a full
        EMI chart (amortization schedule) — see emiCalcOverlay below. -->
-  <div style="position:sticky; top:8px; z-index:9996; margin-bottom:10px; pointer-events:none;">
+  <!-- 🔀 v350 relocation (explicit user instruction, Sep 8 2026, Tamil,
+  drawn on a screenshot): the 📣 Promo Run / 📥 WhatsApp Upload / 📞 Calls
+  row (previously its own sticky row at top:60px, sitting BELOW the 🧮 EMI
+  Calculator launcher and overlapping the Mobile field of the first
+  business row) must instead sit in the SAME horizontal row as the 🧮 EMI
+  Calculator launcher, side-by-side. Merged what used to be two separate
+  sticky <div>s into one single sticky flex row (top:8px) containing the
+  EMI Calculator button followed by the three icons, wrapped if the row
+  ever runs out of width. Every element keeps its exact original id,
+  size, and click handler (emiCalcLauncherBtn / startPromoRunBtn /
+  builderFunnelBtn / builderActiveDot / floatingWaUploadBtn /
+  callRateBadge / callTrackerTotalMini / callTrackerTargetMini) — only
+  the DOM nesting/position changed, zero JS changes needed. -->
+  <div style="position:sticky; top:8px; z-index:9996; margin-bottom:10px; display:flex; align-items:center; flex-wrap:wrap; gap:10px; pointer-events:none;">
     <button type="button" id="emiCalcLauncherBtn" title="Indian EMI Calculator" style="pointer-events:auto; padding:10px 16px; border-radius:24px; background:#0f766e; color:#fff; border:3px solid #fff; box-shadow:0 3px 10px rgba(0,0,0,0.35); display:inline-flex; align-items:center; gap:6px; font-weight:800; font-size:0.8rem; cursor:pointer;">
       <span style="font-size:1.05rem;">🧮</span> EMI Calculator
+    </button>
+
+    <div id="promoRunFloatWrap" style="pointer-events:auto; position:relative;">
+      <button type="button" id="startPromoRunBtn" title="📣 WhatsApp Promo Run" style="width:56px; height:56px; border-radius:50%; background:#16a34a; color:#fff; border:3px solid #fff; box-shadow:0 3px 10px rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; flex-direction:column; font-weight:800; line-height:1; padding:0; cursor:pointer;">
+        <span style="font-size:1.1rem;">📣</span>
+        <span style="font-size:0.46rem;">Promo Run</span>
+      </button>
+      <button type="button" id="builderFunnelBtn" title="9 கேட்டகரி — தேர்வு செய்யவும்" style="position:absolute; bottom:-4px; right:-4px; width:24px; height:24px; border-radius:50%; background:#0f172a; color:#fff; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.35); font-size:11px; font-weight:900; line-height:1; padding:0; cursor:pointer; display:flex; align-items:center; justify-content:center;">▼</button>
+      <span id="builderActiveDot" title="WhatsApp/SMS-க்கு போய் இருக்கீங்க — திரும்ப வந்தவுடன் தானாக மறையும்" style="display:none; position:absolute; top:-4px; left:-4px; width:14px; height:14px; border-radius:50%; background:#22c55e; border:2px solid #fff; box-shadow:0 0 0 1px #000; z-index:3;"></span>
+    </div>
+
+    <button type="button" id="floatingWaUploadBtn" title="Upload from WhatsApp — 📄 Upload &amp; Extract chooser-ஐ Open பண்ணி மேலே Scroll பண்ணும்" style="pointer-events:auto; width:34px; height:34px; border-radius:50%; background:#25D366; color:#fff; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; font-weight:800; line-height:1; padding:0; cursor:pointer;">
+      <span style="font-size:0.85rem;">📥</span>
+    </button>
+
+    <button type="button" id="callRateBadge" title="Calls Today — tap to add today's calls" style="pointer-events:auto; width:34px; height:34px; border-radius:50%; background:#0f766e; color:#fff; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; flex-direction:column; font-weight:800; line-height:1; padding:0; cursor:pointer;">
+      <span style="font-size:0.42rem;">📞</span>
+      <span style="font-size:0.44rem;"><span id="callTrackerTotalMini">0</span>/<span id="callTrackerTargetMini">1000</span></span>
     </button>
   </div>
   <!-- 🔼 Maximize Main Page — explicit user instruction (Sep 2026): moved
@@ -2219,9 +2246,69 @@ whatever is scrolled underneath them. -->
       }
     });
   }
-  var rcResultJumpBtn = document.getElementById('rcResultJumpBtn');
-  if(rcResultJumpBtn) rcResultJumpBtn.addEventListener('click', function(){
+  // 🔢 Result count badges — explicit user instruction (Sep 8 2026, Tamil):
+  // "ரிசல்ட் ஐகான் உள்ளேயே எத்தனை ரிசல்ட் இதுவரை கொடுத்தது என்று வரவேண்டும்"
+  // — a small numeric badge on 🛡️ RC Result / 🪪 KYC Result / 🗂️ Consolidate
+  // Result showing the live total record count for each, so the count is
+  // visible without even tapping in. Called at startup and re-called from
+  // refreshUploadExtractStrikeRateBadge() (already fired after every RC/
+  // KYC/Consolidated scan or save throughout the app) plus every time one
+  // of these Result buttons itself is opened/closed below.
+  async function refreshResultCountBadges(){
     try{
+      const rcBadge = document.getElementById('rcResultCountBadge');
+      if(rcBadge) rcBadge.textContent = (typeof insuranceOcrExtractQueue !== 'undefined' && Array.isArray(insuranceOcrExtractQueue)) ? insuranceOcrExtractQueue.length : '0';
+    }catch(e){}
+    try{
+      const kycBadge = document.getElementById('kycResultCountBadge');
+      if(kycBadge && typeof getKycRecords === 'function') kycBadge.textContent = (await getKycRecords()).length;
+    }catch(e){}
+    try{
+      const consBadge = document.getElementById('consResultCountBadge');
+      if(consBadge && typeof idbGetAllKeysWithPrefix === 'function' && typeof CONSOLIDATED_DOCS_PREFIX !== 'undefined'){
+        consBadge.textContent = (await idbGetAllKeysWithPrefix(CONSOLIDATED_DOCS_PREFIX)).length;
+      }
+    }catch(e){}
+  }
+  window.refreshResultCountBadges = refreshResultCountBadges;
+  // 🔼🔽 Keeps each ▸/▾ toggle arrow (rcResultToggleBtn/kycResultToggleBtn/
+  // consResultToggleBtn) in sync with its panel's actual visibility — ▾
+  // ("Minimize" — tap to close) when the panel is currently open, ▸
+  // ("Maximize" — tap to open) when it's currently closed. Called every
+  // time one of these panels' visibility changes below, so the arrow never
+  // gets stuck showing the wrong direction.
+  function syncResultToggleArrows(){
+    [
+      ['insuranceOcrExtractPanel', 'rcResultToggleBtn'],
+      ['kycOcrExtractPanel', 'kycResultToggleBtn'],
+      ['consolidatedDocPanel', 'consResultToggleBtn']
+    ].forEach(function(pair){
+      var panel = document.getElementById(pair[0]), arrowBtn = document.getElementById(pair[1]);
+      if(!panel || !arrowBtn) return;
+      var isOpen = panel.style.display !== 'none' && panel.style.display !== '';
+      arrowBtn.textContent = isOpen ? '▾' : '▸';
+      arrowBtn.title = isOpen ? 'Minimize' : 'Maximize';
+    });
+  }
+  window.syncResultToggleArrows = syncResultToggleArrows;
+  // 🎯 v349 (explicit user instruction, Sep 8 2026): double-tap-to-open
+  // now ALSO means double-tap-to-close — jumpToRcResult only ever fires
+  // on a genuine double-tap when called from rcResultJumpBtn (see the
+  // DBLTAP_SELECTOR guard further down the page), so if the panel is
+  // already open, that double-tap just hides it again instead of
+  // re-showing/re-rendering it. rcResultToggleBtn (the ▸/▾ arrow) calls
+  // this exact same function directly on a single tap — no double-tap
+  // guard on that id — since its icon already makes the action explicit.
+  async function jumpToRcResult(){
+    try{
+      var existingPanel = document.getElementById('insuranceOcrExtractPanel');
+      if(existingPanel && existingPanel.style.display !== 'none' && existingPanel.style.display !== ''){
+        existingPanel.style.display = 'none';
+        var existingBtn = document.getElementById('uploadExtractChooseRcBtn');
+        if(existingBtn) existingBtn.classList.remove('tool-btn-panel-open');
+        syncResultToggleArrows();
+        return;
+      }
       closeOtherUploadResultPanels('insuranceOcrExtractPanel');
       var panel = document.getElementById('insuranceOcrExtractPanel');
       var btn = document.getElementById('uploadExtractChooseRcBtn');
@@ -2239,11 +2326,25 @@ whatever is scrolled underneath them. -->
       if(btn) btn.classList.add('tool-btn-panel-open');
       expandUploadResultBodyIfMinimized('insuranceOcrExtractBody', 'insuranceOcrMinimizeBtn');
       scrollUploadResultPanelIntoView(panel);
-    }catch(e){ console.warn('rcResultJumpBtn failed', e); alert('⚠️ 🛡️ RC Result காட்டும்போது Error — Screenshot எடுத்து அனுப்புங்க.'); }
-  });
-  var kycResultJumpBtn = document.getElementById('kycResultJumpBtn');
-  if(kycResultJumpBtn) kycResultJumpBtn.addEventListener('click', async function(){
+      syncResultToggleArrows();
+      refreshResultCountBadges();
+    }catch(e){ console.warn('jumpToRcResult failed', e); alert('⚠️ 🛡️ RC Result காட்டும்போது Error — Screenshot எடுத்து அனுப்புங்க.'); }
+  }
+  var rcResultJumpBtn = document.getElementById('rcResultJumpBtn');
+  if(rcResultJumpBtn) rcResultJumpBtn.addEventListener('click', jumpToRcResult);
+  var rcResultToggleBtn = document.getElementById('rcResultToggleBtn');
+  if(rcResultToggleBtn) rcResultToggleBtn.addEventListener('click', jumpToRcResult);
+
+  async function jumpToKycResult(){
     try{
+      var existingKycPanel = document.getElementById('kycOcrExtractPanel');
+      if(existingKycPanel && existingKycPanel.style.display !== 'none' && existingKycPanel.style.display !== ''){
+        existingKycPanel.style.display = 'none';
+        var existingKycBtn = document.getElementById('uploadExtractChooseKycBtn');
+        if(existingKycBtn) existingKycBtn.classList.remove('tool-btn-panel-open');
+        syncResultToggleArrows();
+        return;
+      }
       closeOtherUploadResultPanels('kycOcrExtractPanel');
       var panel = document.getElementById('kycOcrExtractPanel');
       var btn = document.getElementById('uploadExtractChooseKycBtn');
@@ -2258,11 +2359,25 @@ whatever is scrolled underneath them. -->
       if(typeof renderKycOcrExtractPanel === 'function') await renderKycOcrExtractPanel('');
       expandUploadResultBodyIfMinimized('kycOcrExtractBody', 'kycOcrMinimizeBtn');
       scrollUploadResultPanelIntoView(panel);
-    }catch(e){ console.warn('kycResultJumpBtn failed', e); alert('⚠️ 🪪 KYC Result காட்டும்போது Error — Screenshot எடுத்து அனுப்புங்க.'); }
-  });
-  var consResultJumpBtn = document.getElementById('consResultJumpBtn');
-  if(consResultJumpBtn) consResultJumpBtn.addEventListener('click', async function(){
+      syncResultToggleArrows();
+      refreshResultCountBadges();
+    }catch(e){ console.warn('jumpToKycResult failed', e); alert('⚠️ 🪪 KYC Result காட்டும்போது Error — Screenshot எடுத்து அனுப்புங்க.'); }
+  }
+  var kycResultJumpBtn = document.getElementById('kycResultJumpBtn');
+  if(kycResultJumpBtn) kycResultJumpBtn.addEventListener('click', jumpToKycResult);
+  var kycResultToggleBtn = document.getElementById('kycResultToggleBtn');
+  if(kycResultToggleBtn) kycResultToggleBtn.addEventListener('click', jumpToKycResult);
+
+  async function jumpToConsResult(){
     try{
+      var existingConsPanel = document.getElementById('consolidatedDocPanel');
+      if(existingConsPanel && existingConsPanel.style.display !== 'none' && existingConsPanel.style.display !== ''){
+        existingConsPanel.style.display = 'none';
+        var existingConsBtn = document.getElementById('uploadExtractChooseConsolidatedBtn');
+        if(existingConsBtn) existingConsBtn.classList.remove('tool-btn-panel-open');
+        syncResultToggleArrows();
+        return;
+      }
       closeOtherUploadResultPanels('consolidatedDocPanel');
       var panel = document.getElementById('consolidatedDocPanel');
       var btn = document.getElementById('uploadExtractChooseConsolidatedBtn');
@@ -2281,8 +2396,22 @@ whatever is scrolled underneath them. -->
       try{ if(typeof renderConsolidatedManualDocList === 'function') await renderConsolidatedManualDocList(''); }catch(e){}
       expandUploadResultBodyIfMinimized('consolidatedDocBody', 'consolidatedDocMinimizeBtn');
       scrollUploadResultPanelIntoView(panel);
-    }catch(e){ console.warn('consResultJumpBtn failed', e); alert('⚠️ 🗂️ Consolidate Result காட்டும்போது Error — Screenshot எடுத்து அனுப்புங்க.'); }
-  });
+      syncResultToggleArrows();
+      refreshResultCountBadges();
+    }catch(e){ console.warn('jumpToConsResult failed', e); alert('⚠️ 🗂️ Consolidate Result காட்டும்போது Error — Screenshot எடுத்து அனுப்புங்க.'); }
+  }
+  var consResultJumpBtn = document.getElementById('consResultJumpBtn');
+  if(consResultJumpBtn) consResultJumpBtn.addEventListener('click', jumpToConsResult);
+  var consResultToggleBtn = document.getElementById('consResultToggleBtn');
+  if(consResultToggleBtn) consResultToggleBtn.addEventListener('click', jumpToConsResult);
+
+  // Initial paint — badge counts should be visible immediately, not only
+  // after the first scan/tap. insuranceOcrExtractQueue/getKycRecords may
+  // not have finished restoring from IndexedDB yet at this exact line, so
+  // this is re-run (see insuranceOcrQueueReadyPromise usage further below)
+  // once everything is actually loaded too.
+  refreshResultCountBadges();
+  syncResultToggleArrows();
 
   // 🧮 EMI Calculator launcher (scrolling page) — explicit user
   // instruction (Sep 3, 2026, Tamil). window.openEmiCalculator is
@@ -11126,10 +11255,16 @@ async function expandZipFiles(files, depth, onZipProgress){
   return out;
 }
 
+// 📦 Batch Number — explicit user instruction (Sep 8 2026, Tamil): every
+// scan run via this 📎 Business List upload icon is now tagged with a
+// running Batch Number, shown in the post-batch summary below, so the
+// person can tell which upload run produced which result count.
+let customerDocsUploadBatchNumber = 0;
 document.getElementById('financerDocsUploadInput').addEventListener('change', async (e) => {
   const files = Array.from(e.target.files || []);
   e.target.value = '';
   if(!files.length || !customerDocsBizId) return;
+  const thisBatchNumber = ++customerDocsUploadBatchNumber;
   // Captured now, at the moment upload starts — NOT re-read from the
   // live customerDocsBizId/customerDocsBizName globals inside the async
   // work below. If you switch to a different business's 📎 documents
@@ -11142,13 +11277,23 @@ document.getElementById('financerDocsUploadInput').addEventListener('change', as
   const addBtn = document.getElementById('financerDocsAddBtn');
   const oldLabel = addBtn.textContent;
   addBtn.disabled = true;
-  addBtn.textContent = '⏳ Extract + PDF-ஆக சேர்க்கிறது...';
+  addBtn.textContent = `⏳ Batch #${thisBatchNumber} — Extract + PDF-ஆக சேர்க்கிறது...`;
+  // 🎯 Fix (explicit user instruction, Sep 8 2026, Tamil): "படிக்கப்படுவது
+  // ஸ்கேனிங் பேட்ச் பேட்சாக செய்யப்படுவது, பேட்ச் நம்பருடன் RC Related/
+  // KYC Related/Consolidated Result தான் இடம்பெற வேண்டும்; எத்தனை Files
+  // உருவாகி உள்ளது என்பது மட்டும்தான் வரவேண்டும்" — before/after counts
+  // of the actual saved record stores (never Strike Rate/attempt counts)
+  // captured here so the summary alert below reports exactly how many
+  // NEW files this batch actually produced in each Result store.
+  const rcCountBefore = (typeof insuranceOcrExtractQueue !== 'undefined' && Array.isArray(insuranceOcrExtractQueue)) ? insuranceOcrExtractQueue.length : 0;
+  let kycCountBefore = 0;
+  try{ if(typeof getKycRecords === 'function') kycCountBefore = (await getKycRecords()).length; }catch(e){}
   try{
     const finalRecord = await mergeFilesIntoCustomerPdf(
       files,
       uploadBizName,
       (idx, total, name, secs) => {
-        if(customerDocsBizId === uploadBizId) addBtn.textContent = `⏳ Document ${idx}/${total}${secs ? ` (${secs}s…)` : ' — Type கண்டுபிடிக்கிறது...'}`;
+        if(customerDocsBizId === uploadBizId) addBtn.textContent = `⏳ Batch #${thisBatchNumber} — Document ${idx}/${total}${secs ? ` (${secs}s…)` : ' — Type கண்டுபிடிக்கிறது...'}`;
       },
       async (partialRecord) => {
         // Saved after EVERY file — see comment in mergeFilesIntoCustomerPdf.
@@ -11192,10 +11337,6 @@ document.getElementById('financerDocsUploadInput').addEventListener('change', as
         recordToSave.extractedText = (prevText ? prevText + ' ' : '') + newTextParts.join(' ');
       }
     }catch(e){ console.warn('Customer Documents extractedText persist failed', e); }
-    const bizIconSaveOk = await idbSetVerified(CUSTOMER_DOCS_PREFIX + uploadBizId, recordToSave);
-    if(!bizIconSaveOk){
-      alert('❌ Document-ஐ Phone-ல் Permanent-ஆ Save பண்ண முடியல்!\n\nகாரணம்: Phone Storage Full-ஆ இருக்கலாம்.\n\nசெய்ய வேண்டியது:\n• Phone Storage-ல Space Free பண்ணுங்க\n• குறைவான Photos-ஆ, சின்ன Batches-ஆ சேருங்க\n• மறுபடி Try பண்ணுங்க');
-    }
     // Only refresh the on-screen list if the overlay is still showing
     // THIS same business — otherwise leave whatever's currently visible
     // alone (the data is already safely saved either way).
@@ -11204,26 +11345,56 @@ document.getElementById('financerDocsUploadInput').addEventListener('change', as
       renderCustomerDocsList();
     }
     try{ if(typeof refreshRowDocBadges === 'function') refreshRowDocBadges(); }catch(e){}
-    // 🚫 Vehicle/scene photos (lorry, car, bike...) still got UPLOADED —
-    // just their OCR pass was skipped to save time (no document text to
-    // extract from a vehicle photo anyway). Let the person know which
-    // ones, so it's clear nothing was silently dropped from the PDF.
-    if(skippedOcrOnly && skippedOcrOnly.length){
-      alert(`📎 ${skippedOcrOnly.length} Image(s) Vehicle/Scene Photo போல தெரிந்ததால் OCR Scan மட்டும் Skip செய்யப்பட்டது (Image PDF-ல் சேர்க்கப்பட்டுள்ளது, ஒன்றும் விடுபடவில்லை):\n\n${skippedOcrOnly.join('\n')}`);
+    // 🎯 Batch Result Summary — explicit user instruction (Sep 8 2026,
+    // Tamil): "ஸ்கேன் செய்து ரிசல்ட் கொடுக்கும்போது எந்தவிதமான Popup-உம்
+    // வரக்கூடாது, பில் தோன்றுவதைப் போல ஆட்டோமேட்டிக்கா ஸ்கிப் ஆக வேண்டும்"
+    // — every routine end-of-batch info line (Vehicle/Scene skip count,
+    // Duplicate skip count, Non-embeddable skip count, RC/KYC/Consolidated
+    // totals) used to be its own separate alert(), each needing an "OK"
+    // tap before the next one even showed. All of that is now folded into
+    // ONE toast (showTnPinToastGlobal) that appears and auto-dismisses on
+    // its own — no tap needed, never blocks the next scan. Only a
+    // genuine, actionable failure (Phone Storage full below) still uses a
+    // real alert(), since that one needs the person to actually do
+    // something about it, not just glance at a receipt.
+    // consolidateCustomerDocumentsForMobile is run here (best-effort, for
+    // this business's own mobile only) BEFORE the Consolidated count is
+    // read, so a freshly-scanned RC/KYC document that matches this
+    // business's Mobile Number is reflected immediately instead of
+    // waiting for 🗂️ Consolidate Result to be tapped.
+    try{
+      const rcCountAfter = (typeof insuranceOcrExtractQueue !== 'undefined' && Array.isArray(insuranceOcrExtractQueue)) ? insuranceOcrExtractQueue.length : 0;
+      let kycCountAfter = 0;
+      try{ if(typeof getKycRecords === 'function') kycCountAfter = (await getKycRecords()).length; }catch(e){}
+      const bizMobiles = (data.find(d => d.id === uploadBizId) || {}).mobiles || [];
+      if(bizMobiles[0] && typeof consolidateCustomerDocumentsForMobile === 'function'){
+        try{ await consolidateCustomerDocumentsForMobile(bizMobiles[0]); }catch(e){}
+      }
+      let consCountAfter = null;
+      try{ if(typeof idbGetAllKeysWithPrefix === 'function' && typeof CONSOLIDATED_DOCS_PREFIX !== 'undefined') consCountAfter = (await idbGetAllKeysWithPrefix(CONSOLIDATED_DOCS_PREFIX)).length; }catch(e){}
+      const rcNew = rcCountAfter - rcCountBefore;
+      const kycNew = kycCountAfter - kycCountBefore;
+      const noRecogCount = files.length - (skippedOcrOnly ? skippedOcrOnly.length : 0) - (skippedDuplicates ? skippedDuplicates.length : 0) - (skippedNonEmbeddable ? skippedNonEmbeddable.length : 0) - Math.max(rcNew, 0) - Math.max(kycNew, 0);
+      const toastBits = [
+        `📦 Batch #${thisBatchNumber}: 🛡️${rcCountAfter} (+${Math.max(rcNew,0)})`,
+        `🪪${kycCountAfter} (+${Math.max(kycNew,0)})`,
+        consCountAfter !== null ? `🗂️${consCountAfter}` : null,
+        !bizMobiles[0] ? '⚠️Mobile இல்ல' : null,
+        noRecogCount > 0 ? `⚠️${noRecogCount} Unrecognized` : null
+      ].filter(Boolean);
+      if(typeof showTnPinToastGlobal === 'function') showTnPinToastGlobal(toastBits.join(' · '));
+      try{ if(typeof refreshResultCountBadges === 'function') await refreshResultCountBadges(); }catch(e){}
+    }catch(e){ console.warn('Batch #' + thisBatchNumber + ' summary failed', e); }
+    const bizIconSaveOk = await idbSetVerified(CUSTOMER_DOCS_PREFIX + uploadBizId, recordToSave);
+    if(!bizIconSaveOk){
+      alert('❌ Document-ஐ Phone-ல் Permanent-ஆ Save பண்ண முடியல்!\n\nகாரணம்: Phone Storage Full-ஆ இருக்கலாம்.\n\nசெய்ய வேண்டியது:\n• Phone Storage-ல Space Free பண்ணுங்க\n• குறைவான Photos-ஆ, சின்ன Batches-ஆ சேருங்க\n• மறுபடி Try பண்ணுங்க');
     }
-    // 🔁 Exact-content duplicates — these were NOT added a second time.
-    // Auto-Skip stays exactly as before; a Side-by-Side Image Compare
-    // (Old vs New) popup is shown right after, so the skip isn't just a
-    // filename in an alert().
-    if(skippedDuplicates && skippedDuplicates.length){
-      alert(`🔁 ${skippedDuplicates.length} File(s) இந்த Business-க்கு ஏற்கனவே Upload ஆகி இருந்தது (அதே Content) — Duplicate-ஆக மறுபடி சேர்க்கப்படவில்லை:\n\n${skippedDuplicates.join('\n')}`);
-      if(duplicateCompareItems && duplicateCompareItems.length) buildDuplicateCompareModal(duplicateCompareItems, recordToSave.blob, 'Customer Documents');
-    }
-    // 🚫 File formats that can't be rendered into a PDF page (xlsx/csv/
-    // doc/docx) — completely skipped, no placeholder page/text added.
-    if(skippedNonEmbeddable && skippedNonEmbeddable.length){
-      alert(`⚠️ ${skippedNonEmbeddable.length} File(s) PDF-ல் சேர்க்க முடியல் (Old .doc Format அல்லது Convert பண்ணும்போது Error) — Original File-ஐ தனியா பாக்கவும்:\n\n${skippedNonEmbeddable.join('\n')}`);
-    }
+    // 🔁 Exact-content duplicates — these were NOT added a second time
+    // (Auto-Skip). The Side-by-Side Image Compare modal (an actual
+    // decision UI, not a routine info popup) still opens so an old vs new
+    // duplicate can be reviewed if genuinely needed — the plain info
+    // alert() that used to precede it is gone, folded into the toast above.
+    if(duplicateCompareItems && duplicateCompareItems.length) buildDuplicateCompareModal(duplicateCompareItems, recordToSave.blob, 'Customer Documents');
   }catch(err){
     alert(pdfMergeErrorToTamil(err));
   }finally{
@@ -12265,7 +12436,29 @@ function refreshRowInPlace(id){
   if(!item) return;
   const stillMatchesFilter = filterData(searchBox.value).some(d => d.id === id);
   if(!stillMatchesFilter){
+    // 🐛 CRITICAL Fix (explicit user instruction, Sep 8 2026, Tamil): "நான்
+    // ஒரு பிசினஸ் லிஸ்ட்டை Edit செய்து Data-ஐ Edit செய்தால் அது மூன்று
+    // நான்கு பேருக்கு மேலே சென்று விடுகிறது" — when the just-saved row
+    // drops out of the CURRENT filter (e.g. "Unedited" filter, right
+    // after touchEdited marks this row Edited a moment ago), the old code
+    // re-rendered the whole list and left the scroll position exactly
+    // where it was in PIXELS — with this one row now missing, everything
+    // below shifts up to fill the gap, so whatever business happened to
+    // land at that same pixel offset is now several rows past where the
+    // person was actually working, forcing a manual scroll-back every
+    // single save. Captured here (before the re-render removes this row)
+    // is the id of the very next row directly below it — after
+    // re-rendering, THAT row is scrolled into the exact same spot, so the
+    // person lands precisely on the next business to work on, never
+    // several rows ahead of it.
+    const oldRowElForJumpFix = tbody.querySelector(`tr[data-id="${id}"]`);
+    const nextRowElForJumpFix = oldRowElForJumpFix ? oldRowElForJumpFix.nextElementSibling : null;
+    const nextRowIdForJumpFix = (nextRowElForJumpFix && nextRowElForJumpFix.dataset) ? nextRowElForJumpFix.dataset.id : null;
     render(filterData(searchBox.value), Math.max(shownCount, PAGE_SIZE));
+    if(nextRowIdForJumpFix){
+      const landedRowForJumpFix = tbody.querySelector(`tr[data-id="${nextRowIdForJumpFix}"]`);
+      if(landedRowForJumpFix) landedRowForJumpFix.scrollIntoView({ behavior: 'auto', block: 'center' });
+    }
     return;
   }
   const idxInList = currentList.findIndex(d => d.id === id);
@@ -13614,6 +13807,15 @@ bothListsAddEventListener('click', (e) => {
   if(!item) return;
   commitPendingRowEdits(tr, item);
 
+  // 🐛 Fix (explicit user instruction, Sep 8 2026, Tamil — same "jumping"
+  // bug fixed in saveRow/refreshRowInPlace above): captured BEFORE the
+  // reschedule moves this row elsewhere in the date-sorted list, so the
+  // person can be scrolled back to the very next business directly below
+  // where they were, instead of following the just-rescheduled row to its
+  // new (usually much later) date position.
+  const nextRowElBeforeResched = tr.nextElementSibling;
+  const nextRowIdBeforeResched = (nextRowElBeforeResched && nextRowElBeforeResched.dataset) ? nextRowElBeforeResched.dataset.id : null;
+
   const oldCode = postponeWatchDateCode(item.name);
   const newCode = dateCode6(shiftedDate(btn.dataset.shift));
   const m = DATE_TAG_PATT.exec(item.name);
@@ -13638,11 +13840,20 @@ bothListsAddEventListener('click', (e) => {
 
   resortDataByDateTag();
   render(filterData(searchBox.value), Math.max(shownCount, PAGE_SIZE));
-  const movedRow = tbody.querySelector(`tr[data-id="${id}"]`);
-  if(movedRow){
-    movedRow.classList.add('saved-flash');
-    setTimeout(() => movedRow.classList.remove('saved-flash'), 900);
-    movedRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  // Follow the NEXT business captured above, not the one just rescheduled
+  // away — keeps the work position steady instead of jumping ahead.
+  const landedNextRowResched = nextRowIdBeforeResched ? tbody.querySelector(`tr[data-id="${nextRowIdBeforeResched}"]`) : null;
+  if(landedNextRowResched){
+    landedNextRowResched.classList.add('saved-flash');
+    setTimeout(() => landedNextRowResched.classList.remove('saved-flash'), 900);
+    landedNextRowResched.scrollIntoView({ behavior: 'auto', block: 'center' });
+  } else {
+    const movedRow = tbody.querySelector(`tr[data-id="${id}"]`);
+    if(movedRow){
+      movedRow.classList.add('saved-flash');
+      setTimeout(() => movedRow.classList.remove('saved-flash'), 900);
+      movedRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   }
 });
 
@@ -13966,6 +14177,17 @@ function saveRow(tr){
   const item = data.find(d => d.id === id);
   if(!item) return;
 
+  // 🐛 Fix (explicit user instruction, Sep 8 2026, Tamil — same "jumping"
+  // bug as refreshRowInPlace above): captured BEFORE any edit/resort/
+  // re-render below, so if this Save moves/removes the current row (date
+  // tag changed → resorted elsewhere, or Edited → filtered out of an
+  // "Unedited" view), the person can be scrolled back to the next
+  // business directly below where they were, instead of following the
+  // just-saved row to wherever it moved (or landing wherever the page
+  // happens to sit after the list shifts).
+  const nextRowElBeforeSave = tr.nextElementSibling;
+  const nextRowIdBeforeSave = (nextRowElBeforeSave && nextRowElBeforeSave.dataset) ? nextRowElBeforeSave.dataset.id : null;
+
   const oldDateCodeMatch = DATE_TAG_PATT.exec(item.name);
   const oldDateCode = oldDateCodeMatch ? oldDateCodeMatch[2] : null;
 
@@ -14005,16 +14227,38 @@ function saveRow(tr){
     // already sits), then re-render so the move is actually visible.
     resortDataByDateTag();
     render(filterData(searchBox.value), Math.max(shownCount, PAGE_SIZE));
+    // 🐛 Fix (see nextRowIdBeforeSave note above): follow the NEXT
+    // business captured before this Save, not the one that just moved
+    // away to its new date — that keeps the work position steady instead
+    // of jumping several rows every time a date gets edited.
+    const landedNextRow = nextRowIdBeforeSave ? tbody.querySelector(`tr[data-id="${nextRowIdBeforeSave}"]`) : null;
+    if(landedNextRow){
+      landedNextRow.classList.add('saved-flash');
+      setTimeout(() => landedNextRow.classList.remove('saved-flash'), 900);
+      landedNextRow.scrollIntoView({ behavior: 'auto', block: 'center' });
+      return;
+    }
+    // No next row (this was the last one in the list) — fall back to
+    // showing where the edited business itself landed, same as before.
+    const movedRow = tbody.querySelector(`tr[data-id="${id}"]`);
+    if(movedRow){
+      movedRow.classList.add('saved-flash');
+      setTimeout(() => movedRow.classList.remove('saved-flash'), 900);
+      movedRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    return;
   } else {
     refreshRowInPlace(id);
   }
 
-  // brief visual confirmation on the freshly refreshed row
+  // brief visual confirmation on the freshly refreshed row (only reached
+  // when the date tag did NOT change — refreshRowInPlace above already
+  // handles its own scroll-position fix internally when this row drops
+  // out of the active filter).
   const newRow = tbody.querySelector(`tr[data-id="${id}"]`);
   if(newRow){
     newRow.classList.add('saved-flash');
     setTimeout(() => newRow.classList.remove('saved-flash'), 900);
-    if(dateTagChanged) newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 }
 
@@ -15333,6 +15577,137 @@ async function ocrRecognize(imageInput, workerIndex){
   return { data: tesseractResult.data, engine: 'Tesseract', visionError };
 }
 
+
+// ---------- 📤📥 Backup Save/Restore for ALL Upload Icons — explicit user
+// instruction (Sep 8 2026, Tamil): every actual scanned Photo/PDF FILE
+// (not just text metadata — the existing 🛡️/🪪/🗂️ Backup Save buttons only
+// ever exported text) uploaded anywhere in the Business List, packaged
+// into one ZIP with a manifest so Restore can put every file back under
+// its exact original IndexedDB key. ----------
+// Every prefix that stores an actual document/blob record anywhere in the
+// app — adding a new upload feature later just means adding its prefix
+// here, nothing else changes.
+const ALL_UPLOAD_DOC_PREFIXES = [
+  { prefix: 'customer_docs_', label: '📎 Customer Documents' },
+  { prefix: 'financer_docs_', label: '🏦 Financer Documents' },
+  { prefix: 'insurance_docs_', label: '🛡️ Insurance Documents' },
+  { prefix: 'insurance_quotation_', label: '📑 Insurance Quotation' },
+  { prefix: 'insurance_regn_docs_', label: '🛡️ RC/Insurance (per Registration Number)' },
+  { prefix: 'consolidated_customer_docs_', label: '🗂️ Consolidated (Auto)' },
+  { prefix: 'consolidated_manual_docs_', label: '🗂️ Consolidated (Manual Upload)' },
+  { prefix: 'kyc_person_docs_', label: '🪪 KYC (per Person)' }
+];
+async function backupAllUploadDocuments(onProgress){
+  const zip = new JSZip();
+  const manifest = [];
+  let totalFiles = 0, totalBytes = 0;
+  for(const { prefix, label } of ALL_UPLOAD_DOC_PREFIXES){
+    let keys = [];
+    try{ keys = await idbGetAllKeysWithPrefix(prefix); }catch(e){ console.warn('backupAllUploadDocuments: key list failed for', prefix, e); continue; }
+    for(const key of keys){
+      let rec = null;
+      try{ const r = await idbGet(key); rec = (r && r.value) ? r.value : null; }catch(e){}
+      if(!rec || !rec.blob) continue;
+      const { blob, ...metaWithoutBlob } = rec;
+      const zipPath = `${prefix}/${key.slice(prefix.length)}.bin`;
+      try{
+        zip.file(zipPath, blob);
+        manifest.push({ key, prefix, label, zipPath, meta: metaWithoutBlob, blobType: blob.type || '' });
+        totalFiles++;
+        totalBytes += blob.size || 0;
+      }catch(e){ console.warn('backupAllUploadDocuments: zip.file failed for', key, e); }
+      if(onProgress) onProgress(totalFiles, label);
+      // Yield to the UI every so often — thousands of documents would
+      // otherwise freeze the tab for the whole loop.
+      if(totalFiles % 25 === 0) await new Promise(r => setTimeout(r, 0));
+    }
+  }
+  zip.file('manifest.json', JSON.stringify({ createdAt: new Date().toISOString(), totalFiles, totalBytes, entries: manifest }, null, 2));
+  return { zip, totalFiles, totalBytes };
+}
+document.getElementById('backupAllUploadsBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('backupAllUploadsBtn');
+  const oldLabel = btn.textContent;
+  // ⚠️ A deliberate, potentially very large/slow one-time export (every
+  // scanned Photo/PDF across the whole Business List) — a confirm() here
+  // is appropriate (unlike routine scan-completion popups elsewhere in
+  // this app, which were removed per explicit instruction) since this is
+  // a rare, heavy action the person is choosing to start, not a result
+  // of ordinary work.
+  if(!confirm('📤 Business List-ல் உள்ள எல்லா Upload ஐகான்களிலும் இதுவரை Upload ஆன அத்தனை Photo/PDF File-களையும் ஒரே ZIP-ஆ தயார் பண்ணப் போகிறோம். Business List பெரிசா இருந்தா, இது நிறைய நேரம் (பல நிமிடங்கள்) எடுக்கலாம், மற்றும் ZIP File மிகப்பெரிசா (பல GB வரை) இருக்கலாம். தொடரவா?')) return;
+  btn.disabled = true;
+  try{
+    const { zip, totalFiles, totalBytes } = await backupAllUploadDocuments((count, label) => {
+      btn.textContent = `⏳ ${count} Files... (${label})`;
+    });
+    if(!totalFiles){
+      alert('📭 எந்த Upload ஐகானிலும் இதுவரை File எதுவும் Upload ஆகவில்லை — Backup File காலியா இருக்கும் என்பதால் Download நிறுத்தப்பட்டது.');
+      return;
+    }
+    btn.textContent = '⏳ ZIP File தயார் பண்ணுகிறது...';
+    const zipBlob = await zip.generateAsync({ type: 'blob', compression: 'STORE' }, (meta) => {
+      btn.textContent = `⏳ ZIP தயார்: ${Math.round(meta.percent)}%`;
+    });
+    const stamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
+    await openOrDownloadBlob(zipBlob, `All_Upload_Documents_Backup_${stamp}.zip`);
+    alert(`✅ Backup முடிந்தது — ${totalFiles} File(s) (${(totalBytes/1024/1024).toFixed(1)} MB) ஒரே ZIP-ல் Download ஆனது.\n\nஇந்த File-ஐ பத்திரமா வையுங்க — 📥 Restore (All Uploads) மூலம் திரும்ப கொண்டு வரலாம்.`);
+  }catch(e){
+    console.warn('backupAllUploadsBtn failed', e);
+    alert(`⚠️ Backup Save Error: ${(e && e.message) ? e.message : String(e)}\n\nஇந்த Message Screenshot எடுத்து அனுப்புங்க — சரி பண்ணுவேன்.`);
+  }finally{
+    btn.disabled = false;
+    btn.textContent = oldLabel;
+  }
+});
+document.getElementById('restoreAllUploadsBtn').addEventListener('click', () => {
+  document.getElementById('restoreAllUploadsInput').click();
+});
+document.getElementById('restoreAllUploadsInput').addEventListener('change', async (e) => {
+  const file = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if(!file) return;
+  if(!confirm(`📥 "${file.name}"-ல் இருந்து Upload Documents-ஐ Restore பண்ணப் போகிறோம். ஏற்கனவே இதே Key-ல் File இருந்தா, அது Overwrite ஆகும். தொடரவா?`)) return;
+  const btn = document.getElementById('restoreAllUploadsBtn');
+  const oldLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ ZIP File படிக்கிறது...';
+  try{
+    const zip = await JSZip.loadAsync(await file.arrayBuffer());
+    const manifestEntry = zip.file('manifest.json');
+    if(!manifestEntry){
+      alert('❌ இந்த ZIP File-ல் manifest.json இல்லை — இது 📤 Backup Save (All Uploads) மூலம் உருவாக்கிய File இல்லை போல தெரிகிறது.');
+      return;
+    }
+    const manifest = JSON.parse(await manifestEntry.async('string'));
+    const entries = manifest.entries || [];
+    let restored = 0, failed = 0;
+    for(const entry of entries){
+      btn.textContent = `⏳ Restoring ${restored + failed + 1}/${entries.length} (${entry.label || entry.prefix})...`;
+      try{
+        const zipFileEntry = zip.file(entry.zipPath);
+        if(!zipFileEntry){ failed++; continue; }
+        const blobData = await zipFileEntry.async('blob');
+        const blob = entry.blobType ? new Blob([blobData], { type: entry.blobType }) : blobData;
+        const recordToSave = { ...(entry.meta || {}), blob };
+        await idbSet(entry.key, recordToSave);
+        restored++;
+      }catch(entryErr){
+        console.warn('restoreAllUploadDocuments: entry failed', entry.key, entryErr);
+        failed++;
+      }
+      if((restored + failed) % 25 === 0) await new Promise(r => setTimeout(r, 0));
+    }
+    try{ if(typeof refreshRowDocBadges === 'function') refreshRowDocBadges(); }catch(e){}
+    try{ if(typeof refreshResultCountBadges === 'function') await refreshResultCountBadges(); }catch(e){}
+    alert(`✅ Restore முடிந்தது — ${restored} File(s) Successfully Restore ஆனது${failed ? `, ${failed} File(s) Fail ஆனது` : ''}.`);
+  }catch(e){
+    console.warn('restoreAllUploadsInput handler failed', e);
+    alert(`⚠️ Restore Error: ${(e && e.message) ? e.message : String(e)}\n\nஇந்த Message Screenshot எடுத்து அனுப்புங்க — சரி பண்ணுவேன்.`);
+  }finally{
+    btn.disabled = false;
+    btn.textContent = oldLabel;
+  }
+});
 
 // ---------- IndexedDB: list every key with a given prefix (needed to
 // walk every business's 📎 Customer Documents record for the bulk scan) ----------
@@ -16787,7 +17162,15 @@ let financeNameFunnelEntries = [];
 document.getElementById('financeNameFunnelBtn').addEventListener('click', (e) => {
   e.preventDefault(); e.stopPropagation();
   const dir = buildFinanceNameDirectory();
-  financeNameFunnelEntries = [...dir.values()].sort((a,b) => b.count - a.count);
+  // 🐛 Fix (explicit user instruction, Sep 8 2026, Tamil): "ஆர்டராக
+  // வரவேண்டும் ... அசெண்டிங்" — this list used to sort by usage count
+  // (most-used Financer first), which put names in an unpredictable
+  // order that changed every time counts shifted. Now sorted purely
+  // alphabetically A→Z on the Financer Name itself (localeCompare, so
+  // Tamil-script names sort correctly too) — same de-duplicated,
+  // count-per-name list from buildFinanceNameDirectory(), just a
+  // different, stable order to browse it in.
+  financeNameFunnelEntries = [...dir.values()].sort((a,b) => a.name.localeCompare(b.name, 'ta'));
   renderFinanceNameFunnelList();
   funnelBackdrop.classList.add('open');
   financeNameFunnelPanel.classList.add('open');
@@ -19291,7 +19674,10 @@ const insuranceOcrQueueReadyPromise = new Promise(res => { insuranceOcrQueueRead
       renderInsuranceOcrExtractList();
     }
   }catch(e){ /* best-effort — an empty/fresh queue is a harmless fallback */ }
-  finally{ insuranceOcrQueueReadyResolve(); } // always resolves, even on error — an empty queue after a genuine failure is still the correct thing to show, not an infinite wait
+  finally{
+    insuranceOcrQueueReadyResolve(); // always resolves, even on error — an empty queue after a genuine failure is still the correct thing to show, not an infinite wait
+    try{ if(typeof refreshResultCountBadges === 'function') await refreshResultCountBadges(); }catch(e){}
+  }
 })();
 const insuranceOcrExtractBtn = document.getElementById('insuranceOcrExtractBtn');
 const insuranceOcrExtractInput = document.getElementById('insuranceOcrExtractInput');
@@ -19416,25 +19802,19 @@ document.getElementById('uploadExtractChooseRcBtn').addEventListener('click', as
   // and returns immediately — it never opens the picker while a batch
   // is already running, since starting a second upload mid-scan was
   // never the intent of this tap anyway.
+  // 🐛 Fix (explicit user instruction — Sep 8, 2026, Tamil: "இந்த மூன்று
+  // ஐகான்கள் ... அப்லோட் செய்வதற்கு மட்டுமே இருக்க வேண்டும், தட்டினால்
+  // இந்த ரவுண்ட் கிட்ட ரிசல்ட் காட்டக்கூடாது"): this icon is now PURELY
+  // an upload trigger — it never shows/renders the saved Review List
+  // panel any more (use the 🛡️ RC Result quick-jump button in the top
+  // bar for that instead). While a batch is actively scanning, the panel
+  // is still revealed so the in-flight upload queue + ✕ Cancel button
+  // stay visible/usable — but the historical review list itself is never
+  // rendered from this tap either way.
   if(typeof insuranceOcrBatchActive !== 'undefined' && insuranceOcrBatchActive){
-    try{ await insuranceOcrQueueReadyPromise; }catch(e){}
-    if(insuranceOcrExtractQueue.length) renderInsuranceOcrExtractList();
     panel.style.display = 'block';
     btn.classList.add('tool-btn-panel-open');
     try{ if(typeof refreshUploadExtractStrikeRateBadge === 'function') await refreshUploadExtractStrikeRateBadge(); }catch(e){}
-    return;
-  }
-  // 🐛 Fix (explicit user instruction — Aug 2026: "பிராக்சன் ஆப் செகண்ட்
-  // ஆப் ஐகான்கள் ஓப்பனாக வேண்டும், மறுபடியும் தட்டினால் ஐகான்கள் க்ளோஸ்
-  // ஆக வேண்டும்") — this button used to have no CLOSE path at all: every
-  // single tap re-showed the list AND re-opened the system Photo/File
-  // Picker again, even if the list was already open. A SECOND tap on an
-  // already-open panel now just closes it — instantly, no file picker,
-  // no async work of any kind.
-  const isOpen = panel.style.display !== 'none' && panel.style.display !== '';
-  if(isOpen){
-    panel.style.display = 'none';
-    btn.classList.remove('tool-btn-panel-open');
     return;
   }
   // 🐛 Fix (explicit user instruction — Aug 2026, repeated: "ஆர் சி
@@ -19444,57 +19824,21 @@ document.getElementById('uploadExtractChooseRcBtn').addEventListener('click', as
   // phone (no dev console) — a genuine crash used to look EXACTLY like
   // "nothing happens when I tap this", indistinguishable from a stale/
   // cached old copy of the app still running. From now on: either the
-  // list shows, the file picker opens, OR a visible alert explains why
-  // neither happened — never silence.
+  // file picker opens, OR a visible alert explains why it didn't —
+  // never silence.
   try{
     document.getElementById('kycOcrExtractPanel').style.display = 'none';
     document.getElementById('uploadExtractChooseKycBtn').classList.remove('tool-btn-panel-open');
     const cdp0 = document.getElementById('consolidatedDocPanel'); if(cdp0) cdp0.style.display = 'none';
     document.getElementById('uploadExtractChooseConsolidatedBtn').classList.remove('tool-btn-panel-open');
-    // Wait for the IndexedDB restore to actually finish before deciding
-    // whether there's anything saved to show — see the fix note above
-    // insuranceOcrQueueReadyPromise's declaration. Resolves instantly on
-    // every tap after the first one (page already fully loaded by then).
-    try{ await insuranceOcrQueueReadyPromise; }catch(e){}
-    // 🐛 Fix (explicit user instruction — Aug 2026): root cause was a
-    // leftover `${textareaHtml}` reference inside renderInsuranceOcrExtractList
-    // (undefined ever since the 👁️ View Text panel was removed) which
-    // threw a ReferenceError on every render where the queue was
-    // non-empty — silently aborting this whole handler before the file
-    // picker below ever opened. That stray reference is now removed.
-    if(insuranceOcrExtractQueue.length){
-      renderInsuranceOcrExtractList();
-    } else {
-      // 🩺 Diagnostic (explicit user instruction — Aug 2026: repeated
-      // reports of "touch panna onnum varala" even on a confirmed-current
-      // version) — the 📊 Strike Rate badge's count is a PERMANENT
-      // historical total that survives "🗑️ Clear List" (by design, so the
-      // lifetime count is never lost) — so it can show e.g. "RC: 1/19"
-      // even when the actual review queue is genuinely empty right now
-      // (cleared earlier, or that one success got deleted individually).
-      // An empty queue is NOT a bug — the file picker below is about to
-      // open normally for a fresh upload — but silently opening it with
-      // zero on-screen explanation looked EXACTLY like "nothing
-      // happened" in every report so far. This makes that state visible
-      // and unambiguous instead of guessable.
-      alert('🛡️ RC Related Review List இப்போது காலியாக உள்ளது (முன்பு Clear List பண்ணி இருக்கலாம், அல்லது இன்னும் ஒன்றும் Save ஆகல) — புது Documents Upload பண்ண இப்போ Photo/File Picker திறக்கும்.');
-    }
     // 🐛 CRITICAL Fix (explicit user instruction — repeated ~20 times,
     // Sep 2026, Tamil): "அப்லோட் செஞ்ச உடனே அப்லோட் ஃபைல் வித் கேன்சல்
-    // பட்டனோட வரணும்" — the ✕ Cancel upload-queue list itself was always
-    // correctly implemented, BUT it lives INSIDE this panel
-    // (insuranceOcrExtractPanel). In the empty-queue branch just above,
-    // this panel was NEVER opened (only the alert() showed) — so when
-    // the file picker below is opened and files are picked, the queue+
-    // Cancel-button list that then renders is real in the DOM but
-    // invisible, sitting inside a still display:none panel. This was the
-    // actual root cause of the queue "never showing" on every fresh/
-    // empty-list upload. Force the panel open here unconditionally
-    // (both branches above) so whatever gets picked next is visible.
+    // பட்டனோட வரணும்" — the ✕ Cancel upload-queue list lives INSIDE this
+    // panel (insuranceOcrExtractPanel), so it's opened here unconditionally
+    // (without rendering any of the OLD saved results into it) so whatever
+    // gets picked next is visible.
     panel.style.display = 'block';
-    // 🟢 Green = open, ONLY once the panel is actually visible on screen —
-    // matches the button's real state instead of just "was tapped".
-    btn.classList.toggle('tool-btn-panel-open', panel.style.display !== 'none' && panel.style.display !== '');
+    btn.classList.add('tool-btn-panel-open');
     insuranceOcrExtractInput.value = '';
     insuranceOcrExtractInput.click();
   }catch(e){
@@ -19929,28 +20273,16 @@ document.getElementById('insuranceQuotationInput').addEventListener('change', ()
 document.getElementById('uploadExtractChooseKycBtn').addEventListener('click', async () => {
   const btn = document.getElementById('uploadExtractChooseKycBtn');
   const panel = document.getElementById('kycOcrExtractPanel');
-  // Same instant-close fix as 🛡️ RC Related above — a second tap on an
-  // already-open KYC panel just closes it, no file picker, no async work.
-  const isOpen = panel.style.display !== 'none' && panel.style.display !== '';
-  if(isOpen){
-    panel.style.display = 'none';
-    btn.classList.remove('tool-btn-panel-open');
-    return;
-  }
-  // 🐛 Fix (explicit user instruction, Aug 31, 2026): "Scanning going
-  // on, when double tap the ticked rc and KYC icon it is not shows
-  // uploaded file" — while a 🪪 KYC batch is actively running, tapping
-  // this icon used to show the panel correctly via renderKycOcrExtractPanel
-  // below, but then IMMEDIATELY force-opened the system Photo/File
-  // picker on top of it (kycOcrExtractInput.click() a few lines down) —
-  // the native picker sheet covers the just-rendered panel, which reads
-  // exactly like "doesn't show the uploaded files" to whoever tapped it
-  // mid-scan. Fixed: if a batch is already running, this tap now only
-  // reveals the current panel/queue and returns — it never opens the
-  // picker while one upload is already in flight, since starting a
-  // second one mid-scan was never the intent of this tap.
+  // 🐛 Fix (explicit user instruction — Sep 8, 2026, Tamil: "இந்த மூன்று
+  // ஐகான்கள் ... அப்லோட் செய்வதற்கு மட்டுமே இருக்க வேண்டும், தட்டினால்
+  // இந்த ரவுண்ட் கிட்ட ரிசல்ட் காட்டக்கூடாது"): this icon is now PURELY
+  // an upload trigger — it never shows/renders the saved 🪪 KYC folder
+  // list any more (use the 🪪 KYC Result quick-jump button in the top
+  // bar for that instead). While a batch is actively running, the panel
+  // is still revealed so the in-flight upload queue + ✕ Cancel button
+  // stay visible/usable — but the saved folder list itself is never
+  // rendered from this tap either way.
   if(typeof kycOcrBatchActive !== 'undefined' && kycOcrBatchActive){
-    try{ await renderKycOcrExtractPanel(''); }catch(e){}
     panel.style.display = 'block';
     btn.classList.add('tool-btn-panel-open');
     try{ if(typeof refreshUploadExtractStrikeRateBadge === 'function') await refreshUploadExtractStrikeRateBadge(); }catch(e){}
@@ -19970,32 +20302,13 @@ document.getElementById('uploadExtractChooseKycBtn').addEventListener('click', a
     document.getElementById('uploadExtractChooseRcBtn').classList.remove('tool-btn-panel-open');
     const cdp1 = document.getElementById('consolidatedDocPanel'); if(cdp1) cdp1.style.display = 'none';
     document.getElementById('uploadExtractChooseConsolidatedBtn').classList.remove('tool-btn-panel-open');
-    let hasKycData = false;
-    try{ hasKycData = (await getKycRecords()).length > 0; }catch(e){}
-    if(hasKycData){
-      // 🐛 Fix (explicit user instruction — Aug 2026: "KYC தட்டினா
-      // Android ரன் ஆகுது, பேஜ் Scroll ஆகவில்லை") — open the panel (so
-      // the "🔄 Syncing..." progress message inside
-      // renderKycOcrExtractPanel is actually visible on screen) BEFORE
-      // the potentially-slow first-time sync work starts inside it,
-      // instead of only becoming visible once that work is already done.
-      panel.style.display = 'block';
-      btn.classList.add('tool-btn-panel-open');
-      await renderKycOcrExtractPanel('');
-    } else {
-      // Same "queue genuinely empty, not broken" diagnostic RC Related
-      // already has — see that handler's note for why this matters.
-      alert('🪪 KYC Folder இப்போது காலியாக உள்ளது (இன்னும் ஒன்றும் Save ஆகல்) — புது Documents Upload பண்ண இப்போ Photo/File Picker திறக்கும்.');
-      // 🐛 CRITICAL Fix (explicit user instruction — repeated ~20 times,
-      // Sep 2026, Tamil): same root cause as 🛡️ RC Related's matching
-      // fix — this panel was never opened in the empty-folder branch, so
-      // the ✕ Cancel upload-queue that renders right after picking files
-      // sat inside a still display:none panel and was never actually
-      // visible. Force it open here too.
-      panel.style.display = 'block';
-      btn.classList.add('tool-btn-panel-open');
-    }
-    btn.classList.toggle('tool-btn-panel-open', panel.style.display !== 'none' && panel.style.display !== '');
+    // 🐛 CRITICAL Fix (explicit user instruction — repeated ~20 times,
+    // Sep 2026, Tamil): the ✕ Cancel upload-queue list lives INSIDE this
+    // panel (kycOcrExtractPanel), so it's opened here unconditionally
+    // (without rendering any of the OLD saved KYC folder into it) so
+    // whatever gets picked next is visible.
+    panel.style.display = 'block';
+    btn.classList.add('tool-btn-panel-open');
     document.getElementById('kycOcrExtractInput').value = '';
     document.getElementById('kycOcrExtractInput').click();
     try{ if(typeof refreshUploadExtractStrikeRateBadge === 'function') await refreshUploadExtractStrikeRateBadge(); }catch(e){}
@@ -20023,43 +20336,36 @@ document.getElementById('uploadExtractChooseJdBtn').addEventListener('click', ()
 document.getElementById('uploadExtractChooseConsolidatedBtn').addEventListener('click', async () => {
   const btn = document.getElementById('uploadExtractChooseConsolidatedBtn');
   const panel = document.getElementById('consolidatedDocPanel');
-  // 🐛 Fix (explicit user instruction — Aug 2026: "மறுபடியும் தட்டினால்
-  // ஐகான்கள் க்ளோஸ் ஆக வேண்டும்") — this button used to ALWAYS set
-  // display:'block' and re-run the (potentially slow, first-time) full
-  // Backfill scan — it never closed at all, no matter how many times you
-  // tapped it. A second tap on an already-open panel now just closes it
-  // instantly — no Backfill, no re-render, no async work.
-  const isOpen = panel.style.display !== 'none' && panel.style.display !== '';
-  if(isOpen){
-    panel.style.display = 'none';
-    btn.classList.remove('tool-btn-panel-open');
-    return;
-  }
+  // 🐛 Fix (explicit user instruction — Sep 8, 2026, Tamil: "இந்த மூன்று
+  // ஐகான்கள் ... அப்லோட் செய்வதற்கு மட்டுமே இருக்க வேண்டும், தட்டினால்
+  // இந்த ரவுண்ட் கிட்ட ரிசல்ட் காட்டக்கூடாது"): this icon is now PURELY
+  // an upload trigger — it no longer runs the Backfill scan or shows the
+  // Consolidated results list at all (use the 🗂️ Consolidate Result
+  // quick-jump button in the top bar for that instead). It just opens the
+  // same manual ➕ Document Upload file picker that used to live inside
+  // the (now-skipped) results panel.
   try{
     document.getElementById('insuranceOcrExtractPanel').style.display = 'none';
     document.getElementById('uploadExtractChooseRcBtn').classList.remove('tool-btn-panel-open');
     document.getElementById('kycOcrExtractPanel').style.display = 'none';
     document.getElementById('uploadExtractChooseKycBtn').classList.remove('tool-btn-panel-open');
-    const listEl = document.getElementById('consolidatedDocList');
+    // 🐛 CRITICAL Fix (explicit user instruction, Sep 8 2026, Tamil: "ஆர்சி
+    // தட்டினா கேஒய்சி வருது, கேஒய்சி தட்டினா கன்சாலிடேட் வருது" — a real
+    // asymmetry found here: unlike 🛡️ RC Related/🪪 KYC's own handlers just
+    // above (which both do `panel.style.display='block'` +
+    // `btn.classList.add('tool-btn-panel-open')` for THEIR OWN panel), this
+    // handler fetched `panel`/`btn` for consolidatedDocPanel but never
+    // actually showed them — so tapping 🗂️ Consolidated Document opened
+    // the file picker with NO panel visibly open at all, leaving whichever
+    // panel was open moments before (or the green "open" highlight on a
+    // DIFFERENT icon) looking like it was still the active one. Now
+    // matches RC/KYC exactly — this panel opens and this icon highlights,
+    // every time this icon itself is tapped.
     panel.style.display = 'block';
     btn.classList.add('tool-btn-panel-open');
-    // 🔁 Backfill EVERY existing 🪪 KYC / 🛡️ RC Related document — not
-    // just ones saved from now on — the moment the panel is opened, so
-    // "இதுவரை அனுப்பிய அனைத்து டாக்குமெண்ட்டுகளும்" (every document ever
-    // sent) actually shows up, including documents that were already
-    // saved before this feature existed. Fast on every later open since
-    // only still-missing Mobile Numbers get (re)compiled.
-    listEl.innerHTML = '<div style="padding:10px; text-align:center; color:#0f766e; font-size:12px;">🔄 முன்பே Save ஆன KYC/RC Documents-ஐ Backfill பண்ணுது — முதல் முறை கொஞ்சம் நேரம் ஆகலாம்...</div>';
-    await backfillConsolidatedDocuments((done, total) => {
-      listEl.innerHTML = `<div style="padding:10px; text-align:center; color:#0f766e; font-size:12px;">🔄 Backfill பண்ணுது... ${done}/${total}</div>`;
-    });
-    await renderConsolidatedDocPanel('');
-    try{ await renderConsolidatedManualDocList(''); }catch(e){ console.warn('renderConsolidatedManualDocList failed on open', e); }
+    const manualInput = document.getElementById('consolidatedManualUploadInput');
+    if(manualInput){ manualInput.value = ''; manualInput.click(); }
     try{ if(typeof refreshUploadExtractStrikeRateBadge === 'function') await refreshUploadExtractStrikeRateBadge(); }catch(e){}
-    // 🎯 Automatic Reorient Sweep — also kicked off when this panel is
-    // opened (not only on app load), fire-and-forget; harmless/cheap if
-    // it already ran recently (reorientChecked flag skips finished docs).
-    try{ if(typeof autoReorientAllStoredDocs === 'function') autoReorientAllStoredDocs().catch(e => console.warn('autoReorientAllStoredDocs failed', e)); }catch(e){}
   }catch(e){
     console.warn('uploadExtractChooseConsolidatedBtn handler failed', e);
     alert(`⚠️ 🗂️ Consolidated Document திறக்கும்போது Error: ${(e && e.message) ? e.message : String(e)}\n\nஇந்த Message Screenshot எடுத்து அனுப்புங்க — சரி பண்ணுவேன்.`);
@@ -20219,6 +20525,12 @@ async function refreshUploadExtractStrikeRateBadge(){
     // of only the scan tally on its own.
     let kycEditorLiveCount = null;
     try{ if(typeof getKycRecords === 'function') kycEditorLiveCount = (await getKycRecords()).length; }catch(e){}
+    // 🔢 Keep the 🛡️ RC Result/🪪 KYC Result/🗂️ Consolidate Result count
+    // badges live too — this function already fires after every RC/KYC/
+    // Consolidated scan or save throughout the app, so this is the one
+    // central place that keeps all three badges current without a
+    // separate call needed at every save site.
+    try{ if(typeof refreshResultCountBadges === 'function') await refreshResultCountBadges(); }catch(e){}
     // 🛡️🪪🗂️ Separate per-icon live counts — explicit user instruction
     // (Aug 31, 2026, Tamil): "கேஒய்சிக்கான கிராஸ் பட்டனுக்கு அருகில்
     // காட்ட வேண்டும் ... ஆர் சி எவ்வளவு கேஒய்சி எவ்வளவு கன்சாலிடேட்
@@ -22269,6 +22581,11 @@ insuranceOcrMinimizeBtn.addEventListener('click', () => {
   insuranceOcrExtractBody.style.display = '';
   insuranceOcrMinimizeBtn.textContent = '▾';
   insuranceOcrMinimizeBtn.title = 'List-ஐ Minimize பண்ணும்';
+  // 🐛 Fix (explicit user instruction, Sep 8 2026): keep the external
+  // ▸/▾ toggle arrow next to 🛡️ RC Result in sync — closing via THIS
+  // internal button used to leave that outer arrow stuck showing ▾
+  // (open) even though the panel just fully closed.
+  try{ if(typeof syncResultToggleArrows === 'function') syncResultToggleArrows(); }catch(e){}
 });
 // 📊📑📇 Minimize/Expand — same ▾/▸ toggle pattern as
 // insuranceOcrMinimizeBtn above, newly added (Aug 31, 2026, Tamil
@@ -22322,6 +22639,7 @@ kycOcrMinimizeBtn.addEventListener('click', () => {
   kycOcrExtractBody.style.display = '';
   kycOcrMinimizeBtn.textContent = '▾';
   kycOcrMinimizeBtn.title = 'List-ஐ Minimize பண்ணும்';
+  try{ if(typeof syncResultToggleArrows === 'function') syncResultToggleArrows(); }catch(e){}
 });
 // 🚫 🔄 Re-scan All (KYC) handler removed along with its button
 // (explicit user instruction — Aug 2026).
@@ -22461,6 +22779,7 @@ if(consolidatedDocMinimizeBtn) consolidatedDocMinimizeBtn.addEventListener('clic
   consolidatedDocBody.style.display = '';
   consolidatedDocMinimizeBtn.textContent = '▾';
   consolidatedDocMinimizeBtn.title = 'List-ஐ Minimize பண்ணும்';
+  try{ if(typeof syncResultToggleArrows === 'function') syncResultToggleArrows(); }catch(e){}
 });
 const consolidatedDocSearch = document.getElementById('consolidatedDocSearch');
 const consolidatedDocSearchClearBtn = document.getElementById('consolidatedDocSearchClear');
@@ -32687,11 +33006,31 @@ document.querySelectorAll('.main-page-inner .tool-btn, .main-page-inner .show-al
 // One delegated capture-phase listener (not per-button wiring) so this
 // also automatically covers any toolbar icon added to the DOM later.
 (function(){
-  const DBLTAP_SELECTOR = '.main-page-inner .tool-btn, .main-page-inner .show-all-enquiry-btn, .main-page-inner .funnel-btn, #insuranceOcrExtractPanel button, #insuranceOcrExtractPanel a.icon-btn, #kycOcrExtractPanel button, #kycOcrExtractPanel a.icon-btn, #consolidatedDocPanel button, #consolidatedDocPanel a.icon-btn';
+  // 🎯 v349 addition (explicit user instruction, Sep 8 2026, Tamil): "நான்
+  // ஆர் சி ரிசல்ட், கே வி சி ரிசல்ட், கன்சாலிடேட்டர் ரிசல்ட் அதை இரு முறை
+  // தட்டினால் மட்டுமே ரிசல்ட் வர வேண்டும், மீண்டும் அதை இருமுறை தட்டினால்
+  // அது மறைய வேண்டும்" — the 🛡️ RC Result / 🪪 KYC Result / 🗂️ Consolidate
+  // Result quick-jump buttons in #topStickyBar (outside .main-page-inner,
+  // so not covered by the selector above until now) now go through this
+  // exact same double-tap guard too — a 1st tap never opens/closes
+  // anything, only a genuine 2nd tap within the window does, and each
+  // handler below (see rcResultJumpBtn/kycResultJumpBtn/consResultJumpBtn)
+  // now toggles its panel closed again if it was already open.
+  const DBLTAP_SELECTOR = '.main-page-inner .tool-btn, .main-page-inner .show-all-enquiry-btn, .main-page-inner .funnel-btn, #insuranceOcrExtractPanel button, #insuranceOcrExtractPanel a.icon-btn, #kycOcrExtractPanel button, #kycOcrExtractPanel a.icon-btn, #consolidatedDocPanel button, #consolidatedDocPanel a.icon-btn, #rcResultJumpBtn, #kycResultJumpBtn, #consResultJumpBtn';
   const DBLTAP_WINDOW_MS = 600;
   const ARMED_PULSE_MS = 700;
   const lastTapAt = new WeakMap();
-  let armedPulseTimer = null;
+  // 🐛 Fix (explicit user instruction, Sep 8 2026, Tamil: "ஆர்சி தட்டினா
+  // கேஒய்சி வருது" — investigated as a possible mis-tap symptom): this
+  // used to be ONE shared `armedPulseTimer` variable for every guarded
+  // icon on the page. Tapping icon A (arms it, schedules its pulse-removal
+  // timer) then quickly tapping icon B cancelled A's timer via
+  // `clearTimeout(armedPulseTimer)` and replaced it with B's — so icon A's
+  // dashed "armed" pulse could get stuck showing forever, never actually
+  // cleared. Each icon now gets its OWN timer (keyed by the exact button
+  // element in this WeakMap), so tapping one icon can never cancel or
+  // interfere with another's pulse state.
+  const pulseTimers = new WeakMap();
 
   document.addEventListener('click', function(e){
     const btn = e.target.closest(DBLTAP_SELECTOR);
@@ -32707,6 +33046,7 @@ document.querySelectorAll('.main-page-inner .tool-btn, .main-page-inner .show-al
       // etc.) — do NOT preventDefault/stopPropagation here — and flip the
       // permanent green/normal state for THIS icon only.
       lastTapAt.delete(btn);
+      clearTimeout(pulseTimers.get(btn));
       btn.classList.remove('stffe-dbltap-armed');
       btn.classList.toggle('stffe-dbltap-on');
       return;
@@ -32720,8 +33060,8 @@ document.querySelectorAll('.main-page-inner .tool-btn, .main-page-inner .show-al
     e.stopImmediatePropagation();
     lastTapAt.set(btn, now);
     btn.classList.add('stffe-dbltap-armed');
-    clearTimeout(armedPulseTimer);
-    armedPulseTimer = setTimeout(() => { btn.classList.remove('stffe-dbltap-armed'); }, ARMED_PULSE_MS);
+    clearTimeout(pulseTimers.get(btn));
+    pulseTimers.set(btn, setTimeout(() => { btn.classList.remove('stffe-dbltap-armed'); }, ARMED_PULSE_MS));
   }, true); // capture phase — runs before every other click listener already on these buttons
 })();
 </script>
@@ -35779,7 +36119,22 @@ updateUndoBackButtons();
             await appendKycDoc(savedRec.id, file);
             if(!existingKycList.find(r => r.id === savedRec.id)) existingKycList.push(savedRec);
             try{ await bumpKycStrikeRate(!idsBeforeUpsert.has(savedRec.id)); }catch(e){}
-            try{ await renderKycOcrExtractPanel(document.getElementById('kycOcrExtractSearch') ? document.getElementById('kycOcrExtractSearch').value : ''); }catch(e){}
+            // 🐛 CRITICAL Fix (explicit user instruction, Sep 8 2026, Tamil:
+            // "பிசினஸ் லிஸ்டில் WhatsApp Extract மூலமாக அப்லோட் செய்து
+            // ஸ்கேனிங் நடந்து KYC Document Match ஆனா, அது நேரடியாக KYC
+            // Related ஐகானுக்கு சென்றடையும் — அதை KYC Result-க்கு மாற்ற
+            // வேண்டும்"): renderKycOcrExtractPanel() defaults its 2nd
+            // param (openPanel) to true, so this background WhatsApp
+            // Extract scan step was silently force-opening the 🪪 KYC
+            // Related panel on screen the instant a KYC document matched
+            // — even though nobody tapped 🪪 KYC. Passing openPanel:false
+            // here (same fix already applied to runKycFileOnlyImport's own
+            // background resume calls) keeps this a pure background data
+            // update: the saved record (matched OR unmatched — see the
+            // 🆕 "Match இல்லை" badge) is still fully visible the moment the
+            // person taps 🪪 KYC Result themselves; it just never yanks the
+            // panel open on its own mid-scan any more.
+            try{ await renderKycOcrExtractPanel(document.getElementById('kycOcrExtractSearch') ? document.getElementById('kycOcrExtractSearch').value : '', false); }catch(e){}
             try{ if(typeof refreshUploadExtractStrikeRateBadge === 'function') refreshUploadExtractStrikeRateBadge(); }catch(e){}
             if(savedRec.mobiles && savedRec.mobiles[0] && typeof consolidateCustomerDocumentsForMobile === 'function'){
               consolidateCustomerDocumentsForMobile(savedRec.mobiles[0]).catch(e => console.warn('background consolidate (WA→KYC) failed', e));
@@ -37434,26 +37789,26 @@ async function tryAutoRouteMatchedShareRecord(rec){
       // in himself; the Business Name box (seeded further below from the
       // WhatsApp title, unaffected by this) still auto-fills exactly as it
       // appears in the WhatsApp Extract either way.
+      // 🐛 Fix (explicit user instruction — Sep 8, 2026, Tamil: "மேட்ச்
+      // ஆகாத நம்பர்கள் வந்தாலும் அந்த நம்பர் மொபைல் நம்பர் பாக்ஸில்
+      // ஆட்டோமேட்டிக்காக பீல் ஆக வேண்டும், நான் பிசினஸ் நேம் ஐ மட்டும்
+      // தான் டைப் செய்யுமாறு இருக்க வேண்டும்"): the previous behaviour
+      // (v345) only auto-filled/locked this box when the detected number
+      // ALREADY matched an existing Business/Financer row, leaving a
+      // genuinely new number blank/unlocked for manual typing. He now
+      // wants ANY number detected in the WhatsApp Share title/text —
+      // matched or brand new — to auto-fill this box immediately, so the
+      // only thing he ever has to type by hand is the Business Name.
       const shareMeta = [rec.title, rec.text].filter(Boolean).join(' ');
       const foundShareMobiles = shareMeta ? extractMobilesFromOcrText(shareMeta) : [];
-      let __matchedExistingMobile = false;
       if(foundShareMobiles.length){
-        const candidateMobile = foundShareMobiles[0];
-        try{
-          const bizHit = (typeof shareFormFindBizByMobile === 'function') ? shareFormFindBizByMobile(candidateMobile) : null;
-          const finHit = (!bizHit && typeof shareFormFindFinancerNamesByMobile === 'function') ? shareFormFindFinancerNamesByMobile(candidateMobile) : [];
-          __matchedExistingMobile = !!(bizHit || (finHit && finHit.length));
-        }catch(e){ __matchedExistingMobile = false; }
-        if(__matchedExistingMobile){
-          mobileInputEl.value = candidateMobile;
-          setTimeout(() => { try{ runAutoDetect(); }catch(e){} }, 0);
-        }
+        mobileInputEl.value = foundShareMobiles[0];
+        setTimeout(() => { try{ runAutoDetect(); }catch(e){} }, 0);
       }
-      if(!__matchedExistingMobile){
-        // Covers both: (a) no mobile detected in the Share title/text at
-        // all, and (b) a mobile WAS detected but it's not in the Business
-        // List yet (a new business) — either way, leave it blank/unlocked
-        // for manual typing instead of trapping him or guessing wrong.
+      if(!foundShareMobiles.length){
+        // No mobile at all detected in the Share title/text — nothing to
+        // auto-fill from, so leave it blank/unlocked for manual typing
+        // (background content-based OCR match below can still catch it).
         mobileInputEl.readOnly = false;
         mobileInputEl.style.background = '#fffbeb';
         mobileInputEl.placeholder = '⚠️ புதிய பிசினஸ் — Business List-ல் இல்லை. மொபைல் நம்பரை இங்கே Type பண்ணவும்';
@@ -38192,12 +38547,34 @@ async function tryAutoRouteMatchedShareRecord(rec){
     if(isFromShare){
       try{ history.replaceState(null, '', location.pathname); }catch(e){}
     }
-    const rawRecords = (await getAllShareRecords()).filter(r => !__shareRecordsBeingFinalized.has(r.id));
-    // 🔧 Sep 2, 2026 fix — see groupShareRecordsForOnePopupPerBusiness above:
-    // collapse several separate POSTs for the SAME detected Mobile Number
-    // into one merged record BEFORE the popup loop below ever runs, so one
-    // business never gets shown more than one popup for the same share batch.
-    const records = groupShareRecordsForOnePopupPerBusiness(rawRecords);
+    // 🐛 CRITICAL Fix (explicit user instruction, Sep 8 2026, Tamil: "ஒரு
+    // சில Business-க்கு (உ.ம். KBS Tours and Travels) Popup வரவே இல்லை")
+    // — ROOT CAUSE: everything below (fetching every pending share record,
+    // then grouping them one-popup-per-business) used to run with NO
+    // try/catch at all — unlike the per-record loop further down, which
+    // was already carefully wrapped. If grouping/detecting a Mobile Number
+    // for even ONE malformed/unusual share record threw here, the WHOLE
+    // batch silently failed with no popup for ANY business in it, not just
+    // the bad one — and the only place that error landed was a bare
+    // `catch(e){}` in the caller, so nothing was ever shown, logged
+    // visibly, or retried. Now wrapped exactly like the per-record loop:
+    // a visible alert names which step failed instead of vanishing
+    // silently, and (just as important) still lets the person retry after
+    // fixing/re-sharing rather than being permanently stuck with zero
+    // feedback.
+    let rawRecords, records;
+    try{
+      rawRecords = (await getAllShareRecords()).filter(r => !__shareRecordsBeingFinalized.has(r.id));
+      // 🔧 Sep 2, 2026 fix — see groupShareRecordsForOnePopupPerBusiness above:
+      // collapse several separate POSTs for the SAME detected Mobile Number
+      // into one merged record BEFORE the popup loop below ever runs, so one
+      // business never gets shown more than one popup for the same share batch.
+      records = groupShareRecordsForOnePopupPerBusiness(rawRecords);
+    }catch(batchErr){
+      console.error('processShareQueue: fetching/grouping share records failed', batchErr);
+      try{ alert('🛑 WhatsApp Extract Popup காட்டப்போ, Share Records-ஐ படிக்கும்/Group பண்ணும் நிலையிலேயே Error வந்தது (இதனால எந்த Business-க்குமே Popup வராம போச்சு):\n\n' + ((batchErr && batchErr.message) || String(batchErr)) + '\n\nஇந்த Message Screenshot எடுத்து அனுப்புங்க — சரி பண்ணுவேன். மறுபடி WhatsApp-ல் இருந்து Share பண்ணி பாருங்க.'); }catch(e){}
+      return;
+    }
     updateShareDebugLine((isFromShare ? '?shared=1 present, ' : '') + 'ShareInboxDB records: ' + rawRecords.length + ' → ' + records.length + ' popup(s) after grouping');
     if(!records.length) return;
     records.sort((a, b) => (a.ts || 0) - (b.ts || 0));
@@ -38296,7 +38673,27 @@ async function tryAutoRouteMatchedShareRecord(rec){
       }).catch(e => console.warn('storage.persisted() check failed', e));
     }
   }catch(e){ console.warn('Persistent Storage request failed to start', e); }
+  // 🎯 Fix (explicit user instruction, Sep 8 2026, Tamil: "பாப் அப் ஸ்க்ரீன்
+  // உடனே தோன்ற வேண்டும், முடிந்த அளவுக்கு விரைவா") — this used to wait
+  // for the browser's 'load' event before ever checking for a pending
+  // WhatsApp share. 'load' only fires once EVERY resource on the page has
+  // finished — every image, every external CDN script (JSZip, pdf-lib,
+  // Tesseract, etc.) — which on a slow/metered mobile connection can take
+  // far longer than parsing this file itself. Since this exact script
+  // block only ever runs once the page's own HTML is already fully parsed
+  // (a plain inline <script>, no defer/async), the pending-share check can
+  // safely run RIGHT NOW, synchronously, instead of waiting for 'load' at
+  // all — this is the earliest possible point recovering it without
+  // waiting on network resources the popup itself never needs.
+  // getAllShareRecords()/renderShareInboxFromQuery() only touch the small
+  // ShareInboxDB (written by sw-share.js) — never the large Business List
+  // — so this is cheap even before the rest of the page has settled.
+  try{ renderShareInboxFromQuery(); }catch(e){}
+  try{ processShareQueue(); }catch(e){}
   window.addEventListener('load', async () => {
+    // Same check repeated here as a safety net — covers the rare case
+    // where the share arrived a few milliseconds after the immediate
+    // check above already ran and found nothing.
     try{ renderShareInboxFromQuery(); }catch(e){}
     try{ processShareQueue(); }catch(e){}
     // ⚡ Background PDF-Archive Queue — auto-resume on every app open.
