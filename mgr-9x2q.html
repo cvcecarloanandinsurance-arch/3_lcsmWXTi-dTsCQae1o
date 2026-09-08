@@ -1219,7 +1219,7 @@ scan, export), never at top-level during initial script execution. -->
     about which build is actually running. Full fix-tag now lives only in
     the tooltip (title) — the on-screen text is just the version number,
     since the descriptive suffix was the widest single item in this row. -->
-    <span id="appVersionBadge" title="v348 · restoreFromCloudUnwrapFix — worker.js's GET /backup returns {savedAt,payload}, client now correctly unwraps .payload before restoring (previous v347 build passed the wrapper straight through, which would have failed looksLikeValidData). · v347 · restoreFromCloudBackup — added ☁️ Restore from Cloud button next to ☁️ Set Cloudflare Backup: pulls the latest text-only snapshot back from the same Cloudflare Worker/KV (Business List full replace, Insurance Renewal/KYC merge-safe, same as 📥 Import Backup's tested logic, just sourced over the network via GET /backup instead of a chosen file). Photo/PDF documents never touch Cloudflare — unaffected, still phone-only. · v346 · rcKycConsResultJumpIcons · v345 · waExtractNewBizMobileBlank — fix (Sep 3, 2026, Tamil: user asked that in the WhatsApp Extract Share Inbox popup, when the detected Mobile Number does NOT match an existing Business/Financer row — i.e. the business isn't in the Business List yet — the Mobile Number box should be left blank/unlocked for him to type in himself, rather than auto-filled/locked with a not-yet-listed number; the Business Name box should keep auto-filling exactly as it appears in the WhatsApp Extract regardless). The Mobile Number box now only auto-fills (and stays locked) when the number detected in the Share title/text already matches an existing Business or Financer row via shareFormFindBizByMobile/shareFormFindFinancerNamesByMobile; otherwise it's unlocked and starts blank, same as the existing no-detection safety-net path (manual typing + background RC/KYC content auto-match still both apply). Previous v344 note: waExtractSkipScan — the WhatsApp Extract Share Inbox popup's 🔗 Merge + RC/Insurance Scan button no longer runs the mandatory OCR scan step (runBulkOcrBatchCapped3) before reaching the Business List; it's now just ⬆️ Upload, straight from read/zip-PDF-expand to one-file-at-a-time upload." style="flex-shrink:0; white-space:nowrap; padding:3px 8px; border-radius:12px; border:1px solid #78716c; background:#f5f5f4; color:#57534e; font-weight:800; font-size:0.62rem;">🏷️ v348 · restoreFromCloudUnwrapFix</span>
+    <span id="appVersionBadge" title="v353 · mergeLatestEditWinsByDate — Tamil request (Sep 8 2026): when 🔀 Merge Backup from Other Phone finds the SAME business on both sides (matched by mobile, as always), it no longer just fills blank fields — every edit made via ✏️ Save (saveRow → touchEdited) now stamps that record with a real _lastEditedAt timestamp, and on merge, whichever side's edit is genuinely newer wins the Name/Address/JustDial-link values, with the surviving record correctly marked Edited either way. Records with no timestamp on either side (anything edited before this version) safely fall back to the old blanks-only behaviour, so nothing already loaded is ever downgraded by an older/undated incoming copy. Also fixed a real bug found while doing this: the old blanket editedIds union after a merge was tagging the INCOMING file's raw record ids as edited even though matched records keep the LOCAL id and new records get a freshly generated one — those orphan ids were silently inflating the 📝 Edited counter without corresponding to any real row; the edited flag is now carried onto whichever id the record actually ends up with, precisely, with no orphans. 📂 Import Backup itself is untouched — it stays a deliberate FULL REPLACE (see v350's shrink-guard); this fix lives in 🔀 Merge Backup, the non-destructive tool for combining two phones'/files' data, which is what you should use to combine your currently-loaded 1700-edited data with a separate ~29,000-business backup file without losing either side. · v352 · rescanAllPlusRealCallsBadge — ① 🔄 Re-scan All bulk button added to all 3 planned panels (🛡️ RC Related/🪪 KYC/🗂️ Consolidated) — the rescanOneKycPersonById function had existed since v351 for exactly this but was never wired to a button; KYC's per-row Re-scan stays removed as explicitly instructed earlier, only the panel-header bulk button was added. RC's own new rescanOneRegnDocById originally wrote through the old upsertInsuranceRenewalRecord()/insurance_renewal_records_v1 store — caught before shipping (that store was already deliberately abandoned per an earlier fix) and corrected to write through upsertIntoInsuranceExtractQueue(), the real current single-source-of-truth the RC panel/WhatsApp Promo/Consolidated all read from. Consolidated's Re-scan All re-runs consolidateCustomerDocumentsForMobile for every ALREADY-compiled Mobile Number (refreshing from any newer KYC/RC documents); finding brand-new never-compiled mobiles stays fully automatic as before. All three fill-blank-only (never overwrite a good existing value), show live ⏳n/total progress, and end with one combined summary alert. ② 📞 Calls Today badge (was showing a manually typed-in '0/1000' — tap the badge, type a number, it just added to a fake localStorage total with zero connection to any real call) removed entirely; the badge now shows the SAME real, phone-pad-touch-based count already computed for the 📇 badge beside it (today's distinct Business List rows whose 📞 Call icon was actually tapped) — no target, no denominator, no manual entry. · v351 · manualRcKycBizSyncBtnAdded — audited every button in the app labeled/behaving as a 'Refresh': found ONE genuinely broken/missing one — syncRcKycToBusinessList's own comment described a visible '🔄 Manual Sync' button (manualRcKycBizSyncBtn) as already wired, but the actual <button> element and click listener were never added, only the auto-run-on-load version existed. Added the real button (next to 🔀 Merge Backup from Other Phone) wired to the exact same, already-working syncRcKycToBusinessList function. Every other Refresh-labeled control (🔄 Counts Refresh, per-row 🔄 Refresh, 🔄 Re-fetch & Merge in Consolidated, 🛡️ RC Related's per-row 🔄 Re-scan, 🔄 47-Category Search Progress Reset) was checked and confirmed already correctly wired — no change needed there. (Separately noted but left untouched: a complete rescanOneKycPersonById function for a planned '🔄 Re-scan All' bulk button across RC/KYC/Consolidated exists in the code but was never attached to any visible button for any of the three — the KYC per-row version of this was explicitly removed earlier per user instruction, so this was left as-is rather than guessed back into the UI.) · v350 · importBackupShrinkGuard — 📂 Import Backup (a FULL REPLACE, unlike 🔀 Merge Backup from Other Phone) now warns clearly and asks for a second confirmation before importing a file with FEWER businesses than what's currently loaded — importing several backup files one after another via this button was silently discarding the bigger live list each time, and that smaller result then also overwrote the IndexedDB safety copy, so refresh had nothing bigger left to recover from (reported as the list reverting to an old ~20,000 count). No change to what happens once confirmed. · v348 · restoreFromCloudUnwrapFix — worker.js's GET /backup returns {savedAt,payload}, client now correctly unwraps .payload before restoring (previous v347 build passed the wrapper straight through, which would have failed looksLikeValidData). · v347 · restoreFromCloudBackup — added ☁️ Restore from Cloud button next to ☁️ Set Cloudflare Backup: pulls the latest text-only snapshot back from the same Cloudflare Worker/KV (Business List full replace, Insurance Renewal/KYC merge-safe, same as 📥 Import Backup's tested logic, just sourced over the network via GET /backup instead of a chosen file). Photo/PDF documents never touch Cloudflare — unaffected, still phone-only. · v346 · rcKycConsResultJumpIcons · v345 · waExtractNewBizMobileBlank — fix (Sep 3, 2026, Tamil: user asked that in the WhatsApp Extract Share Inbox popup, when the detected Mobile Number does NOT match an existing Business/Financer row — i.e. the business isn't in the Business List yet — the Mobile Number box should be left blank/unlocked for him to type in himself, rather than auto-filled/locked with a not-yet-listed number; the Business Name box should keep auto-filling exactly as it appears in the WhatsApp Extract regardless). The Mobile Number box now only auto-fills (and stays locked) when the number detected in the Share title/text already matches an existing Business or Financer row via shareFormFindBizByMobile/shareFormFindFinancerNamesByMobile; otherwise it's unlocked and starts blank, same as the existing no-detection safety-net path (manual typing + background RC/KYC content auto-match still both apply). Previous v344 note: waExtractSkipScan — the WhatsApp Extract Share Inbox popup's 🔗 Merge + RC/Insurance Scan button no longer runs the mandatory OCR scan step (runBulkOcrBatchCapped3) before reaching the Business List; it's now just ⬆️ Upload, straight from read/zip-PDF-expand to one-file-at-a-time upload." style="flex-shrink:0; white-space:nowrap; padding:3px 8px; border-radius:12px; border:1px solid #78716c; background:#f5f5f4; color:#57534e; font-weight:800; font-size:0.62rem;">🏷️ v353 · mergeLatestEditWinsByDate</span>
   </div>
   <!-- 🎯 RC/KYC/Consolidate Result quick-jump icons — RELOCATED (explicit
   user instruction, Sep 8 2026, Tamil): originally placed here in the
@@ -1588,6 +1588,7 @@ WhatsApp Upload and 📞 Calls are now shown smaller, per instruction). -->
           <strong>🛡️ RC Related — பெயர் / Engine / Chassis / Expiry / Mobile</strong>
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
             <button id="insuranceOcrMinimizeBtn" type="button" title="List-ஐ Minimize/Expand பண்ணும் (Upload எண்ணிக்கை அதிகமா இருந்தா, Screen-ல் நீளமா வராம பண்ண)" style="background:#78716c;color:#fff;border:none;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;">▾</button>
+            <button type="button" id="rcRescanAllBtn" style="background:#0e7490;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;" title="🔄 Re-scan All — Save ஆன ஒவ்வொரு Registration Number-ஓட RC/Insurance Document-ஐயும் மறுபடி OCR Scan பண்ணி, 🛡️ Insurance Renewal Excel-ல் Blank/Missing Fields-ஐ நிரப்பும் (இருக்கும் Value-ஐ மாற்றாது). Records எண்ணிக்கை அதிகமா இருந்தா நேரம் ஆகும்.">🔄 Re-scan All</button>
             <button id="insuranceOcrClearAllBtn" type="button" style="background:#b91c1c;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;" title="இந்த List-ஐ காலி பண்ணும் (இதுவரை Extract பண்ண எதையும் Delete பண்ணாது, இந்த Review Queue-ஐ மட்டும் காலி பண்ணும்).">🗑️ Clear List</button>
             <button id="insuranceOcrFullResetBtn" type="button" style="background:#7f1d1d;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;" title="🧨 COMPLETE RESET — நடந்துகொண்டிருக்கும் Scan-ஐ நிறுத்தும், Review List-ஐ காலி பண்ணும், ஒவ்வொரு Registration Number-க்கும் Save ஆன PDF Archive Files அனைத்தையும் நீக்கும், Strike Rate-ஐயும் 0-க்கு Reset பண்ணும் — முழுவதுமாக ஒரு Fresh Start. இது திரும்பப் பெற முடியாது (Irreversible).">🧨 Complete Reset</button>
             <button id="insuranceOcrBackupSaveBtn" type="button" style="background:#0e7490;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;" title="இதுவரை Scan ஆன அத்தனை Records-ஐயும் ஒரு JSON File-ஆ Download பண்ணும் — புது Version Upload பண்ண முன் இதை பண்ணி வையுங்க.">📤 Backup Save</button>
@@ -1639,6 +1640,7 @@ WhatsApp Upload and 📞 Calls are now shown smaller, per instruction). -->
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
             <button id="kycOcrMinimizeBtn" type="button" title="List-ஐ Minimize/Expand பண்ணும் (Upload எண்ணிக்கை அதிகமா இருந்தா, Screen-ல் நீளமா வராம பண்ண)" style="background:#78716c;color:#fff;border:none;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;">▾</button>
             <button type="button" id="kycOcrExtractAddMoreBtn" style="background:#9333ea;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;">➕ மேலும் Upload</button>
+            <button type="button" id="kycRescanAllBtn" style="background:#0e7490;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;" title="🔄 Re-scan All — Save ஆன ஒவ்வொரு 🪪 KYC Person Record-உம் அவரவர் Document-ஐ மறுபடி OCR Scan பண்ணி, Blank/Missing Fields-ஐ மட்டும் நிரப்பும் (இருக்கும் Correct Value-ஐ மாற்றாது). Records எண்ணிக்கை அதிகமா இருந்தா நேரம் ஆகும்.">🔄 Re-scan All</button>
             <button id="kycFullResetBtn" type="button" style="background:#7f1d1d;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;" title="🧨 COMPLETE RESET — நடந்துகொண்டிருக்கும் Scan-ஐ நிறுத்தும், Save ஆன அத்தனை 🪪 KYC Person Records-ஐயும் (Name/Aadhaar/PAN/Mobile) மற்றும் ஒவ்வொரு Person-ஓட Scan ஆன Documents அனைத்தையும் நீக்கும், Strike Rate-ஐயும் 0-க்கு Reset பண்ணும் — முழுவதுமாக ஒரு Fresh Start. இது திரும்பப் பெற முடியாது (Irreversible). 🛡️ RC Related/🗂️ Consolidated/Business List பாதிக்கப்படாது.">🧨 Complete Reset</button>
             <button id="kycBackupSaveBtn" type="button" style="background:#0e7490;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;" title="இதுவரை Save ஆன அத்தனை KYC Records-ஐயும் ஒரு JSON File-ஆ Download பண்ணும் — புது Version Upload பண்ண முன் இதை பண்ணி வையுங்க.">📤 Backup Save</button>
             <button id="kycBackupRestoreBtn" type="button" style="background:#0369a1;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;" title="📤 Backup Save-ல் Download ஆன JSON File-ஐ திரும்ப Load பண்ணி, இந்த List-ல் Merge பண்ணும்.">📥 Backup Restore</button>
@@ -1682,6 +1684,7 @@ WhatsApp Upload and 📞 Calls are now shown smaller, per instruction). -->
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
             <button id="consolidatedManualUploadBtn" type="button" title="🗂️ Consolidated-க்கு நேரடியாக Document Upload பண்ண (Multi-select, PDF/Image) — Business List-ல் Mobile Number மேட்ச் ஆனா Auto-fill ஆகும், இல்லைனா Mobile Number Box-ல் நீங்களே தட்டச்சு பண்ணலாம்." style="background:#0f766e;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;">➕ Document Upload</button>
             <button id="consolidatedDocMinimizeBtn" type="button" title="List-ஐ Minimize/Expand பண்ணும்" style="background:#78716c;color:#fff;border:none;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;">▾</button>
+            <button type="button" id="consRescanAllBtn" style="background:#0e7490;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;" title="🔄 Re-scan All — ஏற்கனவே Compile ஆன ஒவ்வொரு Mobile Number-ஓட Consolidated Document-ஐயும், அதன் Latest 🪪 KYC/🛡️ RC Related Documents-உடன் மறுபடி ஒப்பிட்டு Refresh பண்ணும் (புது Mobile Number-ஐ இது Add பண்ணாது — அது தானாகவே நடக்கும்; இது இருக்கிறவற்றை Refresh பண்ண மட்டும்). Records எண்ணிக்கை அதிகமா இருந்தா நேரம் ஆகும்.">🔄 Re-scan All</button>
             <button id="consFullResetBtn" type="button" style="background:#7f1d1d;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;" title="🧨 COMPLETE RESET — நடந்துகொண்டிருக்கும் Scan-ஐ நிறுத்தும், 🗂️ Consolidated-ல் நேரடியாக Upload செய்த Documents அனைத்தும், Auto-Consolidated Combined PDFs அனைத்தும், Strike Rate-ஐயும் 0-க்கு Reset பண்ணும் — முழுவதுமாக ஒரு Fresh Start. இது திரும்பப் பெற முடியாது (Irreversible). 🛡️ RC Related/🪪 KYC/Business List பாதிக்கப்படாது (அவை மறுபடியும் Save ஆகும்போது இங்கே தானாகவே திரும்ப Auto-Consolidate ஆகும்).">🧨 Complete Reset</button>
             <button id="consBackupSaveBtn" type="button" style="background:#0e7490;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;" title="📌 நேரடியாக Upload செய்த Documents-ஓட Mobile Number/Name Details-ஐ (Actual Image/PDF இல்லாமல்) ஒரு JSON File-ஆ Download பண்ணும். 🔒 Full-Automatic பகுதி 🪪 KYC/🛡️ RC Related Backup Restore ஆனதும் தானாகவே திரும்ப உருவாகும்.">📤 Backup Save</button>
             <button id="consBackupRestoreBtn" type="button" style="background:#0369a1;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;" title="📤 Backup Save-ல் Download ஆன JSON File-ஐ திரும்ப Load பண்ணும் (Excluded/Deleted List மட்டும் Restore ஆகும்; Actual Documents திரும்ப Upload பண்ண வேண்டும்).">📥 Backup Restore</button>
@@ -1913,6 +1916,21 @@ WhatsApp Upload and 📞 Calls are now shown smaller, per instruction). -->
       <input type="file" id="importBackupFile" accept="application/json,.json" style="display:none;">
       <button class="tool-btn tool-btn-export" id="mergeBackupBtn" type="button" style="background:#0e7490; color:#fff; border-color:#0e7490;">🔀 Merge Backup from Other Phone</button>
       <input type="file" id="mergeBackupFile" accept="application/json,.json" style="display:none;">
+      <!-- 🐛 Fix (Sep 8, 2026, Tamil — user asked to audit every "Refresh"
+      button in the app and confirm each one genuinely works): this button
+      was referenced by name in syncRcKycToBusinessList's own comment
+      ("both the silent auto-run above and the visible 🔄 Manual Sync
+      button, manualRcKycBizSyncBtn, wired below") as if it already
+      existed — but the actual <button> element and its click listener
+      were never added. The function itself (syncRcKycToBusinessList) was
+      real and already ran automatically on every app load; only the
+      MANUAL on-demand trigger was missing, so a person who wanted to
+      force an immediate re-sync (e.g. right after adding several RC/KYC
+      records) had no working button to tap — a genuinely broken/missing
+      "refresh" in exactly the sense that was asked about. Added now,
+      wired below, calling the SAME syncRcKycToBusinessList used by the
+      silent auto-run — no new logic, just the missing UI hookup. -->
+      <button class="tool-btn tool-btn-export" id="manualRcKycBizSyncBtn" type="button" style="background:#0f766e; color:#fff; border-color:#0f766e;" title="🛡️ RC Related + 🪪 KYC-ல் ஏற்கனவே Save ஆன Records-ஐ, Business List-ல் இப்போதே Check பண்ணி, இன்னும் இல்லாதவற்றை உடனே Add/Sync பண்ணும் (இது App Open ஆனவுடன் தானாகவும் ஓடும் — இது அதையே இப்போதே Manual-ஆ Force பண்ண).">🔄 Manual Sync (RC/KYC → Business List)</button>
       <button class="tool-btn tool-btn-saveall" id="saveAllBtn" type="button">💾 Save All <span class="num" id="saveAllCount" style="display:none;">0</span></button>
     </div>
     <div class="add-biz-form" id="addBizForm" style="display:none;">
@@ -2009,22 +2027,6 @@ WhatsApp Upload and 📞 Calls are now shown smaller, per instruction). -->
     </div>
 
 
-    <div id="callTrackerBox" style="display:none; background:#0f766e; padding:10px 14px; color:#fff; box-shadow:0 4px 10px rgba(0,0,0,0.25); max-width:1100px; margin:0 auto; box-sizing:border-box; border-radius:10px;">
-      <div style="max-width:1100px; margin:0 auto;">
-      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
-        <div style="font-weight:800; font-size:1.0rem;">Calls Today: <span id="callTrackerTotal">0</span> / <span id="callTrackerTarget">1000</span></div>
-        <div id="callTrackerRateLabel" style="font-size:0.78rem; background:rgba(255,255,255,0.18); padding:3px 8px; border-radius:6px;">Rate: 0 / hr · Target: 118 / hr</div>
-      </div>
-      <div style="background:rgba(255,255,255,0.25); border-radius:6px; height:7px; margin-top:6px; overflow:hidden;">
-        <div id="callTrackerBar" style="background:#fff; height:100%; width:0%; transition:width .3s;"></div>
-      </div>
-      <div style="display:flex; gap:8px; margin-top:8px;">
-        <input type="number" id="callTrackerInput" placeholder="இந்த மணி நேரம் எத்தனை calls?" inputmode="numeric" style="flex:1; min-width:0; padding:8px 10px; border-radius:7px; border:none; font-size:0.85rem;">
-        <button type="button" id="callTrackerAddBtn" style="padding:8px 14px; border-radius:7px; border:none; background:#fbbf24; color:#78350f; font-weight:800; cursor:pointer; font-size:0.85rem;">Add</button>
-        <button type="button" id="callTrackerResetBtn" title="Reset today's count" style="padding:8px 11px; border-radius:7px; border:1px solid rgba(255,255,255,0.5); background:transparent; color:#fff; cursor:pointer;">Reset</button>
-      </div>
-      </div>
-    </div>
     <div class="stats-bar">
       <span class="stat-pill">📋 <span class="pill-label">Total: </span><span class="num" id="totalCount">0</span></span>
       
@@ -2084,9 +2086,9 @@ WhatsApp Upload and 📞 Calls are now shown smaller, per instruction). -->
       <span style="font-size:0.85rem;">📥</span>
     </button>
 
-    <button type="button" id="callRateBadge" title="Calls Today — tap to add today's calls" style="pointer-events:auto; width:34px; height:34px; border-radius:50%; background:#0f766e; color:#fff; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; flex-direction:column; font-weight:800; line-height:1; padding:0; cursor:pointer;">
+    <button type="button" id="callRateBadge" title="இன்று 📞 Call பட்டன் Touch செய்து Call பண்ணிய Business எண்ணிக்கை (Real Count — Phone Pad-ல் தொட்டவை மட்டும்)" style="pointer-events:auto; cursor:default; width:34px; height:34px; border-radius:50%; background:#0f766e; color:#fff; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; flex-direction:column; font-weight:800; line-height:1; padding:0;">
       <span style="font-size:0.42rem;">📞</span>
-      <span style="font-size:0.44rem;"><span id="callTrackerTotalMini">0</span>/<span id="callTrackerTargetMini">1000</span></span>
+      <span style="font-size:0.55rem;" id="callTrackerTotalMini">0</span>
     </button>
 
     <!-- 🎯🆕 Two read-only badges — explicit user instruction (Sep 8 2026,
@@ -5849,6 +5851,13 @@ function touchEdited(id){
   editTouchVersion++;
   const it = data.find(d => d.id === id);
   if(it && it.name) lastEditedName = it.name;
+  // v353 — stamp the record itself with WHEN it was last edited (ms epoch).
+  // This travels with the record inside `data` (no separate export/import
+  // code needed — it's just another field on the object), and is what
+  // 🔀 Merge Backup from Other Phone now uses to decide, business-by-
+  // business, which side's edited version is newer when the SAME business
+  // (matched by mobile number) was edited on both phones/files.
+  if(it) it._lastEditedAt = Date.now();
 }
 
 // ---------- One-time cleanup (2026-08-03): 298 businesses tagged for
@@ -5947,9 +5956,12 @@ let allTimeCalledBizIds = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY + 
 // 🎯 Refreshes the two small read-only badges next to 📞 callRateBadge:
 // callTodayUniqueMini = today's DISTINCT businesses whose Call icon was
 // touched (deduped via callDates — touching the same business 10 times
-// today still counts once; deliberately independent of the manual
-// callRateBadge/ctState "Calls Today" tap-counter, which is not a per-
-// business log and must NOT feed this number).
+// today still counts once). 📞 callRateBadge's own count (see its
+// separate ctRender() in the script near the bottom of the file) is
+// computed the same way from the same callDates data — as of Sep 8 2026
+// it is no longer a manually-typed tap-counter, so the two numbers are
+// expected to match; this one stays a separate badge since its title
+// frames it as "unique businesses called" rather than a raw count.
 // callAllTimeUniqueMini = allTimeCalledBizIds.size (never resets).
 function refreshCallTouchBadges(){
   try{
@@ -22539,6 +22551,29 @@ document.getElementById('insuranceOcrClearAllBtn').addEventListener('click', asy
 // Confirmed with a native confirm() first since this is irreversible.
 // Deliberately scoped to 🛡️ RC Related ONLY — 🪪 KYC, 🗂️ Consolidated,
 // the Business List, and every other icon's own data are untouched.
+// 🔄 Re-scan All — 🛡️ RC Related (explicit user instruction, Sep 8 2026,
+// Tamil: "RC/KYC/Consolidated மூணு ஐகான்களுக்கும் Re-scan All Bulk
+// Button"). Enumerates every Registration Number that has an archived
+// 🛡️📄 RC document (idbGetAllKeysWithPrefix over INSURANCE_REGN_DOCS_
+// PREFIX — the actual document archive, independent of whichever cards
+// currently show in this panel's review queue) and re-scans each one via
+// rescanOneRegnDocById. Persists insuranceOcrExtractQueue ONCE at the
+// end (not per-item — this can be thousands of records) and refreshes
+// the panel so any newly-filled fields show immediately.
+document.getElementById('rcRescanAllBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('rcRescanAllBtn');
+  let regnKeys = [];
+  try{ regnKeys = await idbGetAllKeysWithPrefix(INSURANCE_REGN_DOCS_PREFIX); }catch(e){ console.warn('rcRescanAllBtn: listing keys failed', e); }
+  const regns = regnKeys.map(k => k.slice(INSURANCE_REGN_DOCS_PREFIX.length)).filter(Boolean);
+  if(!regns.length){ alert('🛡️ RC Related-ல் இன்னும் எந்த Document-உம் Archive ஆகல் — Re-scan பண்ண எதுவும் இல்லை.'); return; }
+  await runRescanAllButton(btn, regns, rescanOneRegnDocById, {
+    onDone: async () => {
+      try{ await persistInsuranceOcrExtractQueue(); }catch(e){ console.warn('rcRescanAllBtn: persist failed', e); }
+      try{ renderInsuranceOcrExtractList(); }catch(e){}
+      try{ if(typeof refreshUploadExtractStrikeRateBadge === 'function') await refreshUploadExtractStrikeRateBadge(); }catch(e){}
+    }
+  });
+});
 document.getElementById('insuranceOcrFullResetBtn').addEventListener('click', async () => {
   const ok = confirm('🧨 COMPLETE RESET — 🛡️ RC Related\n\nஇது பின்வருவனவற்றை நிரந்தரமாக நீக்கும்:\n• நடந்துகொண்டிருக்கும்/நிறுத்தி வெச்ச Scan (Auto-Resume Checkpoint)\n• Review List-ல் இருக்கும் அனைத்து Extract ஆன தரவுகள்\n• ஒவ்வொரு Registration Number-ஓட Save ஆன PDF Archive Files அனைத்தும்\n• RC Strike Rate எண்ணிக்கை (0-க்கு Reset ஆகும்)\n\n🪪 KYC / 🗂️ Consolidated / Business List பாதிக்கப்படாது.\n\nஇதை திரும்பப் பெற முடியாது. தொடரவா?');
   if(!ok) return;
@@ -22600,6 +22635,26 @@ document.getElementById('insuranceOcrFullResetBtn').addEventListener('click', as
 // IS the saved Person record — so this necessarily deletes all of it
 // (there's no lesser "Clear List only" step possible for KYC; explained
 // to the user before adding this button).
+// 🔄 Re-scan All — 🪪 KYC (explicit user instruction, Sep 8 2026, Tamil).
+// Loops every saved KYC Person record via the existing rescanOneKycPersonById
+// (already fill-blank-only, already re-syncs Business List Mobile Number
+// per person as it goes — see that function's own comments above). No
+// separate persist step needed here since rescanOneKycPersonById already
+// calls setKycRecords() itself per person.
+document.getElementById('kycRescanAllBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('kycRescanAllBtn');
+  let list = [];
+  try{ list = await getKycRecords(); }catch(e){ console.warn('kycRescanAllBtn: getKycRecords failed', e); }
+  const ids = list.map(r => r.id).filter(Boolean);
+  if(!ids.length){ alert('🪪 KYC-ல் இன்னும் எந்த Person Record-உம் இல்லை — Re-scan பண்ண எதுவும் இல்லை.'); return; }
+  await runRescanAllButton(btn, ids, rescanOneKycPersonById, {
+    onDone: async () => {
+      try{ await renderKycOcrExtractPanel(''); }catch(e){}
+      try{ if(typeof refreshKycCountBadge === 'function') await refreshKycCountBadge(); }catch(e){}
+      try{ if(typeof refreshUploadExtractStrikeRateBadge === 'function') await refreshUploadExtractStrikeRateBadge(); }catch(e){}
+    }
+  });
+});
 document.getElementById('kycFullResetBtn').addEventListener('click', async () => {
   const ok = confirm('🧨 COMPLETE RESET — 🪪 KYC\n\nஇது பின்வருவனவற்றை நிரந்தரமாக நீக்கும்:\n• நடந்துகொண்டிருக்கும்/நிறுத்தி வெச்ச Scan (Auto-Resume Checkpoint)\n• Save ஆன அத்தனை KYC Person Records (Name/Aadhaar/PAN/Mobile)\n• ஒவ்வொரு Person-ஓட Scan ஆன Documents (Photo/PDF) அனைத்தும்\n• KYC Strike Rate எண்ணிக்கை (0-க்கு Reset ஆகும்)\n\n🛡️ RC Related / 🗂️ Consolidated / Business List பாதிக்கப்படாது.\n\nஇதை திரும்பப் பெற முடியாது. தொடரவா?');
   if(!ok) return;
@@ -22643,6 +22698,30 @@ document.getElementById('kycFullResetBtn').addEventListener('click', async () =>
 // Related themselves, since consolidateCustomerDocumentsForMobile()
 // silently rebuilds this panel's automatic half from those the next time
 // either one is saved (documented in this button's own tooltip).
+// 🔄 Re-scan All — 🗂️ Consolidated (explicit user instruction, Sep 8
+// 2026, Tamil). Loops every Mobile Number ALREADY compiled here
+// (idbGetAllKeysWithPrefix over CONSOLIDATED_DOCS_PREFIX) and re-runs
+// consolidateCustomerDocumentsForMobile for each via
+// rescanOneConsolidatedMobileById — refreshing the combined PDF with
+// whatever 🪪 KYC/🛡️ RC Related documents exist NOW (including any
+// re-orientation fix), same as tapping 🔄 Refresh on one customer,
+// just for all of them at once. Finding brand-new never-compiled
+// mobiles stays fully automatic (backfillConsolidatedDocuments) — this
+// button's job is refreshing what's already on screen, not discovering
+// new ones.
+document.getElementById('consRescanAllBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('consRescanAllBtn');
+  let keys = [];
+  try{ keys = await idbGetAllKeysWithPrefix(CONSOLIDATED_DOCS_PREFIX); }catch(e){ console.warn('consRescanAllBtn: listing keys failed', e); }
+  const mobiles = keys.map(k => k.slice(CONSOLIDATED_DOCS_PREFIX.length)).filter(Boolean);
+  if(!mobiles.length){ alert('🗂️ Consolidated-ல் இன்னும் எந்த Mobile Number-உம் Compile ஆகல் — Re-scan பண்ண எதுவும் இல்லை.'); return; }
+  await runRescanAllButton(btn, mobiles, rescanOneConsolidatedMobileById, {
+    onDone: async () => {
+      try{ await renderConsolidatedDocPanel(''); }catch(e){}
+      try{ if(typeof refreshUploadExtractStrikeRateBadge === 'function') await refreshUploadExtractStrikeRateBadge(); }catch(e){}
+    }
+  });
+});
 document.getElementById('consFullResetBtn').addEventListener('click', async () => {
   const ok = confirm('🧨 COMPLETE RESET — 🗂️ Consolidated\n\nஇது பின்வருவனவற்றை நிரந்தரமாக நீக்கும்:\n• நடந்துகொண்டிருக்கும்/நிறுத்தி வெச்ச Scan (Auto-Resume Checkpoint)\n• நேரடியாக Upload செய்த Documents அனைத்தும்\n• Auto-Consolidated Combined PDFs அனைத்தும்\n• Consolidated Strike Rate எண்ணிக்கை (0-க்கு Reset ஆகும்)\n\n🛡️ RC Related / 🪪 KYC / Business List பாதிக்கப்படாது — அவை மறுபடியும் Save ஆகும்போது இங்கே தானாகவே திரும்ப Auto-Consolidate ஆகும்.\n\nஇதை திரும்பப் பெற முடியாது. தொடரவா?');
   if(!ok) return;
@@ -29529,6 +29608,117 @@ async function rescanOneKycPersonById(id){
   if(typeof refreshKycCountBadge === 'function') refreshKycCountBadge();
   return { ok: true, anyFieldFound, displayName: kycDisplayName(rec) };
 }
+// 🔄 Re-scan All (RC) — the "RC half" of the same planned bulk feature
+// (see rescanOneKycPersonById's comment above). Re-usable core factored
+// out of the existing 🛡️ Insurance Renewal per-row insRenRescanRow click
+// handler (same analyzeInsuranceDocSmart pipeline, same
+// reorientStoredPdfBlob readable-position fix, same 1-pass-per-page
+// scan) but keyed purely by Registration Number — no <tr> row required —
+// so it can run for EVERY Registration Number that has an archived 🛡️📄
+// RC document, not just ones currently visible as an Insurance Renewal
+// Excel row.
+// 🐛 Caught before shipping: a first draft of this function wrote through
+// upsertInsuranceRenewalRecord()/insurance_renewal_records_v1 — the SAME
+// old store consolidateCustomerDocumentsForMobile's own comment says was
+// "deliberately abandoned" once insuranceOcrExtractQueue became the
+// single source of truth (see the Aug 2026 "Single-Source-of-Truth
+// unification" note above upsertIntoInsuranceExtractQueue). Writing there
+// would have silently updated nothing this app's 🛡️ RC Related panel,
+// 🔟 WhatsApp Promo, or 🗂️ Consolidated actually read from. Fixed to call
+// upsertIntoInsuranceExtractQueue() — the real current choke point —
+// instead, same fill-blank-unless-allowOverwrite merge every other
+// automatic RC/Insurance write path already goes through. Deliberately
+// fill-blank-only here (allowOverwrite:false), matching this bulk
+// button's KYC sibling above (rescanOneKycPersonById is also fill-blank-
+// only) — a single manual per-row Re-scan overwriting a known-wrong
+// value is one deliberate correction; a Re-scan ALL sweeping possibly
+// thousands of records is safer left non-destructive, same reasoning the
+// KYC half already uses. Always silent — caller reports the summary.
+async function rescanOneRegnDocById(regn){
+  let docRec = null;
+  try{
+    const r = await idbGet(INSURANCE_REGN_DOCS_PREFIX + regn);
+    docRec = (r && r.value && r.value.blob) ? r.value : null;
+  }catch(e){}
+  if(!docRec) return { ok: false, anyFieldFound: false };
+  try{
+    const reoriented = await reorientStoredPdfBlob(docRec.blob, regn);
+    if(reoriented.changed){
+      docRec = { ...docRec, blob: reoriented.blob };
+      await idbSet(INSURANCE_REGN_DOCS_PREFIX + regn, docRec);
+    }
+  }catch(reErr){ console.warn('reorientStoredPdfBlob failed inside rescanOneRegnDocById:', reErr); }
+  const pageFiles = (typeof rasterizeAllPdfPagesToImageFiles === 'function') ? await rasterizeAllPdfPagesToImageFiles(docRec.blob, regn) : [];
+  if(!pageFiles.length) return { ok: false, anyFieldFound: false };
+  let merged = {};
+  const isComplete = () => (typeof insuranceRecordIsComplete === 'function') ? insuranceRecordIsComplete(merged) : false;
+  for(const pf of pageFiles){
+    if(isComplete()) break;
+    try{
+      const ex = await analyzeInsuranceDocSmart(pf);
+      if(ex) Object.keys(ex).forEach(k => { if(!merged[k] && ex[k]) merged[k] = ex[k]; });
+    }catch(fieldErr){ console.warn('RC Re-scan All: page extraction failed', regn, fieldErr); }
+  }
+  const anyFieldFound = Object.keys(merged).some(k => merged[k]);
+  if(anyFieldFound){
+    merged.registrationNumber = regn;
+    try{ upsertIntoInsuranceExtractQueue(merged, null, null, false, false); }catch(upErr){ console.warn('RC Re-scan All: upsert failed', regn, upErr); return { ok: false, anyFieldFound: false }; }
+  }
+  return { ok: true, anyFieldFound };
+}
+// 🔄 Re-scan All (Consolidated) — the "Consolidated half" of the same
+// planned bulk feature. 🗂️ Consolidated's own cards don't carry their own
+// OCR-extracted fields (they're purely a merged-PDF compile of whatever
+// 🪪 KYC/🛡️ RC Related already scanned for the same Mobile Number), so
+// "Re-scan" here means what it means everywhere else this word appears
+// in the app when there's nothing new to independently re-read from —
+// re-run the existing compile (consolidateCustomerDocumentsForMobile,
+// WITHOUT skipReorient so orientation fixes are re-checked too, same as
+// a manual 🔄 Refresh tap already does one mobile at a time) for every
+// mobile ALREADY compiled, so any KYC/RC document added/corrected since
+// gets picked up. Deliberately reuses idbGetAllKeysWithPrefix over
+// CONSOLIDATED_DOCS_PREFIX (the already-compiled set) rather than
+// collectAllMobilesFromKycAndRc (the backfill's full candidate set) —
+// finding brand-new never-compiled mobiles is already fully automatic
+// (backfillConsolidatedDocuments), this button's job is refreshing what's
+// already there.
+async function rescanOneConsolidatedMobileById(mobile){
+  try{
+    const compiled = await consolidateCustomerDocumentsForMobile(mobile, { skipReorient: false });
+    return { ok: true, anyFieldFound: !!compiled };
+  }catch(e){ console.warn('Consolidated Re-scan All: failed for', mobile, e); return { ok: false, anyFieldFound: false }; }
+}
+// 🔄 Re-scan All — shared progress-button runner for all 3 panels above.
+// One place implementing "disable + show ⏳n/total + re-enable + show
+// summary alert() at the end" so the RC/KYC/Consolidated buttons all
+// behave identically. `items` is the full list to loop over; `runOne`
+// is one of the 3 functions above (called per item); `label` builds the
+// per-button progress text.
+async function runRescanAllButton(btn, items, runOne, opts){
+  if(!btn || btn.disabled) return;
+  const origHtml = btn.innerHTML;
+  btn.disabled = true;
+  let scanned = 0, updated = 0, failed = 0;
+  try{
+    for(let i=0;i<items.length;i++){
+      btn.innerHTML = `⏳${i+1}/${items.length}`;
+      try{
+        const res = await runOne(items[i]);
+        if(res && res.ok){ scanned++; if(res.anyFieldFound) updated++; }
+        else failed++;
+      }catch(e){ console.warn('runRescanAllButton: item failed', items[i], e); failed++; }
+      // 🎗️ Yield back to the UI thread every few items so the ⏳n/total
+      // text and the rest of the page (scrolling, taps) stay responsive
+      // across a large list — same reasoning as maybeYield() elsewhere.
+      if(i % 3 === 2) await new Promise(r => setTimeout(r, 0));
+    }
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = origHtml;
+  }
+  alert(`🔄 Re-scan All முடிந்தது —\nமொத்தம்: ${items.length}\nScan ஆனது: ${scanned}\nபுதிதா/திருத்தமா தகவல் கிடைத்தது: ${updated}\nதோல்வி: ${failed}`);
+  if(opts && typeof opts.onDone === 'function'){ try{ await opts.onDone(); }catch(e){} }
+}
 // 🚫 Duplicate Mobile Number Block — explicit user instruction (Aug 29,
 // 2026, Tamil): "மீதி இருப்பது: மூன்று icon-லும் (RC/KYC/Consolidated)
 // duplicate mobile number block பண்றது" — the same Mobile Number must
@@ -30287,6 +30477,23 @@ async function syncRcKycToBusinessList(){
   }catch(e){ console.warn('syncRcKycToBusinessList: KYC sync failed', e); }
   return { rcSynced, kycSynced };
 }
+document.getElementById('manualRcKycBizSyncBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('manualRcKycBizSyncBtn');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '🔄 Sync ஆகுது…';
+  try{
+    const { rcSynced, kycSynced } = await syncRcKycToBusinessList();
+    render(filterData(searchBox.value));
+    updateStats();
+    alert(`✅ Manual Sync முடிந்தது.\n\n🛡️ RC Related-லிருந்து Business List-ல் Sync ஆனது/உறுதி ஆனது: ${rcSynced}\n🪪 KYC-லிருந்து Business List-ல் Sync ஆனது/உறுதி ஆனது: ${kycSynced}`);
+  }catch(e){
+    console.warn('manualRcKycBizSyncBtn click failed', e);
+    alert('⚠️ Sync செய்ய முடியல: ' + ((e && e.message) || String(e)));
+  }
+  btn.disabled = false;
+  btn.textContent = originalText;
+});
 
 // Parses an Insurance Expiry Date into a real Date — or null if it
 // doesn't look like a valid date. Never guesses a missing piece.
@@ -32328,6 +32535,32 @@ document.getElementById('importBackupFile').addEventListener('change', (e) => {
     const recCount = Array.isArray(parsed.data) ? parsed.data.length : '?';
     const editedCount = Array.isArray(parsed.editedIds) ? parsed.editedIds.length : 0;
     const savedAtLabel = parsed.savedAt ? new Date(parsed.savedAt).toLocaleString() : 'unknown time';
+    // 🛡️ Shrink guard (explicit user instruction, Sep 2026, Tamil: importing
+    // several old/partial backup files one after another via THIS button —
+    // which does a FULL REPLACE, not a merge — was silently discarding the
+    // current, larger, live Business List every time an older/smaller file
+    // was imported, then persisting that smaller list into IndexedDB too
+    // (mirrorReliabilityLayer overwrites IndexedDB's 'data' key with
+    // whatever is now in memory, regardless of size) — so even the usual
+    // "recover from the bigger IndexedDB copy" boot check had nothing
+    // bigger left to recover FROM, and refresh kept showing the smaller,
+    // older count (reported as "reverting back", e.g. to ~20,000). This
+    // button was never meant for combining multiple backup files — that is
+    // exactly what "🔀 Merge Backup from Other Phone" already does, safely,
+    // additively, without deleting anything currently loaded. This guard
+    // doesn't change what Import Backup does when confirmed (still a full,
+    // deliberate replace, for the genuine "roll back to this one file"
+    // case) — it only forces a clear, explicit second confirmation before
+    // a replace that would SHRINK the list, naming the safer alternative.
+    if(typeof recCount === 'number' && recCount < data.length){
+      const shrinkOk = confirm(
+        `⚠️ இந்த Backup File-ல் ${recCount} Business மட்டும்தான் இருக்கு — ஆனா இப்போ இந்த App-ல் ${data.length} Business ஏற்கனவே Load ஆகி இருக்கு.\n\n` +
+        `📂 Import Backup என்பது FULL REPLACE — இந்த File-ல் இல்லாத பிசினஸ் எல்லாம் நீக்கப்பட்டுவிடும் (${data.length - recCount} பிசினஸ் Loss ஆகலாம்). இது IndexedDB Backup-ஐயும் மாற்றிவிடும் — அதனால Refresh பண்ணினாலும் இழந்தது திரும்ப வராது.\n\n` +
+        `பல Backup Files-ஐ ஒன்றன்பின் ஒன்றாக சேர்க்க வேண்டுமானால், இந்த பட்டனுக்கு பதிலா "🔀 Merge Backup from Other Phone" பட்டனை பயன்படுத்துங்க — அது எதையும் நீக்காமல் Add/Enrich மட்டும் செய்யும்.\n\n` +
+        `இருந்தும் இந்த சிறிய File-ஐ FULL REPLACE-ஆ Import பண்ணணுமா?`
+      );
+      if(!shrinkOk){ e.target.value = ''; return; }
+    }
     // 🐛 Fix (explicit user instruction — Aug 2026: "ஆட்டோமேட்டிக்கா சேவ்
     // ஆகுற மாதிரி ஆப்ஷன் — புது ஐகான் வேண்டாம்") — a v2 backup file (see
     // runAutoBackup above) also carries insuranceRenewalRecords/kycRecords.
@@ -32564,7 +32797,19 @@ document.getElementById('mergeBackupFile').addEventListener('change', (e) => {
     });
     const usedIds = new Set(data.map(d => d.id));
 
-    let added = 0, enriched = 0, untouchedDup = 0, privateLtdDivertedCount = 0, skippedDeleted = 0;
+    let added = 0, enriched = 0, untouchedDup = 0, privateLtdDivertedCount = 0, skippedDeleted = 0, newerVersionKept = 0;
+    // v353 — "எடிட்டர் பிசினஸ் லிஸ்ட்-ஆக இருந்தால் தேதி அடிப்படையில் எது
+    // லேட்டஸ்டாக இருக்கிறதோ அது வர வேண்டும்" (Tamil, Sep 8 2026): when the SAME
+    // business (matched by mobile, as always) was edited on BOTH sides, don't
+    // just silently keep whichever happens to already be loaded here — compare
+    // the incoming file's parsed.editedIds membership + its record's own
+    // _lastEditedAt stamp (added this version, see touchEdited()) against the
+    // one already loaded, and let the genuinely newer edit win the field
+    // values. Records with no _lastEditedAt on either side (anything edited
+    // before this version, or never edited) fall back to the original safe
+    // fill-blanks-only behaviour — nothing already loaded is ever downgraded
+    // by an older or equally-undated incoming copy.
+    const incEditedIdSet = new Set(parsed.editedIds || []);
     parsed.data.forEach(inc => {
       const incMobiles = (inc.mobiles||[]).map(normalizeMobile).filter(Boolean);
       let match = null;
@@ -32580,9 +32825,34 @@ document.getElementById('mergeBackupFile').addEventListener('change', (e) => {
             changed = true;
           }
         });
-        if(!match.name && inc.name){ match.name = inc.name; changed = true; }
-        if(!match.address && inc.address){ match.address = inc.address; changed = true; }
-        if(!match.justdial_link && inc.justdial_link){ match.justdial_link = inc.justdial_link; changed = true; }
+        const incWasEdited = incEditedIdSet.has(inc.id);
+        const matchWasEdited = editedIds.has(match.id);
+        const incStamp = Number(inc._lastEditedAt) || 0;
+        const matchStamp = Number(match._lastEditedAt) || 0;
+        // Newer wins ONLY when both sides actually carry a real, comparable
+        // edit stamp AND the incoming one is strictly later — otherwise fall
+        // through to the original blanks-only enrichment below, so nothing
+        // dated is ever clobbered by something undated.
+        const incomingIsNewerEdit = incWasEdited && incStamp > 0 && incStamp > matchStamp;
+        if(incomingIsNewerEdit){
+          if(inc.name) match.name = inc.name;
+          if(inc.address) match.address = inc.address;
+          if(inc.justdial_link) match.justdial_link = inc.justdial_link;
+          match._lastEditedAt = incStamp;
+          editedIds.add(match.id); // the newer edit is, by definition, an edited record
+          changed = true; newerVersionKept++;
+        } else {
+          if(!match.name && inc.name){ match.name = inc.name; changed = true; }
+          if(!match.address && inc.address){ match.address = inc.address; changed = true; }
+          if(!match.justdial_link && inc.justdial_link){ match.justdial_link = inc.justdial_link; changed = true; }
+          // Even when the incoming copy doesn't win the field values, if IT
+          // was edited and the one loaded here was never marked edited at
+          // all, don't lose that "this business was worked on" signal —
+          // mark it edited here too (previously this info silently vanished
+          // because only the incoming file's own record id — which gets
+          // discarded on a match — was ever added to editedIds).
+          if(incWasEdited && !matchWasEdited){ editedIds.add(match.id); changed = true; }
+        }
         if(changed) enriched++; else untouchedDup++;
       } else if(incMobiles.length && incMobiles.every(m => deletedMobiles.has(m))){
         // Every mobile number on this incoming record was deliberately
@@ -32598,17 +32868,30 @@ document.getElementById('mergeBackupFile').addEventListener('change', (e) => {
         let newId = inc.id;
         if(!newId || usedIds.has(newId)) newId = 'merged_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
         usedIds.add(newId);
+        const wasEditedOnIncoming = incEditedIdSet.has(inc.id); // check BEFORE id is replaced below
         const newItem = Object.assign({}, inc, { id: newId, mobiles: incMobiles, name: stripNameHonorifics(inc.name) });
         assignDateIfMissing(newItem);
         data.push(newItem);
         incMobiles.forEach(m => mobileIndex.set(m, newItem));
+        // v353 — carry the "edited" flag over onto the NEW id this record was
+        // just given (its original id from the incoming file is discarded
+        // above, so the old blanket "add every incoming editedIds id" further
+        // down would otherwise tag an id that no longer exists on any record).
+        if(wasEditedOnIncoming) editedIds.add(newId);
         added++;
       }
     });
 
     // Union the progress-tracking sets so nothing tracked on either phone is lost.
+    // NOTE (v353): editedIds is deliberately NOT blanket-unioned here anymore —
+    // the incoming file's own record ids get replaced/discarded above (matched
+    // records keep the LOCAL id, newly-added records get a freshly generated
+    // id), so blindly adding the incoming file's raw editedIds would tag ids
+    // that don't correspond to any record in `data` at all (inflating the
+    // 📝 Edited count for nothing). The matched-record and newly-added-record
+    // branches above each already carry the "was this edited" flag over onto
+    // whichever id the record actually ends up with.
     (parsed.enquiredIds||[]).forEach(id => enquiredIds.add(id));
-    (parsed.editedIds||[]).forEach(id => editedIds.add(id));
     (parsed.oldIds||[]).forEach(id => oldIds.add(id));
     (parsed.targetIds||[]).forEach(id => targetIds.add(id));
     (parsed.npIds||[]).forEach(id => npIds.add(id));
@@ -32657,7 +32940,7 @@ document.getElementById('mergeBackupFile').addEventListener('change', (e) => {
     updateStats();
     renderPrivateLtdList();
     e.target.value = '';
-    alert(`🔀 Merge complete.\n\n➕ New businesses added: ${added}\n✨ Existing businesses enriched: ${enriched}\n➖ Exact duplicates (no new info): ${untouchedDup}\n🚫 Skipped (deliberately deleted here earlier): ${skippedDeleted}\n🏢 Diverted to Private Ltd Promo: ${privateLtdDivertedCount}\n\nTotal now: ${data.length} businesses.`);
+    alert(`🔀 Merge complete.\n\n➕ New businesses added: ${added}\n📅 Updated to the newer edited version (by edit date): ${newerVersionKept}\n✨ Existing businesses enriched: ${enriched - newerVersionKept > 0 ? enriched - newerVersionKept : 0}\n➖ Exact duplicates (no new info): ${untouchedDup}\n🚫 Skipped (deliberately deleted here earlier): ${skippedDeleted}\n🏢 Diverted to Private Ltd Promo: ${privateLtdDivertedCount}\n\nTotal now: ${data.length} businesses.`);
   };
   reader.onerror = () => { alert('Could not read that file. Please try again.'); e.target.value=''; };
   reader.readAsText(file);
@@ -34641,69 +34924,32 @@ updateUndoBackButtons();
 </script>
 
 <script>
-// 📞 Call Strike Rate Tracker — logs how many calls were made this hour,
-// keeps a running total against the 500/day target, auto-resets every
-// new day, and shows live Strike Rate (total ÷ hours actually worked
-// since 9 AM, excluding the 1-2 PM lunch) against the 59/hour target pace.
+// 📞 Calls Today badge — explicit user instruction (Sep 8 2026, Tamil):
+// "ஸ்ட்ரைக் ரேட் ஜீரோ பார் ஆயிரம் என்று இருக்கிறது அந்த தவுசரை நீக்கவும்
+// ஒன்லி போன் பேட்டில் இருந்து டச் செய்யும் கால் செய்யும் நம்பர் மட்டுமே
+// வர வேண்டும்" — the old "0/1000" number here was a MANUALLY typed-in
+// target-tracker (window.prompt() on tap, saved to its own localStorage
+// key), completely disconnected from any real call — exactly the fake
+// number he wants gone. Removed entirely (ctState/ctLoad/ctSave/CT_TARGET/
+// CT_RATE_TARGET/the hidden callTrackerBox input row and its Add/Reset
+// buttons — none of that is reachable anymore since nothing ever showed
+// that box). This badge now just displays the SAME real, phone-pad-touch-
+// based count already computed for the 📇 callTodayUniqueBadge right next
+// to it (today's distinct businesses whose 📞 Call icon was actually
+// tapped, from callDates) — no separate tracking, no target, no tap-to-
+// add prompt, no denominator. Kept as its own badge (rather than just
+// deleting it) since 📇/📊 are described as "unique businesses called" —
+// this one stays labelled plainly "Calls Today".
 (function(){
-  const CT_KEY = 'callTrackerData_v1';
-  const CT_TARGET = 1000;
-  const CT_RATE_TARGET = 118;
-
-  function ctTodayStr(){
-    const d = new Date();
-    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-  }
-  function ctLoad(){
-    try{
-      const raw = localStorage.getItem(CT_KEY);
-      if(!raw) return { date: ctTodayStr(), total: 0 };
-      const parsed = JSON.parse(raw);
-      if(parsed.date !== ctTodayStr()) return { date: ctTodayStr(), total: 0 }; // new day → auto reset
-      return parsed;
-    }catch(e){ return { date: ctTodayStr(), total: 0 }; }
-  }
-  function ctSave(state){
-    try{ localStorage.setItem(CT_KEY, JSON.stringify(state)); }catch(e){}
-  }
-  function ctElapsedHours(now){
-    const start = new Date(now); start.setHours(9,0,0,0);
-    const end = new Date(now); end.setHours(18,30,0,0);
-    const lunchStart = new Date(now); lunchStart.setHours(13,0,0,0);
-    const lunchEnd = new Date(now); lunchEnd.setHours(14,0,0,0);
-    let t = now < start ? start : (now > end ? end : now);
-    let hrs = (t - start) / 3600000;
-    if(t > lunchEnd) hrs -= 1;
-    else if(t > lunchStart) hrs -= (t - lunchStart) / 3600000;
-    return Math.max(hrs, 0.05);
-  }
-
-  let ctState = ctLoad();
-
   function ctRender(){
-    ctState = ctLoad(); // re-check date each render, in case day rolled over
-    const totalEl = document.getElementById('callTrackerTotal');
-    const targetEl = document.getElementById('callTrackerTarget');
-    const rateEl = document.getElementById('callTrackerRateLabel');
-    const barEl = document.getElementById('callTrackerBar');
     const totalMiniEl = document.getElementById('callTrackerTotalMini');
-    const targetMiniEl = document.getElementById('callTrackerTargetMini');
-    if(totalMiniEl) totalMiniEl.textContent = ctState.total;
-    if(targetMiniEl) targetMiniEl.textContent = CT_TARGET;
-    const badgeEl = document.getElementById('callRateBadge');
-    if(badgeEl){
-      const rateSoFar = ctState.total / ctElapsedHours(new Date());
-      badgeEl.style.background = (rateSoFar >= CT_RATE_TARGET) ? '#16a34a' : '#0f766e';
-    }
-    if(!totalEl) return;
-    totalEl.textContent = ctState.total;
-    targetEl.textContent = CT_TARGET;
-    const hrs = ctElapsedHours(new Date());
-    const rate = (ctState.total / hrs).toFixed(1);
-    rateEl.textContent = 'Rate: ' + rate + ' / hr · Target: ' + CT_RATE_TARGET + ' / hr';
-    rateEl.style.background = (parseFloat(rate) >= CT_RATE_TARGET) ? 'rgba(34,197,94,0.35)' : 'rgba(255,255,255,0.18)';
-    const pct = Math.min(100, Math.round((ctState.total / CT_TARGET) * 100));
-    barEl.style.width = pct + '%';
+    if(!totalMiniEl) return;
+    try{
+      const today = todayLabel();
+      let todayCount = 0;
+      Object.keys(callDates).forEach(id => { if(callDates[id] === today) todayCount++; });
+      totalMiniEl.textContent = todayCount;
+    }catch(e){ console.warn('callRateBadge real-count render failed', e); }
   }
 
   // topStickyBar is position:fixed (proven reliable on this device — the
@@ -34776,38 +35022,6 @@ updateUndoBackButtons();
     window.__reassertTopStickyBar = reassert;
     reassert();
   })();
-
-  const callRateBadgeBtn = document.getElementById('callRateBadge');
-  if(callRateBadgeBtn){
-    callRateBadgeBtn.addEventListener('click', () => {
-      const n = parseInt(window.prompt('இந்த மணி நேரம் எத்தனை calls?', ''), 10);
-      if(!n || n <= 0) return;
-      ctState = ctLoad();
-      ctState.total += n;
-      ctSave(ctState);
-      ctRender();
-    });
-  }
-
-  document.getElementById('callTrackerAddBtn').addEventListener('click', function(){
-    const input = document.getElementById('callTrackerInput');
-    const n = parseInt(input.value, 10);
-    if(!n || n <= 0){ input.focus(); return; }
-    ctState = ctLoad();
-    ctState.total += n;
-    ctSave(ctState);
-    input.value = '';
-    ctRender();
-  });
-  document.getElementById('callTrackerInput').addEventListener('keydown', function(e){
-    if(e.key === 'Enter'){ document.getElementById('callTrackerAddBtn').click(); }
-  });
-  document.getElementById('callTrackerResetBtn').addEventListener('click', function(){
-    if(!confirm('இன்றைய Call Count-ஐ 0-க்கு Reset பண்ணலாமா?')) return;
-    ctState = { date: ctTodayStr(), total: 0 };
-    ctSave(ctState);
-    ctRender();
-  });
 
   ctRender();
   setInterval(ctRender, 60000); // keep rate fresh every minute even with no new input
