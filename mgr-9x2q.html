@@ -1219,7 +1219,7 @@ scan, export), never at top-level during initial script execution. -->
     about which build is actually running. Full fix-tag now lives only in
     the tooltip (title) — the on-screen text is just the version number,
     since the descriptive suffix was the widest single item in this row. -->
-    <span id="appVersionBadge" title="v353 · mergeLatestEditWinsByDate — Tamil request (Sep 8 2026): when 🔀 Merge Backup from Other Phone finds the SAME business on both sides (matched by mobile, as always), it no longer just fills blank fields — every edit made via ✏️ Save (saveRow → touchEdited) now stamps that record with a real _lastEditedAt timestamp, and on merge, whichever side's edit is genuinely newer wins the Name/Address/JustDial-link values, with the surviving record correctly marked Edited either way. Records with no timestamp on either side (anything edited before this version) safely fall back to the old blanks-only behaviour, so nothing already loaded is ever downgraded by an older/undated incoming copy. Also fixed a real bug found while doing this: the old blanket editedIds union after a merge was tagging the INCOMING file's raw record ids as edited even though matched records keep the LOCAL id and new records get a freshly generated one — those orphan ids were silently inflating the 📝 Edited counter without corresponding to any real row; the edited flag is now carried onto whichever id the record actually ends up with, precisely, with no orphans. 📂 Import Backup itself is untouched — it stays a deliberate FULL REPLACE (see v350's shrink-guard); this fix lives in 🔀 Merge Backup, the non-destructive tool for combining two phones'/files' data, which is what you should use to combine your currently-loaded 1700-edited data with a separate ~29,000-business backup file without losing either side. · v352 · rescanAllPlusRealCallsBadge — ① 🔄 Re-scan All bulk button added to all 3 planned panels (🛡️ RC Related/🪪 KYC/🗂️ Consolidated) — the rescanOneKycPersonById function had existed since v351 for exactly this but was never wired to a button; KYC's per-row Re-scan stays removed as explicitly instructed earlier, only the panel-header bulk button was added. RC's own new rescanOneRegnDocById originally wrote through the old upsertInsuranceRenewalRecord()/insurance_renewal_records_v1 store — caught before shipping (that store was already deliberately abandoned per an earlier fix) and corrected to write through upsertIntoInsuranceExtractQueue(), the real current single-source-of-truth the RC panel/WhatsApp Promo/Consolidated all read from. Consolidated's Re-scan All re-runs consolidateCustomerDocumentsForMobile for every ALREADY-compiled Mobile Number (refreshing from any newer KYC/RC documents); finding brand-new never-compiled mobiles stays fully automatic as before. All three fill-blank-only (never overwrite a good existing value), show live ⏳n/total progress, and end with one combined summary alert. ② 📞 Calls Today badge (was showing a manually typed-in '0/1000' — tap the badge, type a number, it just added to a fake localStorage total with zero connection to any real call) removed entirely; the badge now shows the SAME real, phone-pad-touch-based count already computed for the 📇 badge beside it (today's distinct Business List rows whose 📞 Call icon was actually tapped) — no target, no denominator, no manual entry. · v351 · manualRcKycBizSyncBtnAdded — audited every button in the app labeled/behaving as a 'Refresh': found ONE genuinely broken/missing one — syncRcKycToBusinessList's own comment described a visible '🔄 Manual Sync' button (manualRcKycBizSyncBtn) as already wired, but the actual <button> element and click listener were never added, only the auto-run-on-load version existed. Added the real button (next to 🔀 Merge Backup from Other Phone) wired to the exact same, already-working syncRcKycToBusinessList function. Every other Refresh-labeled control (🔄 Counts Refresh, per-row 🔄 Refresh, 🔄 Re-fetch & Merge in Consolidated, 🛡️ RC Related's per-row 🔄 Re-scan, 🔄 47-Category Search Progress Reset) was checked and confirmed already correctly wired — no change needed there. (Separately noted but left untouched: a complete rescanOneKycPersonById function for a planned '🔄 Re-scan All' bulk button across RC/KYC/Consolidated exists in the code but was never attached to any visible button for any of the three — the KYC per-row version of this was explicitly removed earlier per user instruction, so this was left as-is rather than guessed back into the UI.) · v350 · importBackupShrinkGuard — 📂 Import Backup (a FULL REPLACE, unlike 🔀 Merge Backup from Other Phone) now warns clearly and asks for a second confirmation before importing a file with FEWER businesses than what's currently loaded — importing several backup files one after another via this button was silently discarding the bigger live list each time, and that smaller result then also overwrote the IndexedDB safety copy, so refresh had nothing bigger left to recover from (reported as the list reverting to an old ~20,000 count). No change to what happens once confirmed. · v348 · restoreFromCloudUnwrapFix — worker.js's GET /backup returns {savedAt,payload}, client now correctly unwraps .payload before restoring (previous v347 build passed the wrapper straight through, which would have failed looksLikeValidData). · v347 · restoreFromCloudBackup — added ☁️ Restore from Cloud button next to ☁️ Set Cloudflare Backup: pulls the latest text-only snapshot back from the same Cloudflare Worker/KV (Business List full replace, Insurance Renewal/KYC merge-safe, same as 📥 Import Backup's tested logic, just sourced over the network via GET /backup instead of a chosen file). Photo/PDF documents never touch Cloudflare — unaffected, still phone-only. · v346 · rcKycConsResultJumpIcons · v345 · waExtractNewBizMobileBlank — fix (Sep 3, 2026, Tamil: user asked that in the WhatsApp Extract Share Inbox popup, when the detected Mobile Number does NOT match an existing Business/Financer row — i.e. the business isn't in the Business List yet — the Mobile Number box should be left blank/unlocked for him to type in himself, rather than auto-filled/locked with a not-yet-listed number; the Business Name box should keep auto-filling exactly as it appears in the WhatsApp Extract regardless). The Mobile Number box now only auto-fills (and stays locked) when the number detected in the Share title/text already matches an existing Business or Financer row via shareFormFindBizByMobile/shareFormFindFinancerNamesByMobile; otherwise it's unlocked and starts blank, same as the existing no-detection safety-net path (manual typing + background RC/KYC content auto-match still both apply). Previous v344 note: waExtractSkipScan — the WhatsApp Extract Share Inbox popup's 🔗 Merge + RC/Insurance Scan button no longer runs the mandatory OCR scan step (runBulkOcrBatchCapped3) before reaching the Business List; it's now just ⬆️ Upload, straight from read/zip-PDF-expand to one-file-at-a-time upload." style="flex-shrink:0; white-space:nowrap; padding:3px 8px; border-radius:12px; border:1px solid #78716c; background:#f5f5f4; color:#57534e; font-weight:800; font-size:0.62rem;">🏷️ v353 · mergeLatestEditWinsByDate</span>
+    <span id="appVersionBadge" title="v356 · noPopupsForThreeProcesses — Tamil request (Sep 8 2026): &quot;இந்த மூன்று process (RC Related/KYC/Consolidated) ஆகும்போது எந்தவித பாப்-அப்பும் காட்டக்கூடாது.&quot; Every alert() tied to the 🛡️ RC Related / 🪪 KYC / 🗂️ Consolidated bulk upload-and-scan pipelines removed \u2014 including the shared \u201c🔄 Re-scan All\u201d runner (the ⏳n/total → completion-popup pattern the report specifically named), each panel\u2019s own \u201c✅ All Completed: N/N Files\u201d summary (including the resumed/reopened-app path), the \u201c🔁 Duplicate Summary\u201d popups, the \u201cSkip ஆனது\u201d / cross-route move notices, and the ZIP-read error/empty-result alerts. All of these are now console.log/console.warn instead \u2014 same counts still available for debugging, nothing ever interrupts the screen. Progress badges, ⏳n/total button text, and the underlying processing itself are unchanged \u2014 only the popups are gone. · v355 · consResultInstantBackgroundBackfill — Tamil follow-up (Sep 8 2026): after v354\u2019s fix, 🗂️ Consolidated could STILL be slow — found the real biggest cause: jumpToConsResult() (the actual tap handler) used to `await` the FULL backfillConsolidatedDocuments() \u2014 a real compile pass (name-match retry across the whole Business List for every mobile-less KYC/RC record, then a fresh PDF merge/rasterize for every not-yet-compiled customer) \u2014 to completely finish BEFORE the list was shown at all. On a live, constantly-growing ~30,000-business dataset there are almost always pending customers, so the tap could sit doing real background work with nothing on screen for a long time \u2014 and since this SAME backfill already separately auto-runs once on every app open (fire-and-forget, unrelated to this tap), a quick tap soon after opening the app could trigger a SECOND concurrent full pass on top of the first, doubling the wait. Fixed the same way the app already handles this exact pattern elsewhere (its own on-load backfill, and 🪪 KYC\u2019s bulk-scan progress): the panel now renders INSTANTLY with whatever is already compiled, the backfill runs in the background, and the list quietly refreshes (throttled) as more records finish compiling. Nothing about WHAT gets compiled changed \u2014 only WHEN it is first shown. · v354 · kycConsolidatedGstLookupPerfFix — Tamil request (Sep 8 2026): &quot;KYC/Consolidated icon results not coming fast, find the bug.&quot; Found two real bugs, both fixed. (1) 🪪 KYC panel: the GST-number lookup ran, for EVERY KYC person, a fresh scan of ALL Consolidated documents PLUS (via findGstInBusinessListUploads) an IndexedDB read for EVERY ONE of the ~30,000 Business List rows — up to (KYC persons) × (docs + 30,000) reads, redone on every single panel open; this was the actual freeze. Replaced with getGstCandidateIndex(): every candidate document is read from IndexedDB exactly ONCE, cached for the rest of the page session, and every KYC person is matched against that small in-memory list — zero further IndexedDB reads per person. (2) 🗂️ Consolidated panel: documents were read one-at-a-time in a sequential loop (now parallel via Promise.all), and its own \u201cNew Record\u201d check re-scanned the entire Business List for every single row (now a single Set built once, O(1) lookup per row). No visible behaviour changed — same results, dramatically fewer IndexedDB round-trips. · v353 · mergeLatestEditWinsByDate — Tamil request (Sep 8 2026): when 🔀 Merge Backup from Other Phone finds the SAME business on both sides (matched by mobile, as always), it no longer just fills blank fields — every edit made via ✏️ Save (saveRow → touchEdited) now stamps that record with a real _lastEditedAt timestamp, and on merge, whichever side's edit is genuinely newer wins the Name/Address/JustDial-link values, with the surviving record correctly marked Edited either way. Records with no timestamp on either side (anything edited before this version) safely fall back to the old blanks-only behaviour, so nothing already loaded is ever downgraded by an older/undated incoming copy. Also fixed a real bug found while doing this: the old blanket editedIds union after a merge was tagging the INCOMING file's raw record ids as edited even though matched records keep the LOCAL id and new records get a freshly generated one — those orphan ids were silently inflating the 📝 Edited counter without corresponding to any real row; the edited flag is now carried onto whichever id the record actually ends up with, precisely, with no orphans. 📂 Import Backup itself is untouched — it stays a deliberate FULL REPLACE (see v350's shrink-guard); this fix lives in 🔀 Merge Backup, the non-destructive tool for combining two phones'/files' data, which is what you should use to combine your currently-loaded 1700-edited data with a separate ~29,000-business backup file without losing either side. · v352 · rescanAllPlusRealCallsBadge — ① 🔄 Re-scan All bulk button added to all 3 planned panels (🛡️ RC Related/🪪 KYC/🗂️ Consolidated) — the rescanOneKycPersonById function had existed since v351 for exactly this but was never wired to a button; KYC's per-row Re-scan stays removed as explicitly instructed earlier, only the panel-header bulk button was added. RC's own new rescanOneRegnDocById originally wrote through the old upsertInsuranceRenewalRecord()/insurance_renewal_records_v1 store — caught before shipping (that store was already deliberately abandoned per an earlier fix) and corrected to write through upsertIntoInsuranceExtractQueue(), the real current single-source-of-truth the RC panel/WhatsApp Promo/Consolidated all read from. Consolidated's Re-scan All re-runs consolidateCustomerDocumentsForMobile for every ALREADY-compiled Mobile Number (refreshing from any newer KYC/RC documents); finding brand-new never-compiled mobiles stays fully automatic as before. All three fill-blank-only (never overwrite a good existing value), show live ⏳n/total progress, and end with one combined summary alert. ② 📞 Calls Today badge (was showing a manually typed-in '0/1000' — tap the badge, type a number, it just added to a fake localStorage total with zero connection to any real call) removed entirely; the badge now shows the SAME real, phone-pad-touch-based count already computed for the 📇 badge beside it (today's distinct Business List rows whose 📞 Call icon was actually tapped) — no target, no denominator, no manual entry. · v351 · manualRcKycBizSyncBtnAdded — audited every button in the app labeled/behaving as a 'Refresh': found ONE genuinely broken/missing one — syncRcKycToBusinessList's own comment described a visible '🔄 Manual Sync' button (manualRcKycBizSyncBtn) as already wired, but the actual <button> element and click listener were never added, only the auto-run-on-load version existed. Added the real button (next to 🔀 Merge Backup from Other Phone) wired to the exact same, already-working syncRcKycToBusinessList function. Every other Refresh-labeled control (🔄 Counts Refresh, per-row 🔄 Refresh, 🔄 Re-fetch & Merge in Consolidated, 🛡️ RC Related's per-row 🔄 Re-scan, 🔄 47-Category Search Progress Reset) was checked and confirmed already correctly wired — no change needed there. (Separately noted but left untouched: a complete rescanOneKycPersonById function for a planned '🔄 Re-scan All' bulk button across RC/KYC/Consolidated exists in the code but was never attached to any visible button for any of the three — the KYC per-row version of this was explicitly removed earlier per user instruction, so this was left as-is rather than guessed back into the UI.) · v350 · importBackupShrinkGuard — 📂 Import Backup (a FULL REPLACE, unlike 🔀 Merge Backup from Other Phone) now warns clearly and asks for a second confirmation before importing a file with FEWER businesses than what's currently loaded — importing several backup files one after another via this button was silently discarding the bigger live list each time, and that smaller result then also overwrote the IndexedDB safety copy, so refresh had nothing bigger left to recover from (reported as the list reverting to an old ~20,000 count). No change to what happens once confirmed. · v348 · restoreFromCloudUnwrapFix — worker.js's GET /backup returns {savedAt,payload}, client now correctly unwraps .payload before restoring (previous v347 build passed the wrapper straight through, which would have failed looksLikeValidData). · v347 · restoreFromCloudBackup — added ☁️ Restore from Cloud button next to ☁️ Set Cloudflare Backup: pulls the latest text-only snapshot back from the same Cloudflare Worker/KV (Business List full replace, Insurance Renewal/KYC merge-safe, same as 📥 Import Backup's tested logic, just sourced over the network via GET /backup instead of a chosen file). Photo/PDF documents never touch Cloudflare — unaffected, still phone-only. · v346 · rcKycConsResultJumpIcons · v345 · waExtractNewBizMobileBlank — fix (Sep 3, 2026, Tamil: user asked that in the WhatsApp Extract Share Inbox popup, when the detected Mobile Number does NOT match an existing Business/Financer row — i.e. the business isn't in the Business List yet — the Mobile Number box should be left blank/unlocked for him to type in himself, rather than auto-filled/locked with a not-yet-listed number; the Business Name box should keep auto-filling exactly as it appears in the WhatsApp Extract regardless). The Mobile Number box now only auto-fills (and stays locked) when the number detected in the Share title/text already matches an existing Business or Financer row via shareFormFindBizByMobile/shareFormFindFinancerNamesByMobile; otherwise it's unlocked and starts blank, same as the existing no-detection safety-net path (manual typing + background RC/KYC content auto-match still both apply). Previous v344 note: waExtractSkipScan — the WhatsApp Extract Share Inbox popup's 🔗 Merge + RC/Insurance Scan button no longer runs the mandatory OCR scan step (runBulkOcrBatchCapped3) before reaching the Business List; it's now just ⬆️ Upload, straight from read/zip-PDF-expand to one-file-at-a-time upload." style="flex-shrink:0; white-space:nowrap; padding:3px 8px; border-radius:12px; border:1px solid #78716c; background:#f5f5f4; color:#57534e; font-weight:800; font-size:0.62rem;">🏷️ v356 · noPopupsForThreeProcesses</span>
   </div>
   <!-- 🎯 RC/KYC/Consolidate Result quick-jump icons — RELOCATED (explicit
   user instruction, Sep 8 2026, Tamil): originally placed here in the
@@ -2436,21 +2436,43 @@ WhatsApp Upload and 📞 Calls are now shown smaller, per instruction). -->
       var btn = document.getElementById('uploadExtractChooseConsolidatedBtn');
       panel.style.display = 'block';
       if(btn) btn.classList.add('tool-btn-panel-open');
-      if(typeof backfillConsolidatedDocuments === 'function'){
-        try{ await backfillConsolidatedDocuments(function(){}); }catch(e){}
-      }
       try{
         var consSearchInputEl = document.getElementById('consolidatedDocSearch');
         var consSearchClearEl = document.getElementById('consolidatedDocSearchClear');
         if(consSearchInputEl) consSearchInputEl.value = '';
         if(consSearchClearEl) consSearchClearEl.style.display = 'none';
       }catch(e){}
+      // 🐛 v354 — THE major perf fix (Sep 8 2026, Tamil: "Consolidated
+      // Result வேகமா வரலை"). This used to `await backfillConsolidatedDocuments(...)`
+      // — a REAL compile pass (name-match retry across the whole Business
+      // List for every mobile-less KYC/RC record, then a fresh PDF
+      // merge/rasterize via consolidateCustomerDocumentsForMobile for
+      // EVERY not-yet-compiled customer) — to fully FINISH before the list
+      // was ever shown. On a live, constantly-growing ~30,000-business
+      // dataset there are almost always dozens/hundreds of "pending"
+      // customers, so tapping 🗂️ Consolidated could sit doing real
+      // background compile work for a long time with nothing on screen at
+      // all — this was the actual freeze, not a rendering issue. Fixed by
+      // showing whatever's ALREADY compiled INSTANTLY first, then running
+      // the backfill in the background and refreshing the list as new
+      // records land (throttled via the same createThrottledRenderer
+      // pattern already used for 🪪 KYC's own bulk-scan progress above) —
+      // nothing about WHAT gets compiled changed, only WHEN the person
+      // first sees a result.
       if(typeof renderConsolidatedDocPanel === 'function') await renderConsolidatedDocPanel('');
       try{ if(typeof renderConsolidatedManualDocList === 'function') await renderConsolidatedManualDocList(''); }catch(e){}
       expandUploadResultBodyIfMinimized('consolidatedDocBody', 'consolidatedDocMinimizeBtn');
       scrollUploadResultPanelIntoView(panel);
       syncResultToggleArrows();
       refreshResultCountBadges();
+      if(typeof backfillConsolidatedDocuments === 'function'){
+        const consBackfillRenderScheduler = createThrottledRenderer(async () => {
+          try{ if(document.getElementById('consolidatedDocPanel').style.display !== 'none') await renderConsolidatedDocPanel(document.getElementById('consolidatedDocSearch') ? document.getElementById('consolidatedDocSearch').value : ''); }catch(e){}
+        }, 600);
+        backfillConsolidatedDocuments(function(){ consBackfillRenderScheduler(); })
+          .then(() => { try{ consBackfillRenderScheduler(); }catch(e){} })
+          .catch(e => console.warn('background backfillConsolidatedDocuments failed', e));
+      }
     }catch(e){ console.warn('jumpToConsResult failed', e); alert('⚠️ 🗂️ Consolidate Result காட்டும்போது Error — Screenshot எடுத்து அனுப்புங்க.'); }
   }
   var consResultJumpBtn = document.getElementById('consResultJumpBtn');
@@ -8997,6 +9019,57 @@ const GSTIN_PATTERN = /\b\d{2}[A-Z]{5}\d{4}[A-Z]\d[Z][A-Z0-9]\b/;
 function extractGstProprietorName(text){
   const lines = String(text || '').toUpperCase().split(/\r?\n/).map(l => l.trim()).filter(Boolean);
   return extractLabeledLineValue(lines, /^1\.?\s*LEGAL\s*NAME|LEGAL\s*NAME\s*[:\-]?/, 60);
+}
+// 🐛 v354 perf fix — see the big comment at its call site inside
+// renderGroupedArchiveList's 'kyc' branch for the full story. Builds the
+// (Legal Name → GSTIN) candidate list from BOTH sources — 🗂️ Consolidated
+// manual uploads AND every 🏢 Business List row's own uploaded documents
+// — with exactly ONE IndexedDB read per document, ONCE per page session,
+// instead of redoing that same full scan from scratch for every single
+// KYC person on every single panel open (the actual freeze). Cached in
+// __gstCandidateIndexCache; invalidated automatically whenever the
+// Business List's row COUNT changes (a cheap, good-enough signal that
+// new documents likely came in too — a fresh scan added to an
+// ALREADY-EXISTING business without changing the total count is the one
+// case this cache can miss until the count next changes or the page is
+// reloaded; 🔄 Re-scan All / re-opening the app both rebuild it fresh).
+let __gstCandidateIndexCache = null;
+let __gstCandidateIndexCacheBizCount = -1;
+async function getGstCandidateIndex(){
+  const currentBizCount = (typeof data !== 'undefined' && Array.isArray(data)) ? data.length : -1;
+  if(__gstCandidateIndexCache && __gstCandidateIndexCacheBizCount === currentBizCount){
+    return __gstCandidateIndexCache;
+  }
+  const candidates = [];
+  try{
+    const consKeys = await idbGetAllKeysWithPrefix(CONSOLIDATED_MANUAL_DOCS_PREFIX);
+    const consRecs = await Promise.all(consKeys.map(async key => {
+      try{ const r = await idbGet(key); return (r && r.value) || null; }catch(e){ return null; }
+    }));
+    consRecs.forEach(rec => {
+      const text = rec && rec.extractedText;
+      if(!text || !GSTIN_PATTERN.test(text)) return;
+      const legalName = extractGstProprietorName(text);
+      const m = GSTIN_PATTERN.exec(text);
+      if(legalName && m) candidates.push({ legalName, gstNumber: m[0] });
+    });
+  }catch(e){ console.warn('getGstCandidateIndex: consolidated source failed', e); }
+  try{
+    const bizList = (typeof data !== 'undefined' && Array.isArray(data)) ? data : [];
+    const bizRecs = await Promise.all(bizList.map(async item => {
+      try{ const r = await idbGet(CUSTOMER_DOCS_PREFIX + item.id); return (r && r.value) || null; }catch(e){ return null; }
+    }));
+    bizRecs.forEach(rec => {
+      const text = rec && rec.extractedText;
+      if(!text || !GSTIN_PATTERN.test(text)) return;
+      const legalName = extractGstProprietorName(text);
+      const m = GSTIN_PATTERN.exec(text);
+      if(legalName && m) candidates.push({ legalName, gstNumber: m[0] });
+    });
+  }catch(e){ console.warn('getGstCandidateIndex: business list source failed', e); }
+  __gstCandidateIndexCache = candidates;
+  __gstCandidateIndexCacheBizCount = currentBizCount;
+  return candidates;
 }
 async function findGstInBusinessListUploads(ownerName){
   try{
@@ -21628,12 +21701,10 @@ async function runInsuranceOcrExtractBatch(files, opts){
   if(movedToKycCount){
     try{ await renderKycOcrExtractPanel(kycOcrExtractSearch.value || ''); }catch(e){ console.warn('renderKycOcrExtractPanel failed (after RC→KYC cross-route)', e); }
   }
-  if(skippedNonRcCount && !(opts && opts.silent)){
-    alert(`🚫 ${skippedNonRcCount} File(s) RC/Insurance/Permit Document இல்லாததால Skip ஆனது:\n\n${skippedNonRcNames.join('\n')}`);
+  if(skippedNonRcCount){
+    console.log(`RC batch: ${skippedNonRcCount} file(s) skipped (not RC/Insurance/Permit document): ${skippedNonRcNames.join(', ')}`);
   }
-  if(movedToKycCount && !(opts && opts.silent)){
-    alert(`🔀 ${movedToKycCount} File(s) உண்மையில் KYC Document (PAN/Aadhaar) ஆக இருந்ததால், 🛡️ RC Related-லிருந்து 🪪 KYC-க்கு தானாகவே Move ஆகி Save ஆனது.`);
-  } else if(movedToKycCount){
+  if(movedToKycCount){
     console.log(`RC→KYC cross-route: ${movedToKycCount} file(s) moved`);
   }
   // 🔁 Duplicate summary — explicit user instruction (Aug 2026:
@@ -21652,16 +21723,14 @@ async function runInsuranceOcrExtractBatch(files, opts){
   const __chunkOfMany = !!(opts && opts.isChunkOfMany);
   if(regnDuplicateCount || regnMergedCount){
     const msg = `🔁 Duplicate Summary — ${files.length} File(s)-ல்:\n📄 அதே Content Photo மறுபடி Upload ஆகி Skip ஆனது: ${regnDuplicateCount}\n🚗 அதே Registration Number Repeat ஆகி (Missing Fields மட்டும் Fill ஆனது, Second Card Create ஆகல): ${regnMergedCount}`;
-    if((opts && opts.silent) || __chunkOfMany) console.log(msg); else alert(msg);
+    console.log(msg);
   }
-  // ✅ All Completed — explicit user instruction (Sep 2, 2026, Tamil):
-  // shown even on a silent auto-resumed batch (reopening the app after
-  // a close mid-scan) — that resumed-then-finished moment is exactly
-  // when the person needs to know everything is done. NOT shown per
-  // internal chunk (see fix note above) — the caller fires the true
-  // final popup once, after every chunk of the whole selection is done.
+  // 🐛 v355 — explicit user instruction (Sep 8 2026, Tamil): no popup at
+  // all during/after 🛡️ RC Related / 🪪 KYC / 🗂️ Consolidated bulk
+  // processing — this "All Completed" alert (previously shown even for a
+  // normal, non-chunked, non-silent run) is now always logged instead.
   if(!rcBatchCancelled && !__chunkOfMany){
-    alert(`✅ All Completed — 🛡️ RC Related: ${files.length}/${files.length} Files முழுவதுமாக முடிந்தது.`);
+    console.log(`✅ All Completed — 🛡️ RC Related: ${files.length}/${files.length} Files முழுவதுமாக முடிந்தது.`);
   }
   // 🔄 Auto Re-scan (Failed Only, Cloud-Vision-Only) — runs once, right
   // after this batch finishes, ONLY for the files that failed above, and
@@ -21967,7 +22036,7 @@ insuranceOcrExtractInput.addEventListener('change', async () => {
       console.log(`🔁 Duplicate Summary (Full Upload) — ${__rcRunStats.processed} File(s)-ல்:\n📄 Skip ஆனது: ${__rcRunStats.dupSkip}\n🚗 Merge ஆனது: ${__rcRunStats.dupMerge}`);
     }
     if(!__rcRunStats.cancelled){
-      alert(`✅ All Completed — 🛡️ RC Related: ${__rcRunStats.processed}/${rcUploadProgress.total} Files முழுவதுமாக முடிந்தது.` + ((__rcRunStats.dupSkip || __rcRunStats.dupMerge) ? `\n🔁 Duplicate — Skip: ${__rcRunStats.dupSkip}, Merge: ${__rcRunStats.dupMerge}` : ''));
+      console.log(`✅ All Completed — 🛡️ RC Related: ${__rcRunStats.processed}/${rcUploadProgress.total} Files முழுவதுமாக முடிந்தது.` + ((__rcRunStats.dupSkip || __rcRunStats.dupMerge) ? ` 🔁 Duplicate — Skip: ${__rcRunStats.dupSkip}, Merge: ${__rcRunStats.dupMerge}` : ''));
     }
   }
   rcPickerBtn.textContent = originalRcBtnText0;
@@ -23483,39 +23552,30 @@ async function runKycOcrExtractBatch(files, opts){
   if(skipped){
     if(silent && typeof window.showBackgroundQueueWarning === 'function'){
       window.showBackgroundQueueWarning('🪪 KYC Upload', `${skipped} File(s) Skip ஆனது — Name/Aadhaar/PAN கிடைக்கல்.`);
-    } else if(!silent && !isChunkOfMany){
-      alert(`🪪 KYC Upload முடிந்தது.\n\n✅ Save ஆனது: ${saved}\n⚠️ Name/Aadhaar/PAN எதுவும் கிடைக்காததால Skip ஆனது: ${skipped}`);
+    } else {
+      console.log(`🪪 KYC Upload முடிந்தது. Save ஆனது: ${saved}, Name/Aadhaar/PAN எதுவும் கிடைக்காததால Skip ஆனது: ${skipped}`);
     }
   }
   if(movedToRcCount){
     try{ renderInsuranceOcrExtractList(); }catch(e){ console.warn('renderInsuranceOcrExtractList failed (after KYC→RC cross-route)', e); }
     try{ await yieldToPaint(); }catch(e){}
   }
-  if(skippedNonKycCount && !silent && !isChunkOfMany){
-    alert(`🚫 ${skippedNonKycCount} File(s) KYC Document (PAN/Aadhaar) இல்லாததால Skip ஆனது:\n\n${skippedNonKycNames.join('\n')}`);
+  if(skippedNonKycCount){
+    console.log(`KYC batch: ${skippedNonKycCount} file(s) skipped (not a KYC document): ${skippedNonKycNames.join(', ')}`);
   }
-  if(movedToRcCount && !silent && !isChunkOfMany){
-    alert(`🔀 ${movedToRcCount} File(s) உண்மையில் RC/Insurance/Permit Document ஆக இருந்ததால், 🪪 KYC-லிருந்து 🛡️ RC Related-க்கு தானாகவே Move ஆகி Save ஆனது.`);
-  } else if(movedToRcCount){
-    console.log(`KYC→RC cross-route: ${movedToRcCount} file(s) moved`);
-  }
+  console.log(movedToRcCount ? `KYC→RC cross-route: ${movedToRcCount} file(s) moved` : '');
   // 🔁 Duplicate summary — explicit user instruction (Aug 2026:
   // "அப்லோடு செய்யப்பட்ட தரவுகளில் எத்தனை டூப்ளிகேட் ஆக ஆனது என்ற
   // தரவையும் கொடுக்க வேண்டும்") — same as the RC batch above, this data
   // already existed but was never shown for 🪪 KYC bulk upload.
-  if((kycDuplicateCount || kycPersonMergedCount) && !silent && !isChunkOfMany){
-    alert(`🔁 Duplicate Summary — ${files.length} File(s)-ல்:\n📄 அதே Content Photo மறுபடி Upload ஆகி Skip ஆனது: ${kycDuplicateCount}\n🪪 ஏற்கனவே இருக்கிற KYC நபருடன் Match ஆனது (Same Aadhaar/PAN/Name): ${kycPersonMergedCount}`);
-  } else if(kycDuplicateCount || kycPersonMergedCount){
+  if(kycDuplicateCount || kycPersonMergedCount){
     console.log(`KYC batch duplicates — exact photo: ${kycDuplicateCount}, matched existing person: ${kycPersonMergedCount}`);
   }
-  // ✅ All Completed — explicit user instruction (Sep 2, 2026, Tamil):
-  // shown even on a silent auto-resumed batch (reopening the app after
-  // a close mid-scan) — that resumed-then-finished moment is exactly
-  // when the person needs to know everything is done. Suppressed when
-  // isChunkOfMany — the caller shows ONE combined popup for the whole
-  // upload instead (see fix note above).
+  // 🐛 v355 — explicit user instruction (Sep 8 2026, Tamil): no popup at
+  // all during/after 🛡️ RC Related / 🪪 KYC / 🗂️ Consolidated bulk
+  // processing — this "All Completed" alert is now always logged instead.
   if(!isChunkOfMany){
-    alert(`✅ All Completed — 🪪 KYC: ${files.length}/${files.length} Files முழுவதுமாக முடிந்தது.`);
+    console.log(`✅ All Completed — 🪪 KYC: ${files.length}/${files.length} Files முழுவதுமாக முடிந்தது.`);
   }
   // 🔄 Auto Re-scan (Failed Only, Cloud-Vision-Only) — same mechanism as
   // 🛡️ RC Related, see that function's own note above for the full
@@ -23618,13 +23678,13 @@ kycOcrExtractInput.addEventListener('change', async () => {
     if(__kycRunStats.kycDuplicateCount || __kycRunStats.kycPersonMergedCount){
       console.log(`🔁 Duplicate Summary (Full Upload) — ${__kycTotalFiles} File(s)-ல்:\n📄 அதே Content Photo Skip: ${__kycRunStats.kycDuplicateCount}\n🪪 ஏற்கனவே இருக்கிற Person Match: ${__kycRunStats.kycPersonMergedCount}`);
     }
-    alert(`✅ All Completed — 🪪 KYC: ${__kycTotalFiles}/${__kycTotalFiles} Files முழுவதுமாக முடிந்தது.\n\n✅ Save ஆனது: ${__kycRunStats.saved}\n⚠️ Skip ஆனது: ${__kycRunStats.skipped}` + ((__kycRunStats.kycDuplicateCount || __kycRunStats.kycPersonMergedCount) ? `\n🔁 Duplicate — Photo Skip: ${__kycRunStats.kycDuplicateCount}, Person Match: ${__kycRunStats.kycPersonMergedCount}` : '') + (__kycRunStats.movedToRcCount ? `\n🔀 🛡️ RC Related-க்கு Move ஆனது: ${__kycRunStats.movedToRcCount}` : ''));
+    console.log(`✅ All Completed — 🪪 KYC: ${__kycTotalFiles}/${__kycTotalFiles} Files முழுவதுமாக முடிந்தது. Save ஆனது: ${__kycRunStats.saved}, Skip ஆனது: ${__kycRunStats.skipped}` + ((__kycRunStats.kycDuplicateCount || __kycRunStats.kycPersonMergedCount) ? ` Duplicate — Photo Skip: ${__kycRunStats.kycDuplicateCount}, Person Match: ${__kycRunStats.kycPersonMergedCount}` : '') + (__kycRunStats.movedToRcCount ? ` RC Related-க்கு Move ஆனது: ${__kycRunStats.movedToRcCount}` : ''));
   }
   if(!anyProcessed1){
     if(expandErr1){
-      alert(`⚠️ 🪪 KYC — ZIP படிக்கும்போது Error: ${(expandErr1 && expandErr1.message) ? expandErr1.message : String(expandErr1)}`);
+      console.warn(`🪪 KYC — ZIP படிக்கும்போது Error:`, expandErr1);
     } else if(rawFiles.length){
-      alert('ZIP-ல் இருந்து PDF/படங்கள் எதுவும் கிடைக்கவில்லை.');
+      console.log('ZIP-ல் இருந்து PDF/படங்கள் எதுவும் கிடைக்கவில்லை.');
     }
   }
 });
@@ -24369,7 +24429,7 @@ async function runKycFileOnlyImport(files){
     // unconditionally regardless, falsely claiming N/N finished right after
     // the person had just wiped everything and stopped it.
     if(!(typeof __kycScanCancelRequested !== 'undefined' && __kycScanCancelRequested)){
-      alert(`✅ All Completed — 🪪 KYC: ${files.length}/${files.length} Files முழுவதுமாக முடிந்தது.`);
+      console.log(`✅ All Completed — 🪪 KYC: ${files.length}/${files.length} Files முழுவதுமாக முடிந்தது.`);
     }
   } finally {
     kycAutoIndexRebuildSuppressed = false;
@@ -28287,11 +28347,25 @@ async function renderConsolidatedDocPanel(query){
   panel.style.display = 'block'; try{ syncPanelToggleButtons(); }catch(e){}
   let rows = [];
   try{
+    // 🐛 v354 perf fix (Sep 8 2026, Tamil: "Consolidated Result வேகமா
+    // வரலை") — two separate slow spots fixed together: (1) every
+    // Consolidated document was read from IndexedDB ONE AT A TIME in a
+    // sequential for-loop (with thousands of documents, that's thousands
+    // of round-trips back-to-back) — now fetched in parallel via
+    // Promise.all, same pattern already used elsewhere in this file for
+    // exactly this reason. (2) isNewRecordVal ran a fresh
+    // data.some(...) scan across the ENTIRE ~30,000-row Business List
+    // for EVERY Consolidated row — now a single Set of normalized
+    // mobiles is built ONCE up front and reused as an O(1) lookup per row.
+    const bizMobileSet = (typeof data !== 'undefined' && Array.isArray(data) && typeof normalizeMobile === 'function')
+      ? new Set(data.flatMap(d => (d.mobiles || []).map(normalizeMobile)))
+      : null;
     const keys = await idbGetAllKeysWithPrefix(CONSOLIDATED_DOCS_PREFIX);
-    for(const key of keys){
-      let rec = null;
-      try{ const r = await idbGet(key); rec = (r && r.value) ? r.value : null; }catch(e){}
-      if(!rec || !rec.blob) continue;
+    const recs = await Promise.all(keys.map(async key => {
+      try{ const r = await idbGet(key); return (r && r.value) ? r.value : null; }catch(e){ return null; }
+    }));
+    recs.forEach(rec => {
+      if(!rec || !rec.blob) return;
       const label = rec.customerName || rec.businessName || rec.mobile;
       // 👨‍👩‍👧‍👦 Family Badge — explicit user instruction (Sep 3, 2026):
       // when this record was merged with blood-relative Mobile Numbers
@@ -28308,9 +28382,9 @@ async function renderConsolidatedDocPanel(query){
       // compiled/downloaded here. This flag just makes that visible on
       // the card, same badge convention as 🛡️ RC Related/🪪 KYC.
       let isNewRecordVal = false;
-      try{ isNewRecordVal = !!(rec.mobile && typeof data !== 'undefined' && Array.isArray(data) && typeof normalizeMobile === 'function' && !data.some(d => (d.mobiles || []).some(m => normalizeMobile(m) === normalizeMobile(rec.mobile)))); }catch(e){}
+      try{ isNewRecordVal = !!(rec.mobile && bizMobileSet && !bizMobileSet.has(normalizeMobile(rec.mobile))); }catch(e){}
       rows.push({ id: rec.mobile, label, sublabel, searchText: `${rec.businessName||''} ${rec.customerName||''} ${rec.customerBusinessName||''}`, mobile: rec.mobile, isNewRecord: isNewRecordVal });
-    }
+    });
   }catch(e){ console.warn('renderConsolidatedDocPanel: list failed', e); }
   const q = (query || '').trim();
   const filtered = q ? rows.filter(r => (typeof searchMatchesQuery === 'function') ? searchMatchesQuery(r.searchText, r.mobile || '', q) : r.searchText.toUpperCase().includes(q.toUpperCase())) : rows;
@@ -28577,10 +28651,7 @@ async function checkForConsolidatedUploadResume(){
       const btn = document.getElementById('consolidatedManualUploadBtn');
       try{
         const r = await runConsolidatedFileOnlyBatch(files, btn);
-        // ✅ All Completed — explicit user instruction (Sep 2, 2026, Tamil):
-        // shown once a resumed 🗂️ Consolidated batch (after reopening the
-        // app mid-way) genuinely finishes processing every remaining file.
-        alert(`✅ All Completed — 🗂️ Consolidated: ${files.length}/${files.length} Files முழுவதுமாக முடிந்தது.\n\n✅ Mobile Number Auto-fill ஆனது: ${r.matched}\n✏️ Mobile Number கிடைக்காதது: ${r.unmatched}`);
+        console.log(`✅ All Completed — 🗂️ Consolidated: ${files.length}/${files.length} Files முழுவதுமாக முடிந்தது. Mobile Number Auto-fill ஆனது: ${r.matched}, Mobile Number கிடைக்காதது: ${r.unmatched}`);
       } finally {
         consolidatedFileOnlyBatchActive = false;
         setConsMainIconStatus();
@@ -28646,9 +28717,9 @@ consolidatedManualUploadInput.addEventListener('change', async () => {
     }
     if(!matched && !unmatched && rawFiles.length && !consPaused){
       if(consExpandErr){
-        alert(`⚠️ 🗂️ Consolidated Document — ZIP படிக்கும்போது Error: ${(consExpandErr && consExpandErr.message) ? consExpandErr.message : String(consExpandErr)}`);
+        console.warn(`🗂️ Consolidated Document — ZIP படிக்கும்போது Error:`, consExpandErr);
       } else {
-        alert('ZIP-ல் இருந்து PDF/படங்கள் எதுவும் கிடைக்கவில்லை.');
+        console.log('ZIP-ல் இருந்து PDF/படங்கள் எதுவும் கிடைக்கவில்லை.');
       }
     }
   } finally {
@@ -28660,7 +28731,7 @@ consolidatedManualUploadInput.addEventListener('change', async () => {
     await renderConsolidatedManualDocList(document.getElementById('consolidatedDocSearch').value || '');
     await renderConsolidatedDocPanel(document.getElementById('consolidatedDocSearch').value || '');
     if(matched || unmatched){
-      alert(`✅ All Completed — 🗂️ Consolidated: ${matched + unmatched}/${matched + unmatched} Files முழுவதுமாக முடிந்தது.\n\n✅ Mobile Number பைல்பெயரில் கிடைத்து Auto-fill ஆனது: ${matched}\n✏️ Mobile Number கிடைக்காதது (Card-ல் நீங்களே தட்டச்சு பண்ணலாம்): ${unmatched}`);
+      console.log(`✅ All Completed — 🗂️ Consolidated: ${matched + unmatched}/${matched + unmatched} Files முழுவதுமாக முடிந்தது. Mobile Number பைல்பெயரில் கிடைத்து Auto-fill ஆனது: ${matched}, Mobile Number கிடைக்காதது: ${unmatched}`);
     }
   }
 });
@@ -29716,7 +29787,13 @@ async function runRescanAllButton(btn, items, runOne, opts){
     btn.disabled = false;
     btn.innerHTML = origHtml;
   }
-  alert(`🔄 Re-scan All முடிந்தது —\nமொத்தம்: ${items.length}\nScan ஆனது: ${scanned}\nபுதிதா/திருத்தமா தகவல் கிடைத்தது: ${updated}\nதோல்வி: ${failed}`);
+  // 🐛 v355 — explicit user instruction (Sep 8 2026, Tamil): "இந்த மூன்று
+  // process ஆகும்போது எந்தவித பாப்-அப்பும் காட்டக்கூடாது" — this shared
+  // Re-scan All runner (🛡️ RC Related / 🪪 KYC / 🗂️ Consolidated, all
+  // three) used to always alert() a summary the instant it finished.
+  // Removed — logged to console instead so the counts are still there if
+  // ever needed for debugging, but nothing interrupts the screen anymore.
+  console.log(`🔄 Re-scan All முடிந்தது — மொத்தம்: ${items.length}, Scan ஆனது: ${scanned}, புதிதா/திருத்தமா தகவல் கிடைத்தது: ${updated}, தோல்வி: ${failed}`);
   if(opts && typeof opts.onDone === 'function'){ try{ await opts.onDone(); }catch(e){} }
 }
 // 🚫 Duplicate Mobile Number Block — explicit user instruction (Aug 29,
@@ -30001,25 +30078,27 @@ async function renderGroupedArchiveList(container, opts){
     // (extractGstProprietorName) and compares THAT against this KYC
     // person's Name via namesMatchPartialSafe() — same fix as
     // findGstNumberByOwnerName above, applied here too.
-    const gstHits = await Promise.all(list.map(async person => {
+    // 🐛 v354 — CRITICAL perf fix (Sep 8 2026, Tamil: "KYC/Consolidated
+    // Result வேகமா வரலை, Bug கண்டுபிடி"). This used to run, for EVERY
+    // SINGLE KYC person in the list, a fresh idbGetAllKeysWithPrefix +
+    // one idbGet PER Consolidated document, and then (via the
+    // findGstInBusinessListUploads fallback) ANOTHER idbGet for EVERY ONE
+    // of the ~30,000 Business List rows — i.e. up to
+    // (KYC persons) × (Consolidated docs + 30,000 businesses) individual
+    // IndexedDB reads, redone on every single tap of the 🪪 KYC icon. With
+    // a few hundred KYC persons that's easily millions of round-trips —
+    // THIS was the actual freeze, not a rendering slowdown. Fixed by
+    // building the (Legal Name → GSTIN) candidate list from BOTH sources
+    // exactly ONCE (cached for the rest of this page session — see
+    // getGstCandidateIndex below), then matching every KYC person against
+    // that small in-memory array — zero further IndexedDB reads per
+    // person, whether there are 5 KYC people or 5,000.
+    const gstCandidates = await getGstCandidateIndex();
+    const gstHits = list.map(person => {
       if(!person.name) return '';
-      try{
-        const keys = await idbGetAllKeysWithPrefix(CONSOLIDATED_MANUAL_DOCS_PREFIX);
-        for(const key of keys){
-          let rec = null;
-          try{ const r = await idbGet(key); rec = (r && r.value) || null; }catch(e){ continue; }
-          if(!rec) continue;
-          const text = rec.extractedText || '';
-          if(!text || !GSTIN_PATTERN.test(text)) continue;
-          const legalName = extractGstProprietorName(text);
-          if(legalName && namesMatchPartialSafe(legalName, person.name)){
-            const m = GSTIN_PATTERN.exec(text);
-            if(m) return m[0];
-          }
-        }
-        return await findGstInBusinessListUploads(person.name);
-      }catch(e){ return ''; }
-    }));
+      const hit = gstCandidates.find(c => namesMatchPartialSafe(c.legalName, person.name));
+      return hit ? hit.gstNumber : '';
+    });
     for(let __i = 0; __i < list.length; __i++){
       const person = list[__i];
       const rec = personRecs[__i];
