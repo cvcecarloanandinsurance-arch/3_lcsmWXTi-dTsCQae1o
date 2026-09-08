@@ -1219,7 +1219,7 @@ scan, export), never at top-level during initial script execution. -->
     about which build is actually running. Full fix-tag now lives only in
     the tooltip (title) — the on-screen text is just the version number,
     since the descriptive suffix was the widest single item in this row. -->
-    <span id="appVersionBadge" title="v356 · noPopupsForThreeProcesses — Tamil request (Sep 8 2026): &quot;இந்த மூன்று process (RC Related/KYC/Consolidated) ஆகும்போது எந்தவித பாப்-அப்பும் காட்டக்கூடாது.&quot; Every alert() tied to the 🛡️ RC Related / 🪪 KYC / 🗂️ Consolidated bulk upload-and-scan pipelines removed \u2014 including the shared \u201c🔄 Re-scan All\u201d runner (the ⏳n/total → completion-popup pattern the report specifically named), each panel\u2019s own \u201c✅ All Completed: N/N Files\u201d summary (including the resumed/reopened-app path), the \u201c🔁 Duplicate Summary\u201d popups, the \u201cSkip ஆனது\u201d / cross-route move notices, and the ZIP-read error/empty-result alerts. All of these are now console.log/console.warn instead \u2014 same counts still available for debugging, nothing ever interrupts the screen. Progress badges, ⏳n/total button text, and the underlying processing itself are unchanged \u2014 only the popups are gone. · v355 · consResultInstantBackgroundBackfill — Tamil follow-up (Sep 8 2026): after v354\u2019s fix, 🗂️ Consolidated could STILL be slow — found the real biggest cause: jumpToConsResult() (the actual tap handler) used to `await` the FULL backfillConsolidatedDocuments() \u2014 a real compile pass (name-match retry across the whole Business List for every mobile-less KYC/RC record, then a fresh PDF merge/rasterize for every not-yet-compiled customer) \u2014 to completely finish BEFORE the list was shown at all. On a live, constantly-growing ~30,000-business dataset there are almost always pending customers, so the tap could sit doing real background work with nothing on screen for a long time \u2014 and since this SAME backfill already separately auto-runs once on every app open (fire-and-forget, unrelated to this tap), a quick tap soon after opening the app could trigger a SECOND concurrent full pass on top of the first, doubling the wait. Fixed the same way the app already handles this exact pattern elsewhere (its own on-load backfill, and 🪪 KYC\u2019s bulk-scan progress): the panel now renders INSTANTLY with whatever is already compiled, the backfill runs in the background, and the list quietly refreshes (throttled) as more records finish compiling. Nothing about WHAT gets compiled changed \u2014 only WHEN it is first shown. · v354 · kycConsolidatedGstLookupPerfFix — Tamil request (Sep 8 2026): &quot;KYC/Consolidated icon results not coming fast, find the bug.&quot; Found two real bugs, both fixed. (1) 🪪 KYC panel: the GST-number lookup ran, for EVERY KYC person, a fresh scan of ALL Consolidated documents PLUS (via findGstInBusinessListUploads) an IndexedDB read for EVERY ONE of the ~30,000 Business List rows — up to (KYC persons) × (docs + 30,000) reads, redone on every single panel open; this was the actual freeze. Replaced with getGstCandidateIndex(): every candidate document is read from IndexedDB exactly ONCE, cached for the rest of the page session, and every KYC person is matched against that small in-memory list — zero further IndexedDB reads per person. (2) 🗂️ Consolidated panel: documents were read one-at-a-time in a sequential loop (now parallel via Promise.all), and its own \u201cNew Record\u201d check re-scanned the entire Business List for every single row (now a single Set built once, O(1) lookup per row). No visible behaviour changed — same results, dramatically fewer IndexedDB round-trips. · v353 · mergeLatestEditWinsByDate — Tamil request (Sep 8 2026): when 🔀 Merge Backup from Other Phone finds the SAME business on both sides (matched by mobile, as always), it no longer just fills blank fields — every edit made via ✏️ Save (saveRow → touchEdited) now stamps that record with a real _lastEditedAt timestamp, and on merge, whichever side's edit is genuinely newer wins the Name/Address/JustDial-link values, with the surviving record correctly marked Edited either way. Records with no timestamp on either side (anything edited before this version) safely fall back to the old blanks-only behaviour, so nothing already loaded is ever downgraded by an older/undated incoming copy. Also fixed a real bug found while doing this: the old blanket editedIds union after a merge was tagging the INCOMING file's raw record ids as edited even though matched records keep the LOCAL id and new records get a freshly generated one — those orphan ids were silently inflating the 📝 Edited counter without corresponding to any real row; the edited flag is now carried onto whichever id the record actually ends up with, precisely, with no orphans. 📂 Import Backup itself is untouched — it stays a deliberate FULL REPLACE (see v350's shrink-guard); this fix lives in 🔀 Merge Backup, the non-destructive tool for combining two phones'/files' data, which is what you should use to combine your currently-loaded 1700-edited data with a separate ~29,000-business backup file without losing either side. · v352 · rescanAllPlusRealCallsBadge — ① 🔄 Re-scan All bulk button added to all 3 planned panels (🛡️ RC Related/🪪 KYC/🗂️ Consolidated) — the rescanOneKycPersonById function had existed since v351 for exactly this but was never wired to a button; KYC's per-row Re-scan stays removed as explicitly instructed earlier, only the panel-header bulk button was added. RC's own new rescanOneRegnDocById originally wrote through the old upsertInsuranceRenewalRecord()/insurance_renewal_records_v1 store — caught before shipping (that store was already deliberately abandoned per an earlier fix) and corrected to write through upsertIntoInsuranceExtractQueue(), the real current single-source-of-truth the RC panel/WhatsApp Promo/Consolidated all read from. Consolidated's Re-scan All re-runs consolidateCustomerDocumentsForMobile for every ALREADY-compiled Mobile Number (refreshing from any newer KYC/RC documents); finding brand-new never-compiled mobiles stays fully automatic as before. All three fill-blank-only (never overwrite a good existing value), show live ⏳n/total progress, and end with one combined summary alert. ② 📞 Calls Today badge (was showing a manually typed-in '0/1000' — tap the badge, type a number, it just added to a fake localStorage total with zero connection to any real call) removed entirely; the badge now shows the SAME real, phone-pad-touch-based count already computed for the 📇 badge beside it (today's distinct Business List rows whose 📞 Call icon was actually tapped) — no target, no denominator, no manual entry. · v351 · manualRcKycBizSyncBtnAdded — audited every button in the app labeled/behaving as a 'Refresh': found ONE genuinely broken/missing one — syncRcKycToBusinessList's own comment described a visible '🔄 Manual Sync' button (manualRcKycBizSyncBtn) as already wired, but the actual <button> element and click listener were never added, only the auto-run-on-load version existed. Added the real button (next to 🔀 Merge Backup from Other Phone) wired to the exact same, already-working syncRcKycToBusinessList function. Every other Refresh-labeled control (🔄 Counts Refresh, per-row 🔄 Refresh, 🔄 Re-fetch & Merge in Consolidated, 🛡️ RC Related's per-row 🔄 Re-scan, 🔄 47-Category Search Progress Reset) was checked and confirmed already correctly wired — no change needed there. (Separately noted but left untouched: a complete rescanOneKycPersonById function for a planned '🔄 Re-scan All' bulk button across RC/KYC/Consolidated exists in the code but was never attached to any visible button for any of the three — the KYC per-row version of this was explicitly removed earlier per user instruction, so this was left as-is rather than guessed back into the UI.) · v350 · importBackupShrinkGuard — 📂 Import Backup (a FULL REPLACE, unlike 🔀 Merge Backup from Other Phone) now warns clearly and asks for a second confirmation before importing a file with FEWER businesses than what's currently loaded — importing several backup files one after another via this button was silently discarding the bigger live list each time, and that smaller result then also overwrote the IndexedDB safety copy, so refresh had nothing bigger left to recover from (reported as the list reverting to an old ~20,000 count). No change to what happens once confirmed. · v348 · restoreFromCloudUnwrapFix — worker.js's GET /backup returns {savedAt,payload}, client now correctly unwraps .payload before restoring (previous v347 build passed the wrapper straight through, which would have failed looksLikeValidData). · v347 · restoreFromCloudBackup — added ☁️ Restore from Cloud button next to ☁️ Set Cloudflare Backup: pulls the latest text-only snapshot back from the same Cloudflare Worker/KV (Business List full replace, Insurance Renewal/KYC merge-safe, same as 📥 Import Backup's tested logic, just sourced over the network via GET /backup instead of a chosen file). Photo/PDF documents never touch Cloudflare — unaffected, still phone-only. · v346 · rcKycConsResultJumpIcons · v345 · waExtractNewBizMobileBlank — fix (Sep 3, 2026, Tamil: user asked that in the WhatsApp Extract Share Inbox popup, when the detected Mobile Number does NOT match an existing Business/Financer row — i.e. the business isn't in the Business List yet — the Mobile Number box should be left blank/unlocked for him to type in himself, rather than auto-filled/locked with a not-yet-listed number; the Business Name box should keep auto-filling exactly as it appears in the WhatsApp Extract regardless). The Mobile Number box now only auto-fills (and stays locked) when the number detected in the Share title/text already matches an existing Business or Financer row via shareFormFindBizByMobile/shareFormFindFinancerNamesByMobile; otherwise it's unlocked and starts blank, same as the existing no-detection safety-net path (manual typing + background RC/KYC content auto-match still both apply). Previous v344 note: waExtractSkipScan — the WhatsApp Extract Share Inbox popup's 🔗 Merge + RC/Insurance Scan button no longer runs the mandatory OCR scan step (runBulkOcrBatchCapped3) before reaching the Business List; it's now just ⬆️ Upload, straight from read/zip-PDF-expand to one-file-at-a-time upload." style="flex-shrink:0; white-space:nowrap; padding:3px 8px; border-radius:12px; border:1px solid #78716c; background:#f5f5f4; color:#57534e; font-weight:800; font-size:0.62rem;">🏷️ v356 · noPopupsForThreeProcesses</span>
+    <span id="appVersionBadge" title="v359 · waNoInterstitialPage — Tamil request (Sep 8 2026): &quot;இடையில் ஒரு WhatsApp Page வந்து Download/Continue கேட்குது, அது வரக்கூடாது, நேரடியா WhatsApp App-க்கே செல்ல வேண்டும்.&quot; That intermediate page happens when a plain https://wa.me/... or https://api.whatsapp.com/send?... link opens inside the browser instead of jumping to the app instantly — it can land on wa.me\u2019s own web page (with its Continue/Download prompt) first on browsers/WebViews where Android\u2019s automatic App Link handoff isn\u2019t instant. Added waNormalIntentLink() (same intent:// package-targeting idea as the existing waBusinessIntentLink, just for com.whatsapp instead of com.whatsapp.w4b) and switched every remaining direct WhatsApp link to it — openWaShareOrLink()\u2019s own fallback, and the four blank-message &quot;type your own message&quot;/&quot;open this number\u2019s chat&quot; icons that were still using the plain link. These now tell Android to launch the installed app directly, with the wa.me link kept only as the built-in fallback if WhatsApp genuinely isn\u2019t installed. Two genuinely last-resort fallbacks (inside sendShareRandomTemplate/shareBusinessLocation, only reached when navigator.share is entirely unsupported — essentially never true on an Android phone) still use the plain link; not worth the added complexity for a path that shouldn\u2019t ever actually run here. · v358 · waShareCoverageAudit — Tamil follow-up (Sep 8 2026): &quot;அனைத்து WhatsApp Promo/icon-லும் Emoji சரி செஞ்சாச்சா, உறுதிப்படுத்தவும்.&quot; Audited every wa.me/Business-intent link left in the whole file after v357. Found and fixed one more real text-carrying send that had been missed: fireCallFollowUp()\u2019s post-call &quot;🟢 Tap to WhatsApp&quot; link (the small popup after a phone call ends) was still a plain wa.me href — now a button routed through the same openWaShareOrLink() as everything else (still only fires on a genuine tap, same as before, so navigator.share\u2019s user-gesture requirement is satisfied). Everywhere else that still builds a plain wa.me/api.whatsapp.com/Business-intent link (the 🟢/💼 &quot;type your own custom message&quot; icons, and the two &quot;open this number\u2019s existing chat&quot; icons) carries NO pre-filled text at all — nothing for an emoji to corrupt, and nothing for a Share Sheet to hand off, so those are correctly left as direct links to that one specific number, unchanged. Confirmed: every WhatsApp send in this app that carries actual message text — Promo Run (all channels), every per-row 🟢/💼 icon, Private Ltd Promo, and now the Call Follow-Up popup — goes through openWaShareOrLink(). · v357 · waShareChooserAndEmojiFix — Tamil request (Sep 8 2026): (1) emojis showing as broken &quot;�&quot; boxes in sent WhatsApp messages — root cause was the intent://...package=com.whatsapp.w4b link (and to a lesser extent plain wa.me) depending on percent-encoded 4-byte UTF-8 emoji sequences surviving Android\u2019s Intent-URI parser intact, unreliable across Chrome/Android combinations; the template text itself was already correct in the source. (2) explicit request: tapping Normal WhatsApp or WhatsApp Business should show the same Normal-vs-Clone app picker already used for the Clone channels. Both fixed together with one new shared function, openWaShareOrLink(), now used everywhere a WhatsApp text send happens (Promo Run, per-row 🟢/💼 icons, Private Ltd Promo): navigator.share() hands text to the OS directly with no percent-encoding round-trip (fixes the corruption) and always pops Android\u2019s native app chooser (fixes the picker request), for every channel now, not just Clone. Falls back to the old direct link only when navigator.share is unavailable or errors (not on a plain cancel). Trade-off (already true for Clone before this): the contact must now be picked by hand after choosing the app, since a Share Sheet can\u2019t be pre-targeted at one phone number the way wa.me could. · v356 · noPopupsForThreeProcesses — Tamil request (Sep 8 2026): &quot;இந்த மூன்று process (RC Related/KYC/Consolidated) ஆகும்போது எந்தவித பாப்-அப்பும் காட்டக்கூடாது.&quot; Every alert() tied to the 🛡️ RC Related / 🪪 KYC / 🗂️ Consolidated bulk upload-and-scan pipelines removed \u2014 including the shared \u201c🔄 Re-scan All\u201d runner (the ⏳n/total → completion-popup pattern the report specifically named), each panel\u2019s own \u201c✅ All Completed: N/N Files\u201d summary (including the resumed/reopened-app path), the \u201c🔁 Duplicate Summary\u201d popups, the \u201cSkip ஆனது\u201d / cross-route move notices, and the ZIP-read error/empty-result alerts. All of these are now console.log/console.warn instead \u2014 same counts still available for debugging, nothing ever interrupts the screen. Progress badges, ⏳n/total button text, and the underlying processing itself are unchanged \u2014 only the popups are gone. · v355 · consResultInstantBackgroundBackfill — Tamil follow-up (Sep 8 2026): after v354\u2019s fix, 🗂️ Consolidated could STILL be slow — found the real biggest cause: jumpToConsResult() (the actual tap handler) used to `await` the FULL backfillConsolidatedDocuments() \u2014 a real compile pass (name-match retry across the whole Business List for every mobile-less KYC/RC record, then a fresh PDF merge/rasterize for every not-yet-compiled customer) \u2014 to completely finish BEFORE the list was shown at all. On a live, constantly-growing ~30,000-business dataset there are almost always pending customers, so the tap could sit doing real background work with nothing on screen for a long time \u2014 and since this SAME backfill already separately auto-runs once on every app open (fire-and-forget, unrelated to this tap), a quick tap soon after opening the app could trigger a SECOND concurrent full pass on top of the first, doubling the wait. Fixed the same way the app already handles this exact pattern elsewhere (its own on-load backfill, and 🪪 KYC\u2019s bulk-scan progress): the panel now renders INSTANTLY with whatever is already compiled, the backfill runs in the background, and the list quietly refreshes (throttled) as more records finish compiling. Nothing about WHAT gets compiled changed \u2014 only WHEN it is first shown. · v354 · kycConsolidatedGstLookupPerfFix — Tamil request (Sep 8 2026): &quot;KYC/Consolidated icon results not coming fast, find the bug.&quot; Found two real bugs, both fixed. (1) 🪪 KYC panel: the GST-number lookup ran, for EVERY KYC person, a fresh scan of ALL Consolidated documents PLUS (via findGstInBusinessListUploads) an IndexedDB read for EVERY ONE of the ~30,000 Business List rows — up to (KYC persons) × (docs + 30,000) reads, redone on every single panel open; this was the actual freeze. Replaced with getGstCandidateIndex(): every candidate document is read from IndexedDB exactly ONCE, cached for the rest of the page session, and every KYC person is matched against that small in-memory list — zero further IndexedDB reads per person. (2) 🗂️ Consolidated panel: documents were read one-at-a-time in a sequential loop (now parallel via Promise.all), and its own \u201cNew Record\u201d check re-scanned the entire Business List for every single row (now a single Set built once, O(1) lookup per row). No visible behaviour changed — same results, dramatically fewer IndexedDB round-trips. · v353 · mergeLatestEditWinsByDate — Tamil request (Sep 8 2026): when 🔀 Merge Backup from Other Phone finds the SAME business on both sides (matched by mobile, as always), it no longer just fills blank fields — every edit made via ✏️ Save (saveRow → touchEdited) now stamps that record with a real _lastEditedAt timestamp, and on merge, whichever side's edit is genuinely newer wins the Name/Address/JustDial-link values, with the surviving record correctly marked Edited either way. Records with no timestamp on either side (anything edited before this version) safely fall back to the old blanks-only behaviour, so nothing already loaded is ever downgraded by an older/undated incoming copy. Also fixed a real bug found while doing this: the old blanket editedIds union after a merge was tagging the INCOMING file's raw record ids as edited even though matched records keep the LOCAL id and new records get a freshly generated one — those orphan ids were silently inflating the 📝 Edited counter without corresponding to any real row; the edited flag is now carried onto whichever id the record actually ends up with, precisely, with no orphans. 📂 Import Backup itself is untouched — it stays a deliberate FULL REPLACE (see v350's shrink-guard); this fix lives in 🔀 Merge Backup, the non-destructive tool for combining two phones'/files' data, which is what you should use to combine your currently-loaded 1700-edited data with a separate ~29,000-business backup file without losing either side. · v352 · rescanAllPlusRealCallsBadge — ① 🔄 Re-scan All bulk button added to all 3 planned panels (🛡️ RC Related/🪪 KYC/🗂️ Consolidated) — the rescanOneKycPersonById function had existed since v351 for exactly this but was never wired to a button; KYC's per-row Re-scan stays removed as explicitly instructed earlier, only the panel-header bulk button was added. RC's own new rescanOneRegnDocById originally wrote through the old upsertInsuranceRenewalRecord()/insurance_renewal_records_v1 store — caught before shipping (that store was already deliberately abandoned per an earlier fix) and corrected to write through upsertIntoInsuranceExtractQueue(), the real current single-source-of-truth the RC panel/WhatsApp Promo/Consolidated all read from. Consolidated's Re-scan All re-runs consolidateCustomerDocumentsForMobile for every ALREADY-compiled Mobile Number (refreshing from any newer KYC/RC documents); finding brand-new never-compiled mobiles stays fully automatic as before. All three fill-blank-only (never overwrite a good existing value), show live ⏳n/total progress, and end with one combined summary alert. ② 📞 Calls Today badge (was showing a manually typed-in '0/1000' — tap the badge, type a number, it just added to a fake localStorage total with zero connection to any real call) removed entirely; the badge now shows the SAME real, phone-pad-touch-based count already computed for the 📇 badge beside it (today's distinct Business List rows whose 📞 Call icon was actually tapped) — no target, no denominator, no manual entry. · v351 · manualRcKycBizSyncBtnAdded — audited every button in the app labeled/behaving as a 'Refresh': found ONE genuinely broken/missing one — syncRcKycToBusinessList's own comment described a visible '🔄 Manual Sync' button (manualRcKycBizSyncBtn) as already wired, but the actual <button> element and click listener were never added, only the auto-run-on-load version existed. Added the real button (next to 🔀 Merge Backup from Other Phone) wired to the exact same, already-working syncRcKycToBusinessList function. Every other Refresh-labeled control (🔄 Counts Refresh, per-row 🔄 Refresh, 🔄 Re-fetch & Merge in Consolidated, 🛡️ RC Related's per-row 🔄 Re-scan, 🔄 47-Category Search Progress Reset) was checked and confirmed already correctly wired — no change needed there. (Separately noted but left untouched: a complete rescanOneKycPersonById function for a planned '🔄 Re-scan All' bulk button across RC/KYC/Consolidated exists in the code but was never attached to any visible button for any of the three — the KYC per-row version of this was explicitly removed earlier per user instruction, so this was left as-is rather than guessed back into the UI.) · v350 · importBackupShrinkGuard — 📂 Import Backup (a FULL REPLACE, unlike 🔀 Merge Backup from Other Phone) now warns clearly and asks for a second confirmation before importing a file with FEWER businesses than what's currently loaded — importing several backup files one after another via this button was silently discarding the bigger live list each time, and that smaller result then also overwrote the IndexedDB safety copy, so refresh had nothing bigger left to recover from (reported as the list reverting to an old ~20,000 count). No change to what happens once confirmed. · v348 · restoreFromCloudUnwrapFix — worker.js's GET /backup returns {savedAt,payload}, client now correctly unwraps .payload before restoring (previous v347 build passed the wrapper straight through, which would have failed looksLikeValidData). · v347 · restoreFromCloudBackup — added ☁️ Restore from Cloud button next to ☁️ Set Cloudflare Backup: pulls the latest text-only snapshot back from the same Cloudflare Worker/KV (Business List full replace, Insurance Renewal/KYC merge-safe, same as 📥 Import Backup's tested logic, just sourced over the network via GET /backup instead of a chosen file). Photo/PDF documents never touch Cloudflare — unaffected, still phone-only. · v346 · rcKycConsResultJumpIcons · v345 · waExtractNewBizMobileBlank — fix (Sep 3, 2026, Tamil: user asked that in the WhatsApp Extract Share Inbox popup, when the detected Mobile Number does NOT match an existing Business/Financer row — i.e. the business isn't in the Business List yet — the Mobile Number box should be left blank/unlocked for him to type in himself, rather than auto-filled/locked with a not-yet-listed number; the Business Name box should keep auto-filling exactly as it appears in the WhatsApp Extract regardless). The Mobile Number box now only auto-fills (and stays locked) when the number detected in the Share title/text already matches an existing Business or Financer row via shareFormFindBizByMobile/shareFormFindFinancerNamesByMobile; otherwise it's unlocked and starts blank, same as the existing no-detection safety-net path (manual typing + background RC/KYC content auto-match still both apply). Previous v344 note: waExtractSkipScan — the WhatsApp Extract Share Inbox popup's 🔗 Merge + RC/Insurance Scan button no longer runs the mandatory OCR scan step (runBulkOcrBatchCapped3) before reaching the Business List; it's now just ⬆️ Upload, straight from read/zip-PDF-expand to one-file-at-a-time upload." style="flex-shrink:0; white-space:nowrap; padding:3px 8px; border-radius:12px; border:1px solid #78716c; background:#f5f5f4; color:#57534e; font-weight:800; font-size:0.62rem;">🏷️ v359 · waNoInterstitialPage</span>
   </div>
   <!-- 🎯 RC/KYC/Consolidate Result quick-jump icons — RELOCATED (explicit
   user instruction, Sep 8 2026, Tamil): originally placed here in the
@@ -3889,10 +3889,7 @@ async function sendWaRandomTemplate(item, wa, useBusinessApp){
     const text = await BUILDER_TEMPLATES[rowCat](item);
     if(text === null) return; // 🎯 Prospect details modal was cancelled — don't open WhatsApp
     const msg = encodeURIComponent(text);
-    const url = useBusinessApp
-      ? waBusinessIntentLink(wa, msg)
-      : `https://wa.me/${wa}?text=${msg}`;
-    window.open(url, '_blank');
+    openWaShareOrLink(wa, msg, useBusinessApp);
     item.waSentCount = (item.waSentCount || 0) + 1;
     item.pingDate = todayStr();
     item.lastWaSentYymmdd = yymmddStr();
@@ -3904,10 +3901,7 @@ async function sendWaRandomTemplate(item, wa, useBusinessApp){
     const text = await BUILDER_TEMPLATES[builderActiveCategory](item);
     if(text === null) return; // 🎯 Prospect details modal was cancelled — don't open WhatsApp
     const msg = encodeURIComponent(text);
-    const url = useBusinessApp
-      ? waBusinessIntentLink(wa, msg)
-      : `https://wa.me/${wa}?text=${msg}`;
-    window.open(url, '_blank');
+    openWaShareOrLink(wa, msg, useBusinessApp);
     item.waSentCount = (item.waSentCount || 0) + 1;
     item.pingDate = todayStr();
     item.lastWaSentYymmdd = yymmddStr();
@@ -3925,10 +3919,7 @@ async function sendWaRandomTemplate(item, wa, useBusinessApp){
   if(!confirmIfDuplicateTemplate(item, i)) return;
 
   const msg = encodeURIComponent(wrapWithRandomGreeting(promoTemplates[i] || messageTemplate));
-  const url = useBusinessApp
-    ? waBusinessIntentLink(wa, msg)
-    : `https://wa.me/${wa}?text=${msg}`;
-  window.open(url, '_blank');
+  openWaShareOrLink(wa, msg, useBusinessApp);
 
   recordTemplateSent(item, i);
   item.waSentCount = (item.waSentCount || 0) + 1;
@@ -4184,22 +4175,51 @@ function nextPromoChannel(){
   return channel;
 }
 
-// Opens WhatsApp for a Promo Run send. For the two Clone channels, hands
-// the message to the phone's native Share Sheet instead of a direct link
-// — WHICH Clone app actually opens is Dhinakaran's own decision (there's
-// no fixed package name an app can reliably launch across phone brands),
-// so this deliberately stops short of picking that for him. Everything
-// else (normal WhatsApp / Prospect's original Business-app path) is
-// unchanged.
-function openPromoWaTarget(wa, msg, useBusiness, useClone){
-  if(useClone && msg && navigator.share){
-    navigator.share({ text: decodeURIComponent(msg) }).catch(() => {
-      window.open(`https://wa.me/${wa}?text=${msg}`, '_blank');
+// 🐛 v357 — shared choke point for EVERY WhatsApp text send in this app
+// (Promo Run, per-row 🟢/💼 icons, Private Ltd Promo — anywhere a message
+// used to be built as a wa.me link or a `com.whatsapp.w4b` intent:// link).
+// Two problems, one root cause, one fix. (1) Emojis showing as "�" broken
+// boxes in the sent message, reported across every kind of WhatsApp
+// send — the intent://...package=com.whatsapp.w4b link (and to a lesser
+// extent plain wa.me) depends on percent-encoded 4-byte UTF-8 emoji
+// sequences surviving Android's Intent-URI parser intact, which isn't
+// reliable on every Chrome/Android combination; that round-trip is the
+// actual corruption point, not the template text itself (already
+// confirmed correct in the source). (2) Explicit request: tapping 🟢
+// Normal WhatsApp or 💼 WhatsApp Business should show the SAME
+// Normal-app-vs-Clone-app picker that already existed for the two Clone
+// channels, instead of silently force-opening one specific app. Both are
+// solved together: navigator.share() hands the text to the OS directly
+// (EXTRA_TEXT, no percent-encoding at all — no more corruption) and, as a
+// side effect, always pops Android's native chooser listing every
+// installed app that can receive shared text (Normal WhatsApp, any Clone
+// of it, Business, any Clone of that) — exactly the picker asked for, for
+// every channel now, not just the two Clone ones. Falls back to the old
+// direct link ONLY when navigator.share isn't available at all, or the
+// Share Sheet itself errors out (not on a plain user-cancel). Trade-off,
+// unavoidable and already true for the Clone channels before this: since a
+// Share Sheet can't be pre-targeted at one phone number, whichever app is
+// picked opens with the text ready but the CONTACT must be picked by
+// hand — unlike the old wa.me link, which jumped straight into that one
+// number's chat. useBusiness only matters for the old-link fallback path.
+function openWaShareOrLink(wa, msg, useBusiness){
+  if(msg && navigator.share){
+    navigator.share({ text: decodeURIComponent(msg) }).catch(shareErr => {
+      if(shareErr && shareErr.name === 'AbortError') return; // person deliberately cancelled the Share Sheet — don't force-open anything instead
+      const url = useBusiness ? waBusinessIntentLink(wa, msg) : waNormalIntentLink(wa, msg);
+      window.open(url, '_blank');
     });
     return;
   }
-  const url = useBusiness ? waBusinessIntentLink(wa, msg) : `https://wa.me/${wa}?text=${msg}`;
+  const url = useBusiness ? waBusinessIntentLink(wa, msg) : waNormalIntentLink(wa, msg);
   window.open(url, '_blank');
+}
+// Kept as a thin wrapper — same name/signature every existing Promo Run
+// call site already uses — so nothing else needed to change there. The
+// old useClone-only special-casing is gone; every channel now goes
+// through openWaShareOrLink the same way.
+function openPromoWaTarget(wa, msg, useBusiness, useClone){
+  openWaShareOrLink(wa, msg, useBusiness);
 }
 
 // Shows only the ONE send button matching this business's rotated channel
@@ -7294,6 +7314,23 @@ function mobilePhoneCellHtml(item){
 function waBusinessIntentLink(wa, encodedMsg){
   const fallback = `https://api.whatsapp.com/send?phone=${wa}&text=${encodedMsg}`;
   return `intent://api.whatsapp.com/send?phone=${wa}&text=${encodedMsg}#Intent;scheme=https;package=com.whatsapp.w4b;S.browser_fallback_url=${encodeURIComponent(fallback)};end`;
+}
+// 🐛 v359 — explicit user instruction (Sep 8 2026, Tamil): "இடையில் ஒரு
+// WhatsApp Page வந்து Download/Continue கேட்குது, அது வரக்கூடாது,
+// நேரடியா WhatsApp App-க்கே செல்ல வேண்டும்." A plain https://wa.me/... or
+// https://api.whatsapp.com/send?... href opened inside a browser (as
+// opposed to navigator.share, which never touches the browser at all) can
+// land on wa.me's own WEB page first — showing its "Continue to Chat" /
+// "Download WhatsApp" interstitial — before Android's App Link handoff
+// kicks in, on browsers/WebViews where that handoff isn't instant. Same
+// fix idea as waBusinessIntentLink above, just targeting the NORMAL
+// WhatsApp package (com.whatsapp) instead of Business — an intent: link
+// tells Android to launch that exact installed app directly, skipping the
+// web page entirely, with the same https://wa.me fallback if the app
+// genuinely isn't installed.
+function waNormalIntentLink(wa, encodedMsg){
+  const fallback = `https://wa.me/${wa}?text=${encodedMsg}`;
+  return `intent://send?phone=${wa}&text=${encodedMsg}#Intent;scheme=whatsapp;package=com.whatsapp;S.browser_fallback_url=${encodeURIComponent(fallback)};end`;
 }
 
 function mobileActionIconsHtml(item, encodedMsg){
@@ -13166,6 +13203,14 @@ bothListsAddEventListener('click', (e) => {
 // Alternates between the two channels each time: 1st call → SMS, 2nd call →
 // WhatsApp, 3rd call → SMS, and so on — never both at once.
 const callFollowUpEl = document.getElementById('callFollowUp');
+// 🐛 v357 — delegated handler for the 🟢 Tap to WhatsApp button built in
+// fireCallFollowUp() below (innerHTML is rewritten fresh each time, so a
+// direct listener wouldn't survive — delegation on the stable parent does).
+callFollowUpEl.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-action="cfu-wa"]');
+  if(!btn) return;
+  openWaShareOrLink(btn.dataset.wa, btn.dataset.msg, false);
+});
 
 function loadNextFollowUpChannel(){
   try{
@@ -13193,8 +13238,13 @@ function fireCallFollowUp(info){
     const smsLink = `sms:${info.phone}?body=${encoded}`;
     callFollowUpEl.innerHTML = `<a class="cfu-fallback" href="${smsLink}">✉️ Tap to message ${info.name}</a>`;
   } else {
-    const waLink = `https://wa.me/91${info.phone}?text=${encoded}`;
-    callFollowUpEl.innerHTML = `<a class="cfu-fallback" target="_blank" href="${waLink}">🟢 Tap to WhatsApp ${info.name}</a>`;
+    // 🐛 v357 — same fix as everywhere else: no longer a plain wa.me href
+    // (percent-encoded emoji corruption risk, no Normal/Clone app picker)
+    // — a real <button>, still only fired by a genuine tap (so
+    // navigator.share, which also requires a direct user-gesture, is
+    // allowed to run), routed through the same openWaShareOrLink() used
+    // everywhere else in the app now.
+    callFollowUpEl.innerHTML = `<button type="button" class="cfu-fallback" data-action="cfu-wa" data-wa="91${info.phone}" data-msg="${encoded}" style="background:none; border:none; padding:0; font:inherit; color:inherit; cursor:pointer;">🟢 Tap to WhatsApp ${info.name}</button>`;
   }
   callFollowUpEl.style.display = 'block';
   clearTimeout(callFollowUpEl._hideTimer);
@@ -33767,7 +33817,7 @@ function disbursedContactIconsHtml(num, bizId, bizName){
   return `
     <a class="icon-btn" title="Call" href="tel:${num}" style="text-decoration:none;">📞</a>
     <a class="icon-btn" title="SMS — type your own customized message" href="sms:${num}" style="text-decoration:none;">✉️</a>
-    <a class="icon-btn" title="WhatsApp — type your own customized message" href="https://api.whatsapp.com/send?phone=${wa}" target="_blank" rel="noopener" style="text-decoration:none;">🟢</a>
+    <a class="icon-btn" title="WhatsApp — type your own customized message" href="${waNormalIntentLink(wa, '')}" target="_blank" rel="noopener" style="text-decoration:none;">🟢</a>
     <a class="icon-btn" title="WhatsApp Business — type your own customized message" href="${waBusinessIntentLink(wa, '')}" style="text-decoration:none;">💼</a>`;
 }
 function renderDisbursedCasesList(){
@@ -34322,7 +34372,7 @@ function renderIncomingCallsList(idx){
       <div class="ic-top">
         <a class="icon-btn icon-call" title="Call — ${row.num}" href="tel:${row.num}" style="text-decoration:none;">📞</a>
         <span class="ic-num">${row.num}</span>
-        <a class="icon-btn" title="Normal WhatsApp-ல் இந்த Number-ன் Chat-ஐ திற — Past Messages/Name/Photo பார்த்து ஞாபகப்படுத்திக்கொள்ளலாம்" href="https://api.whatsapp.com/send?phone=${wa}" target="_blank" rel="noopener" style="background:#dcfce7; color:#166534; border:1px solid #86efac; text-decoration:none;">🟢</a>
+        <a class="icon-btn" title="Normal WhatsApp-ல் இந்த Number-ன் Chat-ஐ திற — Past Messages/Name/Photo பார்த்து ஞாபகப்படுத்திக்கொள்ளலாம்" href="${waNormalIntentLink(wa, '')}" target="_blank" rel="noopener" style="background:#dcfce7; color:#166534; border:1px solid #86efac; text-decoration:none;">🟢</a>
         <a class="icon-btn" title="WhatsApp Business-ல் இந்த Number-ன் Chat-ஐ திற" href="${waBusinessIntentLink(wa, '')}" style="background:#ede9fe; color:#5b21b6; border:1px solid #c4b5fd; text-decoration:none;">💼</a>
       </div>
       <div class="ic-actions">
@@ -34657,8 +34707,7 @@ function sendPrivateLtdWa(contact, wa, useBusinessApp){
   const picked = randomPrivateLtdTemplate(contact);
   if(!confirmIfDuplicateTemplate(contact, picked.index)) return;
   const msg = encodeURIComponent(wrapWithRandomGreeting(picked.text));
-  const url = useBusinessApp ? waBusinessIntentLink(wa, msg) : `https://wa.me/${wa}?text=${msg}`;
-  window.open(url, '_blank');
+  openWaShareOrLink(wa, msg, useBusinessApp);
   recordTemplateSent(contact, picked.index);
   contact.waSentCount = (contact.waSentCount || 0) + 1;
   contact.lastWaSentDate = todayStr();
