@@ -1118,7 +1118,8 @@ scan, export), never at top-level during initial script execution. -->
     shared flex row (flex:1 each, side-by-side) instead. Ids/click
     wiring/behaviour completely unchanged, only the layout wrapper. -->
     <div style="display:flex; gap:6px; width:100%;">
-      <button type="button" id="versionHistoryBtn" title="All Backup — Version History" style="flex:1; min-width:0; padding:5px 6px; border-radius:8px; border:2px solid #7c3aed; background:#f5f3ff; color:#5b21b6; font-weight:800; font-size:0.66rem; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; justify-content:center; gap:4px;">🕐 ALL BACKUP</button>
+      <!-- 🕐 ALL BACKUP (versionHistoryBtn) — removed Sep 9 2026 (Tamil
+      request: "ரிமூவ் ஆல் பேக்கப் பட்டன் சொல்லி பேஜ்"). -->
       <a class="tool-btn tool-btn-export" id="exportEditsBtn" href="#" download="V236_Directory_Backup.json" title="Backup Edit — Export edits backup" style="flex:1; min-width:0; box-sizing:border-box; padding:5px 6px; border-radius:8px; font-weight:800; font-size:0.66rem; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; justify-content:center;">💾 BACKUP EDIT</a>
     </div>
     <!-- 📵 Call பண்ணி Postpone பண்ணாதவை — explicit user instruction (Aug
@@ -1823,24 +1824,18 @@ WhatsApp Upload and 📞 Calls are now shown smaller, per instruction). -->
       Add, 📎/🛡️ business-icon uploads, 🔄 Re-scan — not just this
       button's neighbour). -->
       <button class="tool-btn" id="setVisionKeyBtn" type="button" title="Google Cloud Vision Key — Plain OCR (Text படிக்குறது மட்டும், Document புரிஞ்சுக்காது). 📷 Bulk Add, 📎/🛡️ Business Icons, 🔄 Re-scan உட்பட App முழுக்க இருக்குற எல்லா OCR Path-உம் இந்த Key-ஐ Use பண்ணும்.">🔑 Set Vision API Key</button>
-      <!-- ☁️ Set Cloudflare Backup — explicit user instruction (Sep 2026):
-      "Implement cloudflare to avoid background working failure and sync"
-      — this button stores the Worker URL + secret needed for the
-      existing 5-minute auto-backup to ALSO push a text-only copy of the
-      Business List/RC/KYC/Consolidated data to a Cloudflare Worker+KV
-      store, so it survives even if the phone's local storage is
-      cleared/lost. Same IndexedDB save/read-back pattern as 🔑 Set
-      Vision API Key above. Never includes scanned Photo/PDF documents —
-      text data only, same limit the local Backup Save buttons already
-      have. -->
-      <button class="tool-btn" id="setCfBackupBtn" type="button" style="background:#f6821f; border-color:#f6821f;" title="☁️ Cloudflare Worker URL + Secret Token — set இதை பண்ணா, ஒவ்வொரு 5-நிமிட Auto-Backup-உம் Text Data-வை (Photo/PDF இல்லாம) Cloudflare-க்கும் தானாக அனுப்பும், Phone Storage போனாலும் Data தப்பும்.">☁️ Set Cloudflare Backup</button>
-      <!-- ☁️ Restore from Cloud — explicit user instruction (Sep 2026):
-      lets him PULL the latest text-only snapshot back from the same
-      Cloudflare Worker/KV that ☁️ Set Cloudflare Backup pushes to every
-      5 minutes, so the cloud copy can actually be verified/used, not just
-      trusted blindly. Same merge-safe restore path as 📥 Import Backup —
-      see restoreFromCloudBackup(). -->
-      <button class="tool-btn" id="restoreCfBackupBtn" type="button" style="background:#0b74de; border-color:#0b74de;" title="☁️ Cloudflare-ல் கடைசியா Save ஆன Backup-ஐ இங்க திரும்ப கொண்டு வரும் (Photo/PDF தவிர மத்த Text Data). Business List முழுசா Replace ஆகும் (Version History மாதிரி); RC/KYC/Consolidated Data Merge ஆகும் (இருக்குறதை மேலெழுதாது).">☁️ Restore from Cloud</button>
+      <!-- ☁️ Set Cloudflare Backup / ☁️ Restore from Cloud — Tamil request
+      (Sep 9 2026): "க்ளவுட்ஃப்ளேர் சம்பந்தப்பட்ட எல்லா ஐகானையும் பேச்சுல
+      இருந்து ரிமூவ் பண்ணிட்டு" — both icons removed from the UI. The
+      Secret-mismatch (401) troubleshooting turned into a long, frustrating
+      dead-end (Cloudflare's mobile code-editor kept losing edits), so this
+      feature is being dropped rather than fought with further. The
+      underlying functions (setCloudflareBackupConfig/fetchCloudBackup/
+      pushCloudBackup) are left in place but now UNREACHABLE from the UI —
+      pushCloudBackup's existing "not configured — silent no-op" guard
+      means the 5-minute auto-backup keeps working exactly as before,
+      purely local, with nothing sent to Cloudflare and no more error
+      popups. Nothing else about backup/restore changed. -->
       <!-- 🔑 Set Anthropic API Key — explicit user instruction (Aug 30,
       2026, Tamil): "இப்போது இல்லை ஃபியூச்சரில் வாங்குவேன், அதனால் மெயின்
       பேஜில் ஆந்த்ராபிக் கீ உள்ளிட மற்றும் சேவ் செய்ய ஒரு ஐகானை கொண்டு
@@ -2179,14 +2174,8 @@ WhatsApp Upload and 📞 Calls are now shown smaller, per instruction). -->
   </div>
 </div>
 
-<div class="vh-overlay" id="vhOverlay" style="display:none;">
-  <div class="vh-modal">
-    <h3>🕐 Version History</h3>
-    <p class="vh-sub">Up to 5 most recent auto-saved checkpoints. Restoring replaces the current business list, enquiry marks, edits, and call dates with that checkpoint — do this only if something has gone wrong.</p>
-    <div id="vhList" class="vh-list"></div>
-    <button class="vh-close" id="vhCloseBtn" type="button">Close</button>
-  </div>
-</div>
+<!-- vhOverlay (🕐 Version History popup) — removed Sep 9 2026, went with
+its versionHistoryBtn button above. -->
 <div class="vh-overlay" id="psTalukSummaryOverlay" style="display:none;">
   <div class="vh-modal">
     <h3>🏁 Search முடிந்தது — Direction & Pincode Summary</h3>
@@ -15340,26 +15329,10 @@ async function setCloudflareBackupConfig(cfg){
     return true;
   }catch(e){ console.warn('setCloudflareBackupConfig failed', e); return false; }
 }
-document.getElementById('setCfBackupBtn').addEventListener('click', async () => {
-  const current = await getCloudflareBackupConfig();
-  const url = prompt(
-    (current.url ? 'Current Cloudflare Worker URL:\n' + current.url + '\n\n' : 'No Cloudflare Worker URL set yet.\n\n') +
-    'Paste your Worker URL (e.g. https://stffe-backup-worker.YOURNAME.workers.dev) — leave blank + OK to clear, Cancel to leave unchanged:',
-    current.url
-  );
-  if(url === null) return;
-  if(!url.trim()){
-    await setCloudflareBackupConfig({ url: '', secret: '' });
-    alert('🗑️ Cloudflare Backup cleared. Auto-Backup இனி Local மட்டும் (Cloudflare-க்கு அனுப்பாது).');
-    return;
-  }
-  const secret = prompt('Paste your Worker Secret (the same value you set via "wrangler secret put BACKUP_SECRET"):', current.secret || '');
-  if(secret === null) return;
-  const cfg = { url: url.trim().replace(/\/$/, ''), secret: secret.trim() };
-  const ok = await setCloudflareBackupConfig(cfg);
-  if(!ok){ alert('❌ Save ஆகல் — Storage Problem இருக்கலாம்.'); return; }
-  alert('✅ Cloudflare Backup Configured. இனி ஒவ்வொரு 5-நிமிட Auto-Backup-உம் இதற்கும் தானாக அனுப்பும் (Photo/PDF இல்லாம, Text Data மட்டும்).');
-});
+// ☁️ Set Cloudflare Backup — button removed from UI (Sep 9 2026 Tamil
+// request). setCloudflareBackupConfig() itself is left in place (used by
+// nothing now, harmless) but the click listener that used to prompt for
+// URL/Secret is gone — there's no button left to attach it to.
 // 🐛 Sends the SAME text-only shape as the local RC/KYC/Consolidated
 // Backup Save buttons — deliberately excludes documentBlobs (scanned
 // Aadhaar/PAN/RC images) so this never sends actual ID-document photos
@@ -15409,6 +15382,27 @@ async function fetchCloudBackup(){
   if(!res.ok){
     if(res.status === 404){
       alert('☁️ Cloudflare-ல் இன்னும் ஒரு Backup-உம் Save ஆகல் — முதலில் ஒரு 5-நிமிட Auto-Backup நடக்கிற வரைக்கும் காத்திருங்க, அப்புறம் Restore பண்ணுங்க.');
+    }else if(res.status === 401){
+      // 🩺 v367 · authDebugInfo — Tamil request (Sep 9 2026): worker.js's
+      // unauthorized() now returns non-sensitive LENGTH-only debug fields
+      // (never the actual secret value) so a 401 can be pinned down to
+      // ONE of 3 precise causes instead of a generic "check URL/Secret".
+      let detail = '';
+      try{
+        const body = await res.json();
+        const d = body && body.debug;
+        if(d){
+          detail = `\n\n🔎 Debug:\nApp-ல் Type பண்ண Secret Length: ${cfg.secret.length}\nWorker Receive பண்ண Token Length: ${d.tokenLength}\nWorker-ல் Configure ஆன Secret Length: ${d.secretLength}\nAuth Header வந்ததா: ${d.authHeaderPresent}`;
+          if(cfg.secret.length !== d.tokenLength){
+            detail += '\n\n⚠️ App-ல் Type பண்ண Secret Length, Worker-க்கு உண்மையா போன Token Length Match ஆகல் — Save பண்ணும்போதே ஏதோ Problem (App Bug-ஆ இருக்கலாம், Screenshot அனுப்புங்க).';
+          }else if(d.tokenLength !== d.secretLength){
+            detail += '\n\n🎯 ROOT CAUSE: Length-ஏ Match ஆகல் — Worker-ல் Rotate பண்ண Secret Value, App-ல் Type பண்ண Value வேற. திரும்ப Rotate பண்ணி, Deploy Confirm ஆனதும், அதே Value-ஐ App-ல் Exact-ஆ Type பண்ணுங்க.';
+          }else{
+            detail += '\n\n🎯 ROOT CAUSE: Length Same-ஆ இருந்தாலும் Value வேற — Character Typo/Space இருக்கலாம். இரண்டு Side-லேயும் Secret-ஐ திரும்ப புதுசா (ஒரே Simple Text) Set பண்ணுங்க.';
+          }
+        }
+      }catch(parseErr){}
+      alert('❌ Cloudflare-ல் இருந்து Backup எடுக்க முடியல் (Status: 401 — Unauthorized).' + detail);
     }else{
       alert('❌ Cloudflare-ல் இருந்து Backup எடுக்க முடியல் (Status: ' + res.status + '). Worker URL/Secret சரியா இருக்கான்னு பாருங்க.');
     }
@@ -15607,26 +15601,11 @@ async function diagnoseCloudRestoreFailure(originalErr){
   }
   return lines.join('\n');
 }
-document.getElementById('restoreCfBackupBtn').addEventListener('click', async () => {
-  const btn = document.getElementById('restoreCfBackupBtn');
-  const originalText = btn.textContent;
-  btn.textContent = '☁️ Cloud-ல் இருந்து படிக்குது…';
-  btn.disabled = true;
-  try{
-    const parsed = await fetchCloudBackup();
-    if(parsed) await applyRestoredBackupPayload(parsed, '☁️ Cloudflare');
-  }catch(e){
-    console.warn('Restore from Cloud failed:', e);
-    let msg = '❌ Cloud-ல் இருந்து Restore பண்ண முடியல் (Network Problem-ஆ இருக்கலாம்): ' + (e && e.message ? e.message : e);
-    try{
-      msg += '\n\n' + await diagnoseCloudRestoreFailure(e);
-    }catch(diagErr){ console.warn('Diagnostic itself failed:', diagErr); }
-    alert(msg);
-  }finally{
-    btn.textContent = originalText;
-    btn.disabled = false;
-  }
-});
+// ☁️ Restore from Cloud — button removed from UI (Sep 9 2026 Tamil
+// request: "க்ளவுட்ஃப்ளேர் சம்பந்தப்பட்ட எல்லா ஐகானையும் பேச்சுல இருந்து
+// ரிமூவ் பண்ணிட்டு"). fetchCloudBackup()/diagnoseCloudRestoreFailure()
+// are left in place (unused now, harmless) but there's no button left to
+// click, so no more 401/CORS error popups of any kind.
 
 // ---------- 🔑 Set Anthropic API Key (v236) — explicit user instruction
 // (Aug 30, 2026, Tamil): storage-only for now (see the long HTML comment
@@ -33487,100 +33466,12 @@ window.addEventListener('beforeunload', (e) => {
 });
 
 
-// ---------- Version History modal: browse and restore from the last 5
-// auto-saved IndexedDB checkpoints (a completely separate storage system
-// from localStorage/Direct Save, kept as a last-resort safety net). ----------
-const vhOverlay = document.getElementById('vhOverlay');
-const vhList = document.getElementById('vhList');
-
-function formatHistoryTime(iso){
-  try{
-    const d = new Date(iso);
-    return d.toLocaleString();
-  }catch(e){ return iso; }
-}
-
-async function openVersionHistory(){
-  vhList.innerHTML = '<div class="vh-empty">Loading…</div>';
-  vhOverlay.style.display = 'flex';
-  const history = await idbGetHistory();
-  if(!history.length){
-    vhList.innerHTML = '<div class="vh-empty">No checkpoints saved yet in this browser. Checkpoints build up automatically as you edit (roughly once a minute).</div>';
-    return;
-  }
-  vhList.innerHTML = '';
-  history.slice().reverse().forEach((snap) => {
-    const row = document.createElement('div');
-    row.className = 'vh-item';
-    const recCount = Array.isArray(snap.payload && snap.payload.data) ? snap.payload.data.length : '?';
-    // Show which business was being worked on at this checkpoint, if known
-    // (older checkpoints saved before this field existed won't have it).
-    const bizName = snap.payload && snap.payload.lastEditedName
-      ? String(snap.payload.lastEditedName).replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      : '';
-    row.innerHTML = `
-      <div class="vh-item-meta">
-        <b>${formatHistoryTime(snap.ts)}</b>
-        <span>${recCount} businesses saved at this point</span>
-        ${bizName ? `<span>Last edited: <strong>${bizName}</strong></span>` : ''}
-      </div>
-      <button class="vh-restore-btn" type="button">Restore this</button>
-    `;
-    row.querySelector('.vh-restore-btn').addEventListener('click', () => restoreFromSnapshot(snap));
-    vhList.appendChild(row);
-  });
-}
-
-function restoreFromSnapshot(snap){
-  if(!confirm('Restore this checkpoint from ' + formatHistoryTime(snap.ts) + '?\n\nThis replaces your current business list, enquiry marks, edits, and call dates with that saved point. This cannot be undone.')) return;
-  const p = snap.payload;
-  if(!looksLikeValidData(p.data)){
-    alert('This checkpoint looks damaged and cannot be restored safely.');
-    return;
-  }
-  // BUG FIX: checkpoints save every tag set (Target/Old/SIM/NP/WT/NRN/G/UL/NL)
-  // but this used to only restore 5 of them, so after "Restore" the business
-  // list would reflect the old checkpoint while those other tags stayed as
-  // whatever they were just before restoring — an inconsistent, effectively
-  // broken restore. Now every field that gets checkpointed is restored.
-  data = p.data;
-  enquiredIds = new Set(p.enquiredIds || []);
-  editedIds = new Set(p.editedIds || []);
-  callDates = p.callDates || {};
-  callCounts = p.callCounts || {};
-  noWhatsAppNumbers = new Set(p.noWhatsAppNumbers || []);
-  targetIds = new Set(p.targetIds || []);
-  oldIds = new Set(p.oldIds || []);
-  simUsed = p.simUsed || {};
-  npIds = new Set(p.npIds || []);
-  wtIds = new Set(p.wtIds || []);
-  nrnIds = new Set(p.nrnIds || []);
-  gIds = new Set(p.gIds || []);
-  ulIds = new Set(p.ulIds || []);
-  nlIds = new Set(p.nlIds || []);
-  prospectIds = new Set(p.prospectIds || []);
-  selectedIds = new Set(p.selectedIds || []);
-  ucIds = new Set(p.ucIds || []);
-  ncIds = new Set(p.ncIds || []);
-  prmIds = new Set(p.prmIds || []);
-  disbursedIds = new Set(p.disbursedIds || []);
-  payoutReceivedIds = new Set(p.payoutReceivedIds || []);
-  lastEditedName = p.lastEditedName || lastEditedName;
-  persist(); persistEdited(); persistEnquired(); persistCallDates(); persistCallCounts(); persistNoWhatsApp();
-  persistTarget(); persistOld(); persistSim();
-  persistCallStatus('np', npIds); persistCallStatus('wt', wtIds); persistCallStatus('nrn', nrnIds);
-  persistCallStatus('g', gIds); persistCallStatus('ul', ulIds); persistCallStatus('nl', nlIds);
-  persistCallStatus('prospect', prospectIds); persistCallStatus('selected', selectedIds);
-  persistCallStatus('uc', ucIds); persistCallStatus('nc', ncIds); persistCallStatus('prm', prmIds);
-  vhOverlay.style.display = 'none';
-  render(filterData(searchBox.value));
-  updateStats();
-  alert('Restored. Your list now reflects the ' + formatHistoryTime(snap.ts) + ' checkpoint.');
-}
-
-document.getElementById('versionHistoryBtn').addEventListener('click', openVersionHistory);
-document.getElementById('vhCloseBtn').addEventListener('click', () => { vhOverlay.style.display = 'none'; });
-vhOverlay.addEventListener('click', (e) => { if(e.target === vhOverlay) vhOverlay.style.display = 'none'; });
+// ---------- Version History modal — REMOVED (Sep 9 2026 Tamil request:
+// "ரிமூவ் ஆல் பேக்கப் பட்டன் சொல்லி பேஜ்"). The 🕐 ALL BACKUP button and
+// the popup it opened (browse/restore last 5 auto-saved checkpoints) are
+// gone. The underlying checkpoint-WRITING mechanism (idbSet('autoBackupSnapshot',...)
+// a bit above this comment) is untouched and keeps running exactly as
+// before — only this read/restore UI panel was removed. ----------
 
 // ---------- Corruption recovery check: if this load fell back to the
 // baked-in seed (meaning localStorage was empty, cleared, or corrupted) —
