@@ -15556,6 +15556,57 @@ async function applyRestoredBackupPayload(parsed, sourceLabel){
   const extraMsg = (insMerged || kycMerged) ? `\n\n🛡️ Insurance Renewal: ${insMerged} record(s) merged.\n🪪 KYC: ${kycMerged} record(s) merged.` : '';
   alert(`✅ ${sourceLabel}-ல் இருந்து Restore ஆனது. ${recCount} businesses, ${editedCount} edited — இப்போ Load ஆகி இருக்கு.${extraMsg}`);
 }
+// 🩺 v367 · cloudRestoreFailDiagnostic — Tamil request (Sep 8 2026): "Root
+// Cause என்னன்னு Precise-ஆ கண்டுபிடிக்க, Phone-ல் DevTools இல்லாம முடியாது
+// (Browser CORS Error-ஓட Exact Reason-ஐ JavaScript-க்கு Show பண்ணாது —
+// Security-க்காக)". Runs 2 follow-up probes against the SAME Worker URL
+// right when the real Restore fails, and narrows the vague "Failed to
+// fetch" down into one precise, fixable cause:
+//   Probe 1 — mode:'no-cors' GET: succeeds even when CORS blocks reading
+//     the response, as long as the server is genuinely reachable. If THIS
+//     also fails, the problem has nothing to do with CORS/auth at all —
+//     it's offline/DNS/wrong URL/server down/mixed-content.
+//   Probe 2 — plain cors GET, same URL, WITHOUT the Authorization header:
+//     the custom 'authorization' header is exactly what forces the
+//     browser to send a CORS preflight (OPTIONS) first; a header-less GET
+//     has none. If Probe 1 succeeds but this ALSO throws → the Worker
+//     isn't sending Access-Control-Allow-Origin at all (general CORS
+//     misconfig). If Probe 2 actually SUCCEEDS while the original (with
+//     the header) fails → the Worker's Access-Control-Allow-Headers is
+//     missing/rejecting 'authorization' specifically — that is the one,
+//     precise, fixable root cause.
+async function diagnoseCloudRestoreFailure(originalErr){
+  const cfg = await getCloudflareBackupConfig();
+  const lines = ['🔎 Diagnostic Result:', '', 'Original Error: ' + (originalErr && originalErr.message ? originalErr.message : String(originalErr)), 'navigator.onLine: ' + navigator.onLine];
+  if(!cfg || !cfg.url){ lines.push('', '⚠️ Cloudflare URL Set பண்ணலையே.'); return lines.join('\n'); }
+  if(location.protocol === 'https:' && cfg.url.startsWith('http://')){
+    lines.push('', '🚫 MIXED CONTENT: App https-ல் Run ஆகுது, Worker URL http:// -ஆ இருக்கு — Browser Silent-ஆ Block பண்ணிடும். Worker URL-ஐ https:// -ஆ மாத்துங்க.');
+    return lines.join('\n');
+  }
+  let reachable = false;
+  try{
+    await fetch(cfg.url + '/backup', { method:'GET', mode:'no-cors', cache:'no-store' });
+    reachable = true;
+    lines.push('Probe 1 (no-cors reachability): OK — Server Reachable ஆகுது.');
+  }catch(e2){ lines.push('Probe 1 (no-cors reachability): FAILED — ' + (e2 && e2.message)); }
+  if(!reachable){
+    lines.push('', '🎯 ROOT CAUSE: Server-ஏ Reach ஆகல் — CORS Problem இல்ல. DNS/Worker URL தப்பா இருக்கலாம், Worker Down-ஆ இருக்கலாம், இல்ல Data/Wifi Problem. Worker URL-ஐ Browser-ல Directly Open பண்ணி பாருங்க.');
+    return lines.join('\n');
+  }
+  let worksWithoutAuth = false;
+  try{
+    const r2 = await fetch(cfg.url + '/backup', { method:'GET', cache:'no-store' });
+    worksWithoutAuth = true;
+    lines.push('Probe 2 (cors, no Authorization header): OK — Status ' + r2.status);
+  }catch(e3){ lines.push('Probe 2 (cors, no Authorization header): FAILED — ' + (e3 && e3.message)); }
+  lines.push('');
+  if(worksWithoutAuth){
+    lines.push('🎯 PRECISE ROOT CAUSE: Authorization Header தான் Problem. Worker.js-ஓட CORS Response-ல் Access-Control-Allow-Headers-ல் "authorization" Missing/Wrong. Worker.js-ல் OPTIONS Handler-ல் Access-Control-Allow-Headers: "authorization, content-type" சேருங்க.');
+  }else{
+    lines.push('🎯 PRECISE ROOT CAUSE: General CORS Problem — Worker எல்லா Response-லேயும் (OPTIONS மட்டும் இல்ல, GET-லேயும்) Access-Control-Allow-Origin Header அனுப்பலையா, தப்பா அனுப்புதா பாருங்க.');
+  }
+  return lines.join('\n');
+}
 document.getElementById('restoreCfBackupBtn').addEventListener('click', async () => {
   const btn = document.getElementById('restoreCfBackupBtn');
   const originalText = btn.textContent;
@@ -15566,7 +15617,11 @@ document.getElementById('restoreCfBackupBtn').addEventListener('click', async ()
     if(parsed) await applyRestoredBackupPayload(parsed, '☁️ Cloudflare');
   }catch(e){
     console.warn('Restore from Cloud failed:', e);
-    alert('❌ Cloud-ல் இருந்து Restore பண்ண முடியல் (Network Problem-ஆ இருக்கலாம்): ' + (e && e.message ? e.message : e));
+    let msg = '❌ Cloud-ல் இருந்து Restore பண்ண முடியல் (Network Problem-ஆ இருக்கலாம்): ' + (e && e.message ? e.message : e);
+    try{
+      msg += '\n\n' + await diagnoseCloudRestoreFailure(e);
+    }catch(diagErr){ console.warn('Diagnostic itself failed:', diagErr); }
+    alert(msg);
   }finally{
     btn.textContent = originalText;
     btn.disabled = false;
