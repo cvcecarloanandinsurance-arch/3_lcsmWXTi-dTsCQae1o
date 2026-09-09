@@ -91,7 +91,7 @@ self.addEventListener('fetch', (event) => {
   //
   // Fix: split the work in two, and don't make one wait for the
   // other —
-  //   1) `redirectPromise` below only needs a fast manifest.json
+  //   1) `redirectPromise` below only needs a fast cfg-9x2q.json
   //      fetch (no file data at all) and is handed to
   //      event.respondWith() immediately, so the browser can
   //      navigate to the current app page right away — the person
@@ -146,11 +146,11 @@ self.addEventListener('fetch', (event) => {
 
   // 🐛 EARLIER FIX (kept as-is, Aug 2026 — "Extract from WhatsApp
   // Upload செய்யும்பொழுது பாப்அப் ஸ்க்ரீன் வருவதில்லை"): redirect to
-  // manifest.json's own start_url (fetched fresh, no-store) instead of
+  // cfg-9x2q.json's own start_url (fetched fresh, no-store) instead of
   // the exact filename the Share Sheet posted to — that posted-to
   // filename is baked into the Home Screen shortcut/WebAPK at install
   // time and 404s the moment the HTML is renamed for a newer version.
-  // Falls back to the old posted-to filename only if manifest.json
+  // Falls back to the old posted-to filename only if cfg-9x2q.json
   // itself can't be fetched (e.g. fully offline).
   const redirectPromise = (async () => {
     let redirectTarget = url.pathname + url.search;
@@ -165,7 +165,7 @@ self.addEventListener('fetch', (event) => {
         }
       }
     } catch (e) {
-      console.warn('sw-share.js: manifest.json lookup failed, falling back to posted-to URL', e);
+      console.warn('sw-share.js: cfg-9x2q.json lookup failed, falling back to posted-to URL', e);
     }
     return Response.redirect(redirectTarget, 303);
   })();
