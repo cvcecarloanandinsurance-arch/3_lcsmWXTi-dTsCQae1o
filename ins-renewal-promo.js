@@ -19,7 +19,8 @@ async function getInsuranceRenewalRecords(){const e=await idbGet(INSURANCE_RENEW
 async function setInsuranceRenewalRecords(e){await idbSet(INSURANCE_RENEWAL_KEY,e),insuranceRenewalRecordsCache=e}
 const INSURANCE_RENEWAL_DELETED_KEY="insurance_renewal_deleted_regns_v1";
 async function refreshInsuranceRenewalCache(){insuranceRenewalRecordsCache=await getInsuranceRenewalRecords()}
-function findBizIdByMobileForInsRenewal(e){const t=(e||"").toString().replace(/\D/g,"");if(!t||typeof data>"u")return null;const n=data.find(a=>Array.isArray(a.mobiles)&&a.mobiles.some(u=>(u||"").toString().replace(/\D/g,"")===t));return n?n.id:null}
+var __insRenBizMobMap=null,__insRenBizMobSrc=null,__insRenBizMobLen=-1,__insRenBizMobTs=0;
+function findBizIdByMobileForInsRenewal(e){const t=(e||"").toString().replace(/\D/g,"");if(!t||typeof data>"u")return null;const now=Date.now();if(!__insRenBizMobMap||__insRenBizMobSrc!==data||__insRenBizMobLen!==data.length||now-__insRenBizMobTs>5e3){const m=new Map;for(let i=0;i<data.length;i++){const a=data[i];if(!a||!Array.isArray(a.mobiles))continue;for(let j=0;j<a.mobiles.length;j++){const k=(a.mobiles[j]||"").toString().replace(/\D/g,"");k&&!m.has(k)&&m.set(k,a.id)}}__insRenBizMobMap=m;__insRenBizMobSrc=data;__insRenBizMobLen=data.length;__insRenBizMobTs=now}return __insRenBizMobMap.has(t)?__insRenBizMobMap.get(t):null}
 function insRenewalBlockedByBusinessReceived(e){try{const t=insuranceOcrExtractQueue.find(n=>n.id===e.insRecId);return insBusinessReceivedThisYear(t)?!confirm(`✅ இந்த Registration Number-க்கு Business Received டிக் செய்யப்பட்டுள்ளது (இந்த வருடம்).
 
 இருந்தாலும் Promo அனுப்பவா?`):!1}catch{return!1}}
