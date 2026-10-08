@@ -1335,7 +1335,7 @@ let promoPhase="idle",promoAwaitingReturn=!1,promoAutoMode=!1,__promoRunActive=!
 let __promoLaunchAt=0,__promoHiddenSeen=!1,__promoBlurSeen=!1,__promoGuardUntil=0,__promoWatchdog=null;
 function prEl(i){return document.getElementById(i)}
 function promoIsProspect(e){try{return!!e&&((typeof resolveRowBuilderCategory=="function"&&resolveRowBuilderCategory(e)==="prospect")||builderActiveCategory==="prospect")}catch{return!1}}
-function promoShowContinue(t){const b=prEl("promoAutoContinueBtn");if(!b)return;b.textContent="▶️ NEXTWA — "+String(t||"தொடர்க").replace(/^▶️\s*/,"").replace(/^தொடர்க\s*—\s*/,"தொடர்க — ");b.setAttribute("aria-label","NEXTWA");b.style.display=""}
+function promoShowContinue(t){const b=prEl("promoAutoContinueBtn");if(!b)return;b.textContent="▶️ NEXTWA — "+String(t||"தொடர்க").replace(/^▶️\s*/,"").replace(/^தொடர்க\s*—\s*/,"தொடர்க — ");b.setAttribute("aria-label","NEXTWA");b.style.cssText="display:block;position:fixed;left:6%;right:6%;width:88%;top:50%;transform:translateY(-50%);min-height:150px;margin:0;z-index:2147483000;font-weight:800;font-size:1.05rem;border-radius:14px;border:3px solid #fff;background:#16a34a;color:#fff;box-shadow:0 6px 24px rgba(0,0,0,.5);cursor:pointer"}
 function promoHideContinue(){const b=prEl("promoAutoContinueBtn");b&&(b.style.display="none");promoChainHideNoWa()}
 function promoChainShowContinue(t){promoShowContinue(t)}
 function promoChainHideNoWa(){const b=prEl("promoNoWaSmsBtn");b&&(b.style.display="none")}
